@@ -10,10 +10,22 @@ function drawChartPossibleFuncs() {
   
   const svg = d3.select("#chart-possible-funcs").append("svg").attr("viewBox", [0, 0, width, height]);
   
-  let y1 = xtilde.map((i) => 0.01*(i-1)*(7-i)*(i-8));
-  let y2 = xtilde.map((i) => 0.5 + 0.003*(i-1)*(i-3)*(i-6)*(i-10) -0.03*i*(i-10) - 1 + 0.05*i);
-  let y3 = xtilde.map((i) => -0.2 + 0.005*(i-4)**3);
-  let y4 = xtilde.map((i) => -0.6 + 0.005*(6.8-i)**3);
+  let y1 = xtilde.map((i) => {
+            let n = (i-5)/4.5;
+            return 0.01*(n-1)*(7-n)*(n-8);
+          });
+  let y2 = xtilde.map((i) => {
+            let n = (i-5)/4.5;
+            return 0.5 + 0.003*(n-1)*(n-3)*(n-6)*(n-10) -0.03*n*(n-10) - 1 + 0.05*n;
+          });
+  let y3 = xtilde.map((i) => {
+            let n = (i-5)/4.5;
+            return -0.2 + 0.005*(n-4)**3;
+          });
+  let y4 = xtilde.map((i) => {
+            let n = (i-5)/4.5;
+            return -0.6 + 0.005*(6.8-n)**3;
+          });
  
   let data_comb = xtilde.map((d, i) => ({x: xtilde[i], 
                                          y1: y1[i], 
@@ -52,7 +64,7 @@ function drawChartPossibleFuncs() {
   // Model parameters
   const modelLineGroup = svg.append("g")
     .attr("stroke", "red")
-    .attr("stroke-width", 3)
+    // .attr("stroke-width", 3)
     .attr('fill', 'none');
   
   svg.append("g")

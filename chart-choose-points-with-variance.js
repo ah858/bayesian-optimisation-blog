@@ -12,7 +12,7 @@ function drawChoosePointsWithVariance() {
   const height  = document.getElementById("chart-choose-points-with-variance").offsetWidth / 2
 
   const xscale = d3.scaleLinear()
-    .domain([0,10])
+    .domain([5,50])
     .range([margin.left, width - margin.right])
 
   const yscale = d3.scaleLinear()
@@ -35,10 +35,10 @@ function drawChoosePointsWithVariance() {
   const NUMBER_OF_GUESSES = 3;
   
   // Random points generator
-  const points_random1 = [{x: math.random(0.1, 2.5), y: math.random(-0.8, 0.8)}, 
-                             {x: math.random(3.0, 5.7), y: math.random(-0.8, 0.8)},
-                             {x: math.random(5.2, 6.5), y: math.random(-0.8, 0.8)},
-                             {x: math.random(7.0, 9.5), y: math.random(-0.8, 0.8)}]
+  const points_random1 = [{x: math.random(6, 12), y: math.random(-0.8, 0.8)}, 
+                             {x: math.random(15, 22), y: math.random(-0.8, 0.8)},
+                             {x: math.random(25, 32), y: math.random(-0.8, 0.8)},
+                             {x: math.random(37, 45), y: math.random(-0.8, 0.8)}]
   
   // User selected points
   const points_chosen = [];
@@ -140,7 +140,7 @@ function drawChoosePointsWithVariance() {
   function getPoints(event) {
     const x_val = xscale.invert(event.offsetX) 
     
-    const index = d3.format(".0f")((x_val/10) * 201);
+    const index = d3.format(".0f")(((x_val-5)/45) * 201);
     const y_val = dist_underlying[index]["mean"]
     
     return {x: x_val, y: y_val}

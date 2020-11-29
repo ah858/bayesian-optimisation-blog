@@ -15,7 +15,7 @@ function drawChartGaussianProcessSandbox() {
 	const height  = document.getElementById("chart-gp-sandox").offsetWidth / 2
 
 	const xscale = d3.scaleLinear()
-		.domain([0,10])
+		.domain([5,50])
 		.range([margin.left, width - margin.right])
 
 	const yscale = d3.scaleLinear()

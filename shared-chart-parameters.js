@@ -3,12 +3,12 @@ let width = 500; //document.getElementById("chart").offsetWidth
 let height = 250; // document.getElementById("chart").offsetWidth / 2
 
 
-let xtilde = [...Array(201).keys()].map((i) => i / 200 * 10)
+let xtilde = [...Array(201).keys()].map((i) => 5 + (i / 200 * 45))
 
 const margin = ({top:20, right:30, bottom: 20, left: 30})
 
 const xscale = d3.scaleLinear()
-	.domain([0,10])
+	.domain([5,50])
 	.range([margin.left, width - margin.right])
 
 const yscale = d3.scaleLinear()
@@ -30,7 +30,7 @@ const yAxis = g => g
 // ============================
 
 const sigma = 0.25
-const ell = 1.5
+const ell = 6.75 //1.5 
 const delta = 0.005
 
 const squared_exponential_kernel = (sigma, ell) => {
