@@ -3,17 +3,39 @@ function drawChartGaussianProcessSandbox() {
 	const points = [];
 	// const points = [{x: 500, y: 200}];
 
+	// ================================================
+	// TODO: Make this code responsive
+	// ================================================
 	// These valeus are required so that the clicking coordinates are correct
 	// TODO: Make these responsive viewbox values
-	const width = document.getElementById("chart").offsetWidth
-	const height  = document.getElementById("chart").offsetWidth / 2
+	// Look at these SO answers
+	// - https://stackoverflow.com/questions/22183727/how-do-you-convert-screen-coordinates-to-document-space-in-a-scaled-svg
+	// - https://stackoverflow.com/questions/29261304/how-to-get-the-click-coordinates-relative-to-svg-element-holding-the-onclick-lis
+	const width = document.getElementById("chart-gp-sandox").offsetWidth
+	const height  = document.getElementById("chart-gp-sandox").offsetWidth / 2
 
-	const sigma = 0.25
-	const ell = 1.5
-	const delta = 0.005
+	const xscale = d3.scaleLinear()
+		.domain([0,10])
+		.range([margin.left, width - margin.right])
 
-	// const svg = d3.select("#chart").append("svg").attr("width", width).attr("height", height);
-	const svg = d3.select("#chart").append("svg").attr("viewBox", [0, 0, width, height]);
+	const yscale = d3.scaleLinear()
+	  .domain([-1, 1])
+	  .range([height - margin.bottom, margin.top])
+
+	const xAxis = g => g
+	  .attr("transform", `translate(0, ${height - margin.bottom})`)
+	  .attr("pointer-events", "none")
+	  .call(d3.axisBottom(xscale))
+
+	const yAxis = g => g
+	  .attr("transform", `translate(${margin.left},0)`)
+	  .attr("pointer-events", "none")
+	  .call(d3.axisLeft(yscale))
+
+	const svg = d3.select("#chart-gp-sandox").append("svg").attr("width", width).attr("height", height);
+	// ================================================
+
+	// const svg = d3.select("#chart").append("svg").attr("viewBox", [0, 0, width, height]);
 
 	svg.append("g")
 		.call(xAxis);
@@ -95,9 +117,9 @@ function drawChartGaussianProcessSandbox() {
 	// Transparent "white", a fill is required to capture click events
 	.attr("fill", "#fff0")
 	.on("click", event => {
-	  points.push({x: event.offsetX, y: event.offsetY});
-	  // console.log(points);
-	  update();  
+	    points.push({x: event.offsetX, y: event.offsetY});
+	    // console.log(points);
+	    update();  
 	});
 
 	const line = svg.append("line")
@@ -137,8 +159,8 @@ function drawChartGaussianProcessSandbox() {
 	      .call(drag)
 	  )
 	  // Applies to merged selection of new and old elements
-	  .attr("cx", d => d.x.matrixTransform(svg.getScreenCTM().inverse()))
-	  .attr("cy", d => d.y.matrixTransform(svg.getScreenCTM().inverse()));
+	  .attr("cx", d => d.x)
+	  .attr("cy", d => d.y);
 
 	// Update conditional dist
 	const dist = conditional_distribution(points.map((d) => xscale.invert(d.x)),
@@ -242,51 +264,6 @@ function drawChartGaussianProcessSandbox() {
 	  .attr("clip-path","url(#theshold-clip)");  
 	}
 
-	const squared_exponential_kernel = (sigma, ell) => {
-	  const sigmasq = Math.pow(sigma, 2);
-	  const ellsq = 2 * Math.pow(ell, 2);
-	  return (x1, x2) => sigmasq * Math.exp(-Math.pow(x1 - x2, 2) / ellsq)
-	}
-
-	const apply_kernel = (x1s, x2s, kernel) => {
-	  const covariance = [];
-	  for(let i = 0; i < x1s.length; i++) {
-	    covariance.push([]);
-	    for(let j = 0; j < x2s.length; j++) {
-	      covariance[i][j] = kernel(x1s[i], x2s[j]);
-	    }
-	  }
-	  return math.matrix(covariance);
-	}
-
-	const conditional_distribution = (x, y, xtilde, kernel) => {
-	  if(x.length == 0) return ({ mean: [{ x: 0, y: 0 }] });
-	  const Sigma = math.add(apply_kernel(x, x, kernel), math.multiply(math.identity(x.length), delta));
-	  const Sigmainv = math.inv(Sigma);
-	  const Omega = apply_kernel(xtilde, xtilde, kernel);
-	  const K = apply_kernel(x, xtilde, kernel);
-	  
-	  const mean = math.multiply(math.multiply(math.transpose(K), Sigmainv), y)
-	    ._data;
-	  
-	  const variance = math.diag(math.subtract(Omega, math.multiply(math.multiply(math.transpose(K), Sigmainv), K)))
-	    ._data;
-	  
-	  const sd = math.sqrt(variance);
-	  
-	  return mean.map((d, i) => ({ 
-	    x: xtilde[i], 
-	    mean: d, 
-	    var: variance[i], 
-	    sd: sd[i], 
-	    lower: d - 1.96 * sd[i], 
-	    upper: d + 1.96 * sd[i],
-	    lower2: d - 1.28 * sd[i],
-	    upper2: d + 1.28 * sd[i]
-	  }));
-	}
-
-	const kernel = squared_exponential_kernel(sigma, ell)
 }
 
 drawChartGaussianProcessSandbox();
