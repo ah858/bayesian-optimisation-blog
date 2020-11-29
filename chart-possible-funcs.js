@@ -7,90 +7,89 @@
 // let height = 150; // document.getElementById("chart").offsetWidth / 2
 
 function drawChartPossibleFuncs() {
-
+  
   const svg = d3.select("#chart-possible-funcs").append("svg").attr("viewBox", [0, 0, width, height]);
-
-  let y_linear = xtilde.map((i) => 0.14 * i - 0.4 );
-  let y_quad1 = xtilde.map((i) => -0.03*i*(i-10) - 1 + 0.05*i);
-  let y_quad2 = xtilde.map((i) => -0.6 + 0.01*i**2);
-  let y_cubic = xtilde.map((i) => -0.6 + 0.005*(6.8-i)**3);
-
-  let data_linear = xtilde.map((d, i) => ({x: xtilde[i], y: y_linear[i]}));
-  let data_quad1 = xtilde.map((d, i) => ({x: xtilde[i], y: y_quad1[i]}));
-  let data_quad2 = xtilde.map((d, i) => ({x: xtilde[i], y: y_quad2[i]}));
-  let data_cubic = xtilde.map((d, i) => ({x: xtilde[i], y: y_cubic[i]}));
-
+  
+  let y1 = xtilde.map((i) => 0.01*(i-1)*(7-i)*(i-8));
+  let y2 = xtilde.map((i) => 0.5 + 0.003*(i-1)*(i-3)*(i-6)*(i-10) -0.03*i*(i-10) - 1 + 0.05*i);
+  let y3 = xtilde.map((i) => -0.2 + 0.005*(i-4)**3);
+  let y4 = xtilde.map((i) => -0.6 + 0.005*(6.8-i)**3);
+ 
+  let data_comb = xtilde.map((d, i) => ({x: xtilde[i], 
+                                         y1: y1[i], 
+                                         y2: y2[i], 
+                                         y3: y3[i], 
+                                         y4: y4[i]}));
   // ============================
   // Set up shapes for model
   // ============================
-
+  
   // Set up model mean and std deviations
-  const modelLine = d3.line()
+  const modelLine1 = d3.line()
     .curve(d3.curveBasis)
     .x((d,i) => xscale(d.x))
-    .y((d,i) => yscale(d.y));
-
-  function handleMouseover(event) {
-    d3.select(event.currentTarget).attr("stroke", "red");
-  };
-
-  function handleMouseout(event) {
-    d3.select(event.currentTarget).attr("stroke", "lightgray");
-  };
-
+    .y((d,i) => yscale(d.y1));
+ 
+  const modelLine2 = d3.line()
+    .curve(d3.curveBasis)
+    .x((d,i) => xscale(d.x))
+    .y((d,i) => yscale(d.y2));
+  
+  const modelLine3 = d3.line()
+    .curve(d3.curveBasis)
+    .x((d,i) => xscale(d.x))
+    .y((d,i) => yscale(d.y3));
+  
+  const modelLine4 = d3.line()
+    .curve(d3.curveBasis)
+    .x((d,i) => xscale(d.x))
+    .y((d,i) => yscale(d.y4));
+  
   // ============================
   // Add model elements to svg
   // ============================
-
+  
   // Model parameters
   const modelLineGroup = svg.append("g")
-    .attr("stroke", "lightgray")
+    .attr("stroke", "red")
     .attr("stroke-width", 3)
     .attr('fill', 'none');
-
+  
   svg.append("g")
     .call(xAxis);
-
+  
   svg.append("g")
     .call(yAxis);
 
-  // Initial drawing  
   update();
-
-
+  
   function update() {
     
-    modelLineGroup.selectAll('.modelLineLinear')
-      .data([data_linear])
+    const modelLineObject = modelLineGroup.selectAll('.modelLineTransition')
+      .data([data_comb])
       .join('path')
-      .attr('class', 'modelLineLinear')
-      .attr('d', d => modelLine(d))
-      .on("mouseover", (event) => handleMouseover(event))
-      .on("mouseout", (event) => handleMouseout(event));
+      .attr('class', 'modelLineTransition')
+      .attr('d', d => modelLine1(d));
     
-    modelLineGroup.selectAll('.modelQuad1')
-      .data([data_quad1])
-      .join('path')
-      .attr('class', 'modelQuad1')
-      .attr('d', d => modelLine(d))
-      .on("mouseover", (event) => handleMouseover(event))
-      .on("mouseout", (event) => handleMouseout(event));
+    function repeat() {
+      modelLineObject
+      .transition()
+      .duration(2000)
+      .attr('d', d => modelLine2(d))
+      .transition()
+      .duration(2000)
+      .attr('d', d => modelLine3(d))
+      .transition()
+      .duration(2000)
+      .attr('d', d => modelLine4(d))
+      .transition()
+      .duration(2000)
+      .attr('d', d => modelLine1(d))
+      .on("end", repeat);  // when the transition finishes start again
+    };
     
-    modelLineGroup.selectAll('.modelQuad2')
-      .data([data_quad2])
-      .join('path')
-      .attr('class', 'modelQuad2')
-      .attr('d', d => modelLine(d))
-      .on("mouseover", (event) => handleMouseover(event))
-      .on("mouseout", (event) => handleMouseout(event));
+    repeat();
     
-    modelLineGroup.selectAll('.modelCubic')
-      .data([data_cubic])
-      .join('path')
-      .attr('class', 'modelCubic')
-      .attr('d', d => modelLine(d))
-      .on("mouseover", (event) => handleMouseover(event))
-      .on("mouseout", (event) => handleMouseout(event));
   }
 };
 
