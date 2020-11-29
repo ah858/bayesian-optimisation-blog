@@ -20,7 +20,7 @@
 
 	<div class="mw9 center ph3-ns">
 	  <div class="cf"> <!-- ph2-ns -->
-	    <div class="fl w-100 w-50-ns pa2">
+	    <div class="fl w-100 w-50-ns ph2 pv0"> <!-- No vertical padding -->
 			<h2>Bayesian optimisation</h2>
 
 			<p>Consider a typical problem setting for a Bayesian Optimization problem.</p>
@@ -33,24 +33,57 @@
 
 			<p>You can manufacture a wing prototype in about a day, and the driver can test it on the track reporting their best time to you. There are only 5 days until the next race, however, so you have limited time to find the best design.</p>
 
+	    </div>
+	    <div class="fl w-100 w-50-ns">
+	    	<!-- <div id="chart-funcs"></div> -->
+			<!-- <div class="viewof-points"></div> -->
+	    </div>
+	</div>
+
+	<!-- POSSIBLE FUNCTIONS -->
+
+	<div class="cf"> <!-- ph2-ns -->
+	    <div class="fl w-100 w-50-ns ph2 pv0"> <!-- No vertical padding -->
 			<p>The problem is that we don't know what wing lengths correspond to the best speeds. <strong>Hover tap over the graph on the right to see what possible relationships could look like.</strong></p>
+	    </div>
+	    <div class="fl w-100 w-50-ns">
+	    	<div id="chart-possible-funcs"></div>
+	    </div>
+	</div>
 
-			<p>This is the first text</p>
+	<!-- POSSIBLE FUNCTIONS -->
 
-			<p>This is the second text</p>
-
-			<hr>
-
+	<div class="cf"> <!-- ph2-ns -->
+	    <div class="fl w-100 w-50-ns ph2 pv0"> <!-- No vertical padding -->
 			<button id="button1">Test button</button>
 	    </div>
 	    <div class="fl w-100 w-50-ns">
-	    	<div id="chart-funcs"></div>
 	    	<div id="chart"></div>
-			<!-- <div class="viewof-points"></div> -->
 	    </div>
-	  </div>
 	</div>
 
+
+	<div class="cf"> <!-- ph2-ns -->
+	    <div class="fl w-100 w-50-ns ph2 pv0"> <!-- No vertical padding -->
+	    <div class="fl w-100 w-50-ns"></div>
+	</div>
+
+
+	<div class="cf"> <!-- ph2-ns -->
+	    <div class="fl w-100 w-50-ns ph2 pv0"> <!-- No vertical padding -->
+	    <div class="fl w-100 w-50-ns"></div>
+	</div>
+
+
+	<div class="cf"> <!-- ph2-ns -->
+	    <div class="fl w-100 w-50-ns ph2 pv0"> <!-- No vertical padding -->
+	    <div class="fl w-100 w-50-ns"></div>
+	</div>
+
+	  </div>
+
+	<script src="./shared-chart-parameters.js"></script>	
+	<script src="./chart-possible-funcs.js"></script>	
 	<script src="./chart1.js"></script>
         
 </article>
