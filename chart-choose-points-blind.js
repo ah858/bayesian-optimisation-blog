@@ -104,12 +104,15 @@ function drawChoosePointsBlind() {
     .attr("stroke", "gray")
     .attr("stroke-dasharray", (3, 5))
     .attr("stroke-width", 2)
+    .attr("x1", -10) // Outside the plot
+    .attr("x2", -10) // Outside the plot
     .attr("y1", yscale.range()[0])
     .attr("y2", yscale.range()[1]);
   
   // Use rect in the background to capture click events and handle point creation
   const backgroundRect = svg.append("rect")
-    .attr("width", width)
+    .attr("transform", `translate(${margin.left},0)`)
+    .attr("width", width - (margin.left + margin.right))
     .attr("height", height)
     // Transparent "white", a fill is required to capture click events
     .attr("fill", "#fff0")
@@ -122,7 +125,11 @@ function drawChoosePointsBlind() {
     })
     .on("mousemove", event => {
       hLine.attr("x1", event.offsetX)
-          .attr("x2", event.offsetX);
+          .attr("x2", event.offsetX)
+          .attr("opacity", 1);
+    })
+    .on("mouseout", event => {
+      hLine.attr("opacity", 0);
     });
   
   // Restrict circles to a common group to set attributes collectively and avoid selecting unwanted elements
@@ -135,7 +142,6 @@ function drawChoosePointsBlind() {
  
   // Initial drawing  
   update();
-  return svg.node();
   
   function getPoints(event) {
     const x_val = xscale.invert(event.offsetX) 
