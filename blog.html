@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+
+<head>
+	<title>Blog</title>
+ 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css"/>
+	<script src="https://d3js.org/d3.v6.js"></script>
+	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/math/5.4.0/math.js"></script> -->
+  <script src="https://unpkg.com/mathjs@8.0.1/lib/browser/math.js"></script>
+
+	<!-- <link href="style.css" rel="stylesheet" type="text/css"> -->
+</head>
+
+<body>
+<article class="pa3 pa3-ns">
+  
+  <h1 class="f3 f1-m f-headline-l">Bayesian optimisation</h1>
+
+
+
+	<div class="mw9 center ph3-ns">
+	  <div class="cf"> <!-- ph2-ns -->
+	    <div class="fl w-100 w-50-ns pa2">
+			<h2>Bayesian optimisation</h2>
+
+			<p>Consider a typical problem setting for a Bayesian Optimization problem.</p>
+
+			<h2>The Problem</h2>
+
+			<p>Imagine you're on the engineering design team for a Formula 1 car. The team lead decided it would be worth a try to add a new side-wing to the vehicle. The length of the side-wing, however, can vary within some regulation constraints: 5cm - 40cm. Your job is to find the length of the wing that gives optimal performance as measured by the best lap time the driver is able to achieve.</p>
+
+			<p>This is a typical setting for Bayesian Optimization. We're trying to optimize an unknown objective function y(x) - the vehicle's on track performance as a function of the side-wing length. The objective function is expensive to evaluate: it takes a long period of time to test a new prototype, and manufacturing a prototype component is costly. Our goal is to pick the wing lengths to evaluate such that we find the optimal design in a limited number of steps.</p>
+
+			<p>You can manufacture a wing prototype in about a day, and the driver can test it on the track reporting their best time to you. There are only 5 days until the next race, however, so you have limited time to find the best design.</p>
+
+			<p>The problem is that we don't know what wing lengths correspond to the best speeds. <strong>Hover tap over the graph on the right to see what possible relationships could look like.</strong></p>
+
+			<p>This is the first text</p>
+
+			<p>This is the second text</p>
+
+			<hr>
+
+			<button id="button1">Test button</button>
+	    </div>
+	    <div class="fl w-100 w-50-ns">
+	    	<div id="chart-funcs"></div>
+	    	<div id="chart"></div>
+			<!-- <div class="viewof-points"></div> -->
+	    </div>
+	  </div>
+	</div>
+
+	<script src="./chart1.js"></script>
+        
+</article>
+
+
+	<!-- <h1>Bayseian optimisation</h1>
+
+	<div class="container">
+
+		<div class="col">
+			<p>This is the first text</p>
+
+			<p>This is the second text</p>
+		</div>div>
+
+		<div class="col">
+
+			<svg id="dataviz_area" height=200 width=450></svg>
+
+		</div>div>
+
+	</div> -->
+
+</body>

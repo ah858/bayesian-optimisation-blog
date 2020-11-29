@@ -1,0 +1,12 @@
+.container {
+
+}
+
+.col {
+	padding: 10px;
+	width: 50%;
+}
+
+#chart {
+	width: 100%;
+}
