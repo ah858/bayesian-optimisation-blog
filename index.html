@@ -19,8 +19,8 @@
 
 
 	<div class="mw9 center ph3-ns">
-		<div class="cf"> <!-- ph2-ns -->
-		    <div class="fl w-100 w-50-ns ph2 pv0"> <!-- No vertical padding -->
+		<!-- <div class="cf"> <!-- ph2-ns ->
+		    <div class="fl w-100 w-50-ns ph2 pv0"> <!-- No vertical padding ->
 				<h2>Bayesian optimisation</h2>
 
 				<ul>
@@ -34,11 +34,11 @@
 					<li>Show the score away from the highest point on the choice graphics</li>
 				</ul>
 
-				<p>Consider a typical problem setting for a Bayesian Optimization problem.</p>
+				<p>We'll start off by introducing an archetypal problem setting for Bayesian Optimization, and show how the key elements of Bayesian Optimization can improve upon a naive approach.</p>
 
 				<h2>The Problem</h2>
 
-				<p>Imagine you're on the engineering design team for a Formula 1 car. The team lead decided it would be worth a try to add a new side-wing to the vehicle. The length of the side-wing, however, can vary within some regulation constraints: 5cm - 40cm. Your job is to find the length of the wing that gives optimal performance as measured by the best lap time the driver is able to achieve.</p>
+				<p>Imagine you're on the engineering design team for a Formula 1 car. The team lead decided it would be worth a try to add a new side-wing to the vehicle to improve its cornering speed. The length of the side-wing, however, can vary within regulation constraints: 5cm - 40cm. Your job is to find the length of the wing that gives optimal performance as measured by the top cornering speed the driver is able to achieve.</p>
 
 				<p>This is a typical setting for Bayesian Optimization. We're trying to optimize an unknown objective function y(x) - the vehicle's on track performance as a function of the side-wing length. The objective function is expensive to evaluate: it takes a long period of time to test a new prototype, and manufacturing a prototype component is costly. Our goal is to pick the wing lengths to evaluate such that we find the optimal design in a limited number of steps.</p>
 
@@ -46,42 +46,91 @@
 
 		    </div>
 		    <div class="fl w-100 w-50-ns">
-		    	<!-- <div id="chart-funcs"></div> -->
-				<!-- <div class="viewof-points"></div> -->
+		    </div>
+		</div> -->
+
+
+
+		<div class="cf">
+		    <div class="fl w-100 w-50-ns pv0">
+		    	<h2>Bayesian optimisation</h2>
+
+				<ul>
+					<li>TO-DO list</li>
+					<li>Pick section titles</li>
+					<li>Page (1) Fix margins (2) Responsive mobile layout</li>
+					<li>Add viewbox support</li>
+					<li>Make graphics reset possible</li>
+					<li>Replace buttons with scroll event listeners (and add smoother transitions)</li>
+					<li>Add 'days left' timer on graphics (and annotations)</li>
+					<li>Show the score away from the highest point on the choice graphics</li>
+				</ul>
+
+				<p>We'll start off by introducing an archetypal problem setting for Bayesian Optimization, and show how the key elements of Bayesian Optimization can improve upon a naive approach.</p>
+
+				<h2>The Problem</h2>
+
+				<p>Imagine you're on the engineering design team for a Formula 1 car. The team lead decided it would be worth a try to add a new side-wing to the vehicle to improve its cornering speed. The length of the side-wing, however, can vary within regulation constraints: 5cm - 40cm. Your job is to find the length of the wing that gives optimal performance as measured by the top cornering speed the driver is able to achieve.</p>
+
+				<p>This is a typical setting for Bayesian Optimization. We're trying to optimize an unknown objective function y(x) - the vehicle's on track performance as a function of the side-wing length. The objective function is expensive to evaluate: it takes a long period of time to test a new prototype, and manufacturing a prototype component is costly. Our goal is to pick the wing lengths to evaluate such that we find the optimal design in a limited number of steps.</p>
+
+				<p>You can manufacture a wing prototype in about a day, and the driver can test it on the track reporting their best time to you. There are only 5 days until the next race, however, so you have limited time to find the best design.</p>
 		    </div>
 		</div>
 
 		<!-- POSSIBLE FUNCTIONS -->
 
-		<div class="cf">
+		<!-- <div class="cf">
 		    <div class="fl w-100 w-50-ns ph2 pv0">
 		    	<h2>Possible functions</h2>
 		    </div>
 		</div>
 
-		<div class="cf"> <!-- ph2-ns -->
-		    <div class="fl w-100 w-50-ns ph2 pv0"> <!-- No vertical padding -->
+		<div class="cf"> <!-- ph2-ns ->
+		    <div class="fl w-100 w-50-ns ph2 pv0"> <!-- No vertical padding ->
 				<p>The problem is that we don't know what wing lengths correspond to the best speeds. <strong>Hover tap over the graph on the right to see what possible relationships could look like.</strong></p>
 		    </div>
 		    <div class="fl w-100 w-50-ns">
 		    	<div id="chart-possible-funcs"></div>
 		    </div>
-		</div>
-
-		<!-- BLIND CHOICE OF POINTS -->
+		</div> -->
 
 		<div class="cf">
+		    <div class="fl w-100 w-50-ns pv0">
+				<h2>Possible functions</h2>
+				<p>The problem is that we don't know what wing lengths correspond to the best speeds. <strong>Hover tap over the graph on the right to see what possible relationships could look like.</strong></p>
+		    	<div id="chart-possible-funcs"></div>
+		    	<h2>Choosing points blindly</h2>
+		    	<p>Now let's look at the real data. Without knowing the function, can you find the optimal side wing in 5 days?
+		    	
+		    </div>
+		</div>
+		    
+
+		<!-- BLIND CHOICE OF POINTS -->
+<!-- <div class="cf">
 		    <div class="fl w-100 w-50-ns ph2 pv0">
 		    	<h2>Choosing points blindly</h2>
 		    </div>
-		</div>
+		</div> -->
 
-		<div class="cf"> <!-- ph2-ns -->
+		<!-- <div class="cf"> <!-- ph2-ns ->
 		    <div class="fl w-100 w-50-ns ph2 pv0">
 		    	<p>Now let's look at the real data. Without knowing the function, can you find the optimal side wing in 5 days?</p>
-		    </div> <!-- No vertical padding -->
+		    </div> <!-- No vertical padding ->
 		    <div class="fl w-100 w-50-ns">
+<!-- 		    	<div id="chart-choose-points-blind"></div>
+ ->		    </div>
+		</div>-->
+
+		<div class="cf">
+		    <div class="fl w-100 w-50-ns pv0">
 		    	<div id="chart-choose-points-blind"></div>
+		    	 </div>
+
+		    <div class="fl w-100 w-50-ns ph6 pv5">
+		    	<p class="i f6">We'll pick a new underlying function for you on each reset, we don't want to make it too easy.</p>
+		   		<a class="f6 link dim br-pill ba ph3 pv1 dib black" href="#0">Play again</a>
 		    </div>
 		</div>
 
@@ -105,9 +154,10 @@
 
 				<p>For instance, we could pick the best design as predicted by the model as the next one to test, i.e. the one that gives us the shortest predicted lap-time.</p>
 
+		    	<div id="chart-choose-points-with-mean"></div>
 		    </div> <!-- No vertical padding -->
 		    <div class="fl w-100 w-50-ns">
-		    	<div id="chart-choose-points-with-mean"></div>
+		    	<!-- <div id="chart-choose-points-with-mean"></div> -->
 		    </div>
 		</div>
 
