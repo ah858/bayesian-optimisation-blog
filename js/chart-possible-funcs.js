@@ -63,7 +63,7 @@ function drawChartPossibleFuncs() {
   
   // Background y grid
   svg.append("g")
-    .call(yGrid);
+    .call(yGrid, height, width);
 
   // Model parameters
   const modelLineGroup = svg.append("g")
@@ -72,16 +72,16 @@ function drawChartPossibleFuncs() {
     .attr('fill', 'none');
 
   svg.append("g")
-    .call(xAxis);
+    .call(xAxis, height, width);
   
   svg.append("g")
-    .call(yAxis);
+    .call(yAxis, height);
 
   svg.append("g")
-    .call(xLabel);
+    .call(xLabel, height, width);
 
   svg.append("g")
-    .call(yLabel);
+    .call(yLabel, height);
 
 
   update();

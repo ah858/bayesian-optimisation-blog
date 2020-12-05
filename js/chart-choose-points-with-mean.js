@@ -19,16 +19,6 @@ function drawChoosePointsWithMean() {
     .domain([-1, 1])
     .range([height - margin.bottom, margin.top])
 
-  const xAxis = g => g
-    .attr("transform", `translate(0, ${height - margin.bottom})`)
-    .attr("pointer-events", "none")
-    .call(d3.axisBottom(xscale))
-
-  const yAxis = g => g
-    .attr("transform", `translate(${margin.left},0)`)
-    .attr("pointer-events", "none")
-    .call(d3.axisLeft(yscale))
-
   const svg = d3.select("#chart-choose-points-with-mean").append("svg").attr("width", width).attr("height", 1.2*height);
   // ================================================
 
@@ -45,12 +35,22 @@ function drawChoosePointsWithMean() {
   
   // const svg = d3.select("#chart-choose-points-blind").append("svg").attr("viewBox", [0, 0, width, height]);
   
+  // Background y grid
   svg.append("g")
-    .call(xAxis);
+    .call(yGrid, height, width);
+
+  svg.append("g")
+    .call(xAxis, height, width);
   
   svg.append("g")
-    .call(yAxis);
+    .call(yAxis, height);
 
+  svg.append("g")
+    .call(xLabel, height, width);
+
+  svg.append("g")
+    .call(yLabel, height);
+    
   // ============================
   // Set up labels below x axis
   // ============================

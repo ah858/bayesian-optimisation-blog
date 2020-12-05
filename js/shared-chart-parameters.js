@@ -8,34 +8,48 @@ let xtilde = [...Array(201).keys()].map((i) => 5 + (i / 200 * 45))
 
 const margin = ({top:20, right:30, bottom: 50, left: 55})
 
-const xscale = d3.scaleLinear()
+const xscaleFunction = width => d3.scaleLinear()
 	.domain([5,50])
 	.range([margin.left, width - margin.right])
 
-const yscale = d3.scaleLinear()
+const yscaleFunction = height => d3.scaleLinear()
   .domain([-1, 1])
-  // .domain([120, 160])
-  .range([height - margin.bottom, margin.top])
+  .range([height - margin.bottom, margin.top]);
 
-const xAxis = g => g
-  .attr("transform", `translate(0, ${height - margin.bottom})`)
-  .attr("pointer-events", "none")
-  .call(d3.axisBottom(xscale))
+const xscale = xscaleFunction(width);
+const yscale = yscaleFunction(height);
+
+const xAxis = (g, height, width) => {
+
+  // Redefine xscale for correct height / width specified for plot
+  let xscale = xscaleFunction(width);
+
+  return g
+    .attr("transform", `translate(0, ${height - margin.bottom})`)
+    .attr("pointer-events", "none")
+    .call(d3.axisBottom(xscale));
+}
 
 // Scale values between [-1,1] to [120,160] to emulate F1 cornering speeds
 const scaleYVals = (n) => {
   return 20*(n+1)+120;
 };
 
-const yAxis = g => g
+const yAxis = (g, height) => {
+
+  // Redefine xscale for correct height / width specified for plot
+  let yscale = yscaleFunction(height);
+
+  return g
   .attr("transform", `translate(${margin.left},0)`)
   .attr("pointer-events", "none")
   .attr('stroke-width', 0)
   .call(d3.axisLeft(yscale)
           .ticks(NUM_Y_TICKS)
           .tickFormat( d => scaleYVals(d) ));
+}
     
-const xLabel = g => g
+const xLabel = (g, height, width) => g
   .append("text")
   .attr("y", height - margin.bottom / 2)
   .attr("x", (width + margin.left - margin.right) / 2)
@@ -43,7 +57,7 @@ const xLabel = g => g
   .style("text-anchor", "middle")
   .text("Wing span (cm)");  
 
-const yLabel = g => g
+const yLabel = (g, height) => g
   .append("text")
   .attr("transform", "rotate(-90)")
   .attr("y", 0)
@@ -53,7 +67,12 @@ const yLabel = g => g
   .text("Cornering speed (km/h)");  
 
 
-const yGrid = g => g
+const yGrid = (g, height, width) => {
+
+  // Redefine xscale for correct height / width specified for plot
+  let yscale = yscaleFunction(height);
+
+  return g
   .selectAll(".horizontalGrid")
   .data(yscale.ticks(NUM_Y_TICKS))
   .enter()
@@ -65,6 +84,7 @@ const yGrid = g => g
   .attr("y1", d => yscale(d))
   .attr("y2", d => yscale(d));
             // "shape-rendering" : "crispEdges",
+  };
 
 
 // ============================
