@@ -12,19 +12,19 @@ function drawChartPossibleFuncs() {
   
   let y1 = xtilde.map((i) => {
             let n = (i-5)/4.5;
-            return 0.01*(n-1)*(7-n)*(n-8);
+            return (0.01*(n-1)*(7-n)*(n-8));
           });
   let y2 = xtilde.map((i) => {
             let n = (i-5)/4.5;
-            return 0.5 + 0.003*(n-1)*(n-3)*(n-6)*(n-10) -0.03*n*(n-10) - 1 + 0.05*n;
+            return (0.5 + 0.003*(n-1)*(n-3)*(n-6)*(n-10) -0.03*n*(n-10) - 1 + 0.05*n);
           });
   let y3 = xtilde.map((i) => {
             let n = (i-5)/4.5;
-            return -0.2 + 0.005*(n-4)**3;
+            return (-0.2 + 0.005*(n-4)**3);
           });
   let y4 = xtilde.map((i) => {
             let n = (i-5)/4.5;
-            return -0.6 + 0.005*(6.8-n)**3;
+            return (-0.6 + 0.005*(6.8-n)**3);
           });
  
   let data_comb = xtilde.map((d, i) => ({x: xtilde[i], 
@@ -61,17 +61,28 @@ function drawChartPossibleFuncs() {
   // Add model elements to svg
   // ============================
   
+  // Background y grid
+  svg.append("g")
+    .call(yGrid);
+
   // Model parameters
   const modelLineGroup = svg.append("g")
     .attr("stroke", "red")
     // .attr("stroke-width", 3)
     .attr('fill', 'none');
-  
+
   svg.append("g")
     .call(xAxis);
   
   svg.append("g")
     .call(yAxis);
+
+  svg.append("g")
+    .call(xLabel);
+
+  svg.append("g")
+    .call(yLabel);
+
 
   update();
   

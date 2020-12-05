@@ -2,10 +2,11 @@
 let width = 500; //document.getElementById("chart").offsetWidth
 let height = 250; // document.getElementById("chart").offsetWidth / 2
 
+const NUM_Y_TICKS = 5;
 
 let xtilde = [...Array(201).keys()].map((i) => 5 + (i / 200 * 45))
 
-const margin = ({top:20, right:30, bottom: 20, left: 30})
+const margin = ({top:20, right:30, bottom: 50, left: 55})
 
 const xscale = d3.scaleLinear()
 	.domain([5,50])
@@ -13,6 +14,7 @@ const xscale = d3.scaleLinear()
 
 const yscale = d3.scaleLinear()
   .domain([-1, 1])
+  // .domain([120, 160])
   .range([height - margin.bottom, margin.top])
 
 const xAxis = g => g
@@ -20,10 +22,50 @@ const xAxis = g => g
   .attr("pointer-events", "none")
   .call(d3.axisBottom(xscale))
 
+// Scale values between [-1,1] to [120,160] to emulate F1 cornering speeds
+const scaleYVals = (n) => {
+  return 20*(n+1)+120;
+};
+
 const yAxis = g => g
   .attr("transform", `translate(${margin.left},0)`)
   .attr("pointer-events", "none")
-  .call(d3.axisLeft(yscale))
+  .attr('stroke-width', 0)
+  .call(d3.axisLeft(yscale)
+          .ticks(NUM_Y_TICKS)
+          .tickFormat( d => scaleYVals(d) ));
+    
+const xLabel = g => g
+  .append("text")
+  .attr("y", height - margin.bottom / 2)
+  .attr("x", (width + margin.left - margin.right) / 2)
+  .attr("dy", "1em")
+  .style("text-anchor", "middle")
+  .text("Wing span (cm)");  
+
+const yLabel = g => g
+  .append("text")
+  .attr("transform", "rotate(-90)")
+  .attr("y", 0)
+  .attr("x", -(height + margin.top - margin.bottom) / 2)
+  .attr("dy", "1em")
+  .style("text-anchor", "middle")
+  .text("Cornering speed (km/h)");  
+
+
+const yGrid = g => g
+  .selectAll(".horizontalGrid")
+  .data(yscale.ticks(NUM_Y_TICKS))
+  .enter()
+  .append("line")
+  .attr("stroke", "lightgray")  // colour the line
+  .attr("class", "horizontalGrid")
+  .attr("x1", margin.left)
+  .attr("x2", width - margin.right)
+  .attr("y1", d => yscale(d))
+  .attr("y2", d => yscale(d));
+            // "shape-rendering" : "crispEdges",
+
 
 // ============================
 // Drawing Gaussian Process
