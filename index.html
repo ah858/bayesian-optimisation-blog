@@ -164,7 +164,7 @@
 		<!-- EXPLAIN ISSUE WITH MEAN ALONE -->
 
 		<div class="cf">
-		    <div class="fl w-100 w-50-ns ph2 pv0">
+		    <div class="fl w-100 w-50-ns ph2 pv2">
 		    	<h2>Explore vs exploit</h2>
 		    </div>
 		</div>
@@ -176,8 +176,8 @@
 
 				<p id="explore-exploit-naive-point">Look at the graphic on the right. If we pick the best point that is predicted by the model, we end up choosing a point that is close to existing points we have already found.</p>
 
-				<button id="button-explore-exploit-1">Pick naive point</button>
-
+<!-- 				<button id="button-explore-exploit-1">Pick naive point</button>
+ -->
 				<p>This means that we have ignored the unexplored region of the search space (of smaller wing spans) where an even better design could be located.</p>
 
 		    	<h2>Exploring uncertainty</h2>
@@ -186,14 +186,14 @@
 
 				<p id="explore-exploit-show-variance">How do we know where to explore? We only want to explore in areas where there is a relatively large potential of observing a value that could be optimal, i.e. in those areas where our predictor is uncertain. Hence, in order to explore effectively we need estimates of uncertainty from the predictive model that we're using.</p> 
 
-				<button id="button-explore-exploit-2">Show variance</button>
-
+<!-- 				<button id="button-explore-exploit-2">Show variance</button>
+ -->
 				<p  id="explore-exploit-show-true">Our goal is to build a statistical picture of the function’s overall form given our observations of it. One convenient approach to modelling functions over continuous domains that allows for a full Bayesian Treatment are Gaussian Process. These are widely used in the Bayesian Optimization literature in applications.</p>
 
-				<button id="button-explore-exploit-3">Show true function</button>
-
+<!-- 				<button id="button-explore-exploit-3">Show true function</button>
+ -->
 		    </div> <!-- No vertical padding -->
-		    <div class="fl w-100 w-50-ns ph2 sticky">
+		    <div class="fl w-100 w-50-ns ph2 pv2 sticky">
 		    	<div id="chart-explore-exploit"></div>
 			</div>
 		</div>
