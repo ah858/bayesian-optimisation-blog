@@ -64,8 +64,11 @@ function drawChartPossibleFuncs() {
 
   // Model parameters
   const modelLineGroup = svg.append("g")
-    .attr("stroke", colors[1])
-    .attr("stroke-width", 4)
+    // .attr("stroke", colors[1])
+    // .attr("stroke-width", 4)
+    .attr("stroke", colors[2])
+    .attr("stroke-dasharray", (3, 5)) // match this to the underlying function style used later
+    .attr("stroke-width", 2)
     .attr('fill', 'none');
 
   svg.append("g")
