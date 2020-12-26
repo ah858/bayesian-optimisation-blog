@@ -246,14 +246,6 @@ function drawTwoStepEI() {
 		
 		return points_new
 	}
-
-	function subsample_array(array, sampling_rate) {
-		let subsampled = [];
-		for (let i = 0; i < array.length; i = i+sampling_rate) {
-			subsampled.push(array[i]);
-		}
-		return subsampled;
-	}
   
 	// ============================
 	// Initial drawing  
@@ -315,7 +307,6 @@ function drawTwoStepEI() {
       return exp_imp;
     }
 	
-
     /**
     * Return object array with culmulative EI values for plotting as a D3 path
     * @param  {Array of arrays} array_of_exp_imp    
@@ -371,15 +362,21 @@ function drawTwoStepEI() {
       // Subsampled grid to use in the inner evaluation of the maximum for 2nd-step EI:
       let subsampled_xgrid = subsample_array(xgrid, 5);
       
-      let two_step_exp_imp = [[],[],[]];
-      // let probability_weights = [0.0584409, 0.175847, 0.325062,  0.398942, 0.325062, 0.175847, 0.0584409 ];
-      let normalised_prob = normalise_weights([0.325062,  0.398942, 0.325062]);
+			// TODO: Calculate the probability weights and 2-step arrays dyamically
+      // let probability_weights = [0.0584409, 0.175847, 0.325062, 0.398942, 0.325062, 0.175847, 0.0584409 ];
+			// let two_step_exp_imp = [[],[],[],[],[],[],[]];
+      let probability_weights = [0.175847, 0.325062, 0.398942, 0.325062, 0.175847];
+			let two_step_exp_imp = [[],[],[],[],[]];
+      // let probability_weights = [0.325062, 0.398942, 0.325062 ];
+			// let two_step_exp_imp = [[],[],[]];
+			let normalised_prob = normalise_weights(probability_weights);
+			let number_of_confidence_intervals = probability_weights.length;
 
       for (let i = 0; i < xgrid.length; i++) {
-        let y_samples = gaussian_confidence_intervals(dist.mean[i], dist.variance[i], 1) // Change the 1 at the end to get more points
+        let y_samples = gaussian_confidence_intervals(dist.mean[i], dist.variance[i], 3) // Change the 1 at the end to get more points
         let points_samples = y_samples.map((d, i) => ({x: xgrid[i], y: d}));
         
-        for (let j=0; j <= 2; j++) { // Iterate over the 3 points
+        for (let j=0; j <= number_of_confidence_intervals-1; j++) { // Iterate over the number of confidence intervals points
           let points_xval = prev_points_gp_space.concat(points_samples[j]);
           let exp_imp = get_expected_improvement_from_points(points_xval, subsampled_xgrid, kernel);
           
@@ -390,7 +387,15 @@ function drawTwoStepEI() {
       }
       
       return two_step_exp_imp; 
-    }     
+		}     
+		
+		function subsample_array(array, sampling_rate) {
+			let subsampled = [];
+			for (let i = 0; i < array.length; i = i+sampling_rate) {
+				subsampled.push(array[i]);
+			}
+			return subsampled;
+		}
 	
     // ==============================================
     // NEW CODE  
@@ -411,7 +416,7 @@ function drawTwoStepEI() {
     // Group items
     let grouped_stack_data = d3.group(exp_imp_objects, d => d.key)
     
-    for (let n=0; n<=3; n++) {
+    for (let n=0; n<=5; n++) { // TODO: Make upper limit dynamic depending on the number of confidence intervals
       expectedImprovementGroup.selectAll(`.exp-imp-${n}`)
         .data([grouped_stack_data.get(n)])//[all_stack_points[key_id]])
         .enter()
