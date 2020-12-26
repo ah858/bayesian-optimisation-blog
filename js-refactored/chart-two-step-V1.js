@@ -19,17 +19,6 @@ function drawTwoStepEI() {
 	let LOOP_DELAY = 1500;
 	let LOWER_GRAPHIC_HEIGHT_MULTIPLIER = 1.4;
 
-
-	// =========================
-	// Stack colours
-	// =========================
-	// let stackColourOneStep = ['#212121', '#d2d2d2', '#dbdbdb', '#e5e5e5', '#efefef', '#f9f9f9'];
-	let stackColourTwoStep = ['#2A363B', '#6C5B7B', '#C06C84', '#F67280', '#C06C84', '#6C5B7B'];
-	let stackColourOneStep = ['#2A363B', '#e6e2e9', '#f0dbe1', '#fccfd4', '#f0dbe1', '#e6e2e9']; // 90% lighter https://www.w3schools.com/colors/colors_picker.asp
-
-	let stackColour = d3.scaleOrdinal().domain([0,1,2,3,4])
-		.range(d3.schemeSet3);
-
 	// =========================
 	// Extra scale values
 	// =========================
@@ -67,16 +56,13 @@ function drawTwoStepEI() {
 	const svg = d3.select("#chart-two-step").append("svg").attr("width", width).attr("height", LOWER_GRAPHIC_HEIGHT_MULTIPLIER*height);
 
 	// ============================
-	// Set up background grid
+	// Set up axes
 	// ============================
   
-	// svg.append("g")
-	//   .call(yGrid, height, width);
+	// Background y grid
+	svg.append("g")
+	  .call(yGrid, height, width);
   
-	// ============================
-	// Set up axis
-	// ============================
-
 	svg.append("g")
 	  .call(xAxis, height, width);
 	
@@ -88,6 +74,17 @@ function drawTwoStepEI() {
   
 	svg.append("g")
 	  .call(yLabel, height);
+	
+	// ============================
+	// Set up labels below x axis
+	// ============================
+	
+	// TODO: Add labels for below x axis
+	// TODO: Rewrite x/yAxisLower with variable weight and height parameters
+	svg.append("g")
+	  .call(xAxisLower);
+  	svg.append("g")
+	  .call(yAxisLower);
 	
 	// ============================
 	// Set up shapes for model
@@ -114,14 +111,7 @@ function drawTwoStepEI() {
 	const expectedImprovementLine = d3.line()
 		.curve(d3.curveBasis)
 		.x(d => xscale(d.x))
-		.y(d => yscaleLower(d.expected_improvement));
-
-	
-	const expectedImprovementArea = d3.area()
-		.curve(d3.curveBasis)
-		.x(d => xscale(d.x))
-	  .y0(d => yscaleLower.range()[0])
-		.y1(d => yscaleLower(d.expected_improvement));
+		.y(d => yscaleLower(d.expected_improvement))
    
 	// ============================
 	// Add model elements to svg
@@ -173,8 +163,9 @@ function drawTwoStepEI() {
 	
 	const expectedImprovementGroup = svg.append("g")
 	  .attr("stroke", "green")
-	  .attr("fill", "gray");
+	  .attr("fill", "transparent");
 
+	
 	// Restrict circles to a common group to set
 	// attributes collectively and avoid selecting unwanted elements
 	const potentialCircles = svg.append("g")
@@ -203,16 +194,17 @@ function drawTwoStepEI() {
       points4.splice(points4.indexOf(point), 1);
       update(points4);
     });
-	
-	let twoStepShowing = false;
-	const toggleTwoStepButton = svg.append("text")
-	  .attr("x", width - margin.right)
-	  .attr("y", 10)
-	  .attr("text-anchor", "end")
-	  .attr("class", "f6 link dim br-pill ba ph3 pv1 dib black")
-	  .attr("dy", "0.3em")
-	  .text("Toggle 2-step visuals")
-	  .on("click", event => toggleTwoStep());
+  
+   
+  
+	// const resetButton = svg.append("text")
+	//   .attr("x", width - margin.right)
+	//   .attr("y", 10)
+	//   .attr("text-anchor", "end")
+	//   .attr("class", "f6 link dim br-pill ba ph3 pv1 dib black")
+	//   .attr("dy", "0.3em")
+	//   .text("Reset graphic")
+	//   .on("click", event => resetGraph());
 
 
 	// ============================
@@ -236,18 +228,6 @@ function drawTwoStepEI() {
 	// Helper Functions
 	// ============================
 
-	function createExtraPointsFromDist(dist, x, index, N) {
-
-		let y_intervals = gaussian_confidence_intervals(dist.mean[index], dist.variance[index], 2)
-		let points_new = [];
-
-		for (let i=0; i< y_intervals.length; i++) {
-			points_new.push({x: x, y: yscale(y_intervals[i])})
-		}
-
-		return points_new
-	}
-
 	function createExtraPoints(dist, x, index) {
 
 		let selected_mean = yscale(dist[index]["mean"]);
@@ -266,29 +246,21 @@ function drawTwoStepEI() {
 		
 		return points_new
 	}
-
-	// ============================
-	// Set up labels below x axis
-	// ============================
-	
-	// TODO: Add labels for below x axis
-	// TODO: Rewrite x/yAxisLower with variable weight and height parameters
-	svg.append("g")
-		.call(xAxisLower);
-		
-  svg.append("g")
-	  .call(yAxisLower);
   
 	// ============================
 	// Initial drawing  
 	// ============================
 	update(points4);
-	// Draw Expected improvement curves
-	drawExpectedImprovement(points4);
   
 	// Show initial vertical line when hovering over the image
   function hlineMouseover(event) {
 		let gp_space_points = scale_invert_points(points4, xscale, yscale);
+  
+    // Update conditional dist
+    let dist = conditional_dist_with_confidence_intervals(gp_space_points.map((d) => d.x),
+                                          gp_space_points.map((d) => d.y),
+                                          xtilde,
+																					kernel);
 												
     // Get position of hline
     let x = event.offsetX
@@ -302,30 +274,15 @@ function drawTwoStepEI() {
 		// let index = d3.format(".0f")((xscale.invert(x) / 10) * 201);
 		let index = d3.format(".0f")(xscaleIndex.invert(x));
 
-
-    // POINTS CORRESPOND TO PLOTTED CONFIDENCE INTERVALS Update conditional dist
-    // let dist = conditional_dist_with_confidence_intervals(gp_space_points.map((d) => d.x),
-    //                                       gp_space_points.map((d) => d.y),
-    //                                       xtilde,
-		// 																			kernel);
-    // let points_new = createExtraPoints(dist, x, index);
-
-    // POINTS CORRESPOND TO BRUNO'S CHOSEN POINTS Update conditional dist
-    let dist = conditional_distribution(gp_space_points.map((d) => d.x),
-                                          gp_space_points.map((d) => d.y),
-                                          xtilde,
-																					kernel);
-    let points_new = createExtraPointsFromDist(dist, x, index, 2);
+    let points_new = createExtraPoints(dist, x, index);
     
     // Draw grey circles for possible points
     potentialCircles.selectAll("circle")
       .data(points_new)
       .join("circle")
-      // .attr("r", 4)
-      .attr("r", 7)
+      .attr("r", 4)
       .attr("cx", d => d.x)
-			.attr("cy", d => d.y)
-			.attr("fill", (d,i) => stackColourTwoStep[i+1])
+      .attr("cy", d => d.y)
 	}
   
   // TODO: Expectation of the (best) EI for each x-slice i.e. for each x-slice you need to do 5xEI weighted calculations (averaging over maximums).
@@ -356,23 +313,21 @@ function drawTwoStepEI() {
           Array of expected improvements (EI) different sample points. 
           [[1-step array], [2-step point 1], ..., [2-step point n]]
     * @param  {Array of integers} corresponding_xvals 
-					X values that correspond to points used to calculate the EI arrays.
+          X values that correspond to points used to calculate the EI arrays.
     * @return {Array of objects}      
-					A list of objects with each points x-coord, EI value, and key for which sub-array it originated from.
+          A list of objects with each points x-coord, EI value, and key for which sub-array it originated from.
     */
     function calculated_culmulative_exp_imp(one_step_exp_imp, two_step_exp_imp, xgrid){
       
       let culmulative_vals = [...one_step_exp_imp];
 
-			let exp_imp_objects = [];
+      let exp_imp_objects = [];
       
       // Add objects for each one-step point
       for (let i=0; i < xgrid.length; i++) {
         // let xval = 10 * i / one_step_exp_imp.length; //TODO: Arbitrary constant of 10?
         exp_imp_objects.push({"x": xgrid[i], "expected_improvement": one_step_exp_imp[i], "key": 0 });
-			}
-			
-			// Add 
+      }
       
       // Add objects for each two-step point
       for (let i = 0; i < two_step_exp_imp.length; i++){
@@ -418,7 +373,7 @@ function drawTwoStepEI() {
 			let number_of_confidence_intervals = probability_weights.length;
 
       for (let i = 0; i < xgrid.length; i++) {
-        let y_samples = gaussian_confidence_intervals(dist.mean[i], dist.variance[i], 2) // Change the 1 at the end to get more points
+        let y_samples = gaussian_confidence_intervals(dist.mean[i], dist.variance[i], 3) // Change the 1 at the end to get more points
         let points_samples = y_samples.map((d, i) => ({x: xgrid[i], y: d}));
         
         for (let j=0; j <= number_of_confidence_intervals-1; j++) { // Iterate over the number of confidence intervals points
@@ -460,18 +415,14 @@ function drawTwoStepEI() {
     
     // Group items
     let grouped_stack_data = d3.group(exp_imp_objects, d => d.key)
-		
-		// Plot the stacks in reverse order so lowest traces are on top
-    for (let n=5; n>=0; n--) { // TODO: Make upper limit dynamic depending on the number of confidence intervals
+    
+    for (let n=0; n<=5; n++) { // TODO: Make upper limit dynamic depending on the number of confidence intervals
       expectedImprovementGroup.selectAll(`.exp-imp-${n}`)
         .data([grouped_stack_data.get(n)])//[all_stack_points[key_id]])
         .enter()
         .append('path')
         .attr('class', `exp-imp-${n}`) // No dot here
-        // .attr('d', d => expectedImprovementLine(d))
-				.attr('d', d => expectedImprovementArea(d))
-				.attr('fill', stackColourOneStep[n])
-				.attr('stroke', 'transparent');
+        .attr('d', d => expectedImprovementLine(d));
 		}
 	}
 
@@ -526,6 +477,9 @@ function drawTwoStepEI() {
 		drawGauss(len, true); --len;
 		// Remaining points are looped through with a delay
 		loopDrawGP(len)
+		
+		// Draw Expected improvement curves
+		drawExpectedImprovement(points4);
 		
 		function loopDrawGP(i) {
 			setTimeout(function() {
@@ -586,7 +540,8 @@ function drawTwoStepEI() {
       .attr('class', 'envelope2')
       .transition()
       .duration(500)
-			.attr('d', d => area2(d));
+      .attr('d', d => area2(d));
+    
   }
   
   // Draw the maximum threshold and red envelope
@@ -663,57 +618,7 @@ function drawTwoStepEI() {
       .ease(d3.easeLinear)
       .attr("opacity", 1);
     
-	}
-	
-	function toggleTwoStep() {
-
-			if (twoStepShowing) {
-				for (let n=5; n>=1; n--) { // TODO: Make upper limit dynamic depending on the number of confidence intervals
-					expectedImprovementGroup.selectAll(`.exp-imp-${n}`)
-						.attr('fill', stackColourOneStep[n]);
-				}
-
-				modelMean.selectAll('.mean')
-					.attr("stroke", "black")
-					.attr("stroke-dasharray", 'null')
-					.attr("stroke-width", 1);
-				envelope.selectAll('.envelope')
-					.attr("stroke", "transparent")
-					.attr("fill", "rgba(0,0,100,0.05)");
-				envelope2.selectAll('.envelope2')
-					.attr("stroke", "transparent")
-					.attr("fill", "rgba(0,0,100,0.1)");
-
-			} else {
-				// Set 2-step stack colours
-				for (let n=5; n>=1; n--) { // TODO: Make upper limit dynamic depending on the number of confidence intervals
-					expectedImprovementGroup.selectAll(`.exp-imp-${n}`)
-						.attr('fill', stackColourTwoStep[n]);
-				}
-
-				// Set GP model visuals
-				modelMean.selectAll('.mean')
-					.attr('stroke', 'gray')
-					// .attr("stroke-dasharray", (3, 5))
-					// .attr("stroke-width", 2);
-				envelope.selectAll('.envelope')
-					.attr('fill', 'transparent')
-					.attr('stroke', 'lightgray')
-					// .attr("stroke-dasharray", (3, 5))
-					// .attr("stroke-width", 2);
-				envelope2.selectAll('.envelope2')
-					.attr('fill', 'transparent')
-					.attr('stroke', 'lightgray')
-					// .attr("stroke-dasharray", (3, 5))
-					// .attr("stroke-width", 2);
-			}
-
-
-
-
-		twoStepShowing = !twoStepShowing;
-
-	}
+  }
 	
 }
   
