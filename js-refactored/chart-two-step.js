@@ -299,7 +299,6 @@ function drawTwoStepEI() {
   
 	// Draw the expected improvement
 
-	// TODO: Why does this take one argument when only called with one?
   function drawExpectedImprovement(plot_space_points) {
 
     let gp_space_points = scale_invert_points(plot_space_points, xscale, yscale);
@@ -475,8 +474,7 @@ function drawTwoStepEI() {
 		loopDrawGP(len)
 		
 		// Draw Expected improvement curves
-		// TODO: I think this function is incorrectly implemented
-		drawExpectedImprovement(points4, points_new);
+		drawExpectedImprovement(points4);
 		
 		function loopDrawGP(i) {
 			setTimeout(function() {
