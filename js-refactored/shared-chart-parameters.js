@@ -190,9 +190,8 @@ const conditional_dist_with_confidence_intervals = (x, y, xtilde, kernel) => {
 const kernel = squared_exponential_kernel(sigma, ell);
 
 // ============================
-// Helpers for Gaussian sampling
+// Gaussian sampling
 // ============================
-
 
 const cholesky = (array) => {
   // Returns Cholesky decomposition of array
@@ -227,4 +226,46 @@ const sample_from_gp_prior = (xtilde, kernel) => {
   const L = cholesky(cov_matrix_with_jitter);
   const y = math.multiply(L, sample_random_normal_array(xtilde.length));
   return y;
+}
+
+function gaussian_confidence_intervals(mean, variance, N) {
+  // Returns points [mean - std*N, mean-std* (N-1), ..., mean, mean + std, mean + std*2, ... mean + std * N]
+  // from a Gaussian with a given mean and variance
+  const std = math.sqrt(variance);
+  let samples = [mean];
+  for (let i = 1; i <= N; i++) {
+    samples.unshift(mean - std*i);
+    samples.push(mean + std*i);
+  }
+  return samples;
+}
+
+// ============================
+// Expected improvement
+// ============================
+
+function normal_pdf (x, mean, std) {
+  const scaling_factor = math.dotMultiply(std, math.sqrt(math.dotMultiply(2, math.PI)));
+  const exponential_term = math.exp(math.dotDivide(math.dotMultiply(-1, math.dotPow(math.subtract(x, mean), 2)), (math.dotMultiply(2, math.dotPow(std, 2)))))
+  return math.dotDivide(exponential_term, scaling_factor);
+}
+
+function normal_cdf (x) {
+	return math.add(0.5,math.dotMultiply(0.5, math.erf(x)));
+}
+
+function expected_improvement(x, mean_pred, std_pred, max_pred_hereto) {
+  // Based on eq. 44 in https://www.cs.ox.ac.uk/people/nando.defreitas/publications/BayesOptLoop.pdf
+  const term1 = math.dotMultiply(math.subtract(mean_pred, max_pred_hereto), normal_cdf(math.dotDivide((math.subtract(mean_pred, max_pred_hereto)),std_pred)));
+  const term2 = math.dotMultiply(std_pred, normal_pdf(max_pred_hereto, mean_pred, std_pred));
+   
+  return math.add(term1, term2);
+}
+
+// ============================
+// Generic helpers
+// ============================
+
+function scale_invert_points(points, xscale, yscale) {
+	return points.map((d) => ({x: xscale.invert(d.x), y: yscale.invert(d.y)}));
 }

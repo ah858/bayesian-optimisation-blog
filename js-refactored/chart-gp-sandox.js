@@ -163,7 +163,7 @@ function drawChartGaussianProcessSandbox() {
 	  .attr("cy", d => d.y);
 
 	// Update conditional dist
-	const dist = conditional_distribution(points.map((d) => xscale.invert(d.x)),
+	const dist = conditional_dist_with_confidence_intervals(points.map((d) => xscale.invert(d.x)),
 	                                      points.map((d) => yscale.invert(d.y)),
 	                                      xtilde,
 	                                      kernel);
@@ -201,7 +201,7 @@ function drawChartGaussianProcessSandbox() {
 	const drawThreshold = function() {
 
 	// Update conditional dist
-	const dist = conditional_distribution(points.map((d) => xscale.invert(d.x)),
+	const dist = conditional_dist_with_confidence_intervals(points.map((d) => xscale.invert(d.x)),
 	                                      points.map((d) => yscale.invert(d.y)),
 	                                      xtilde,
 	                                      kernel);
