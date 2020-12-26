@@ -99,13 +99,11 @@ function drawTwoStepEI() {
 	  .curve(d3.curveBasis)
 	  .x(d => xscale(d.x))
 	  .y(d => yscale(d.mean))
-	
 	const area = d3.area()
 	  .curve(d3.curveBasis)
 	  .x(d => xscale(d.x))
 	  .y0(d => yscale(d.lower))
 	  .y1(d => yscale(d.upper));
-	
 	const area2 = d3.area()
 	  .curve(d3.curveBasis)
 	  .x(d => xscale(d.x))
@@ -116,13 +114,22 @@ function drawTwoStepEI() {
 		.curve(d3.curveBasis)
 		.x(d => xscale(d.x))
 		.y(d => yscaleLower(d.expected_improvement));
-
-	
 	const expectedImprovementArea = d3.area()
 		.curve(d3.curveBasis)
 		.x(d => xscale(d.x))
 	  .y0(d => yscaleLower.range()[0])
 		.y1(d => yscaleLower(d.expected_improvement));
+
+	// const expectedImprovementMaskLeft = d3.rect()
+	// 	.x0(d => xscale.range()[0])
+	// 	.x1(d => xscale(d.x)-1)
+	//   .y0(d => yscaleLower.range()[0])
+	// 	.y1(d => yscaleLower.range()[1]);
+	// const expectedImprovementMaskRight = d3.rect()
+	// 	.x0(d => xscale(d.x)+1)
+	// 	.x1(d => xscale.range()[1])
+	// 	.y0(d => yscaleLower.range()[0])
+	// 	.y1(d => yscaleLower.range()[1]);
    
 	// ============================
 	// Add model elements to svg
@@ -132,19 +139,15 @@ function drawTwoStepEI() {
 	const modelMean = svg.append("g")
 	  .attr("stroke", "black")
 	  .attr("fill", "transparent");
-  
 	const envelope = svg.append("g")
 	  .attr("stroke", "transparent")
 	  .attr("fill", "rgba(0,0,100,0.05)");
-	
 	const envelope2 = svg.append("g")
 	  .attr("stroke", "transparent")
 	  .attr("fill", "rgba(0,0,100,0.1)");
-	
 	const redEnvelope = svg.append("g")
 	  .attr("stroke", "transparent")
 	  .attr("fill", "rgba(255,0,0,0.2)");
-	
 	const clipPath = svg.append("clipPath")
 		  .attr("id", "theshold-clip3")
 		  .append("rect")
@@ -153,25 +156,20 @@ function drawTwoStepEI() {
 			.attr("width", width);
 	
 	// Two-step model parameters
-  
 	const envelopeTwoStep = svg.append("g")
 	  .attr("stroke", "transparent")
 	  // .attr("fill", "rgba(0,0,100,0.1)");
 	  .attr("fill", "#F2F2F7");
-	
 	const envelope2TwoStep = svg.append("g")
 	  .attr("stroke", "transparent")
 	  .attr("fill", "#D9DAE8");
 	  // .attr("fill", "rgba(0,0,100,0.1)");
-	
 	const modelMeanTwoStep = svg.append("g")
 	  .attr("stroke", "black")
 		.attr("fill", "transparent");
-		
 	const redEnvelopeTwoStep = svg.append("g")
 	  .attr("stroke", "transparent")
 	  .attr("fill", "rgba(255,0,0,0.2)");
-	
 	const clipPathTwoStep = svg.append("clipPath")
 		  .attr("id", "theshold-clip-2-step")
 		  .append("rect")
@@ -200,8 +198,10 @@ function drawTwoStepEI() {
 	  .attr("x2", xscale.range()[0]);
 	
 	const expectedImprovementGroup = svg.append("g")
-	  // .attr("stroke", "green")
-	  .attr("fill", "gray");
+		.attr("fill", "gray");
+		
+	const expectedImprovmentMask = svg.append("g")
+		.attr("fill", "rgba(255,255,255,0.4)");
 	
   	// Use rect in the background to capture click events and 
   	// handle point creation
@@ -315,10 +315,33 @@ function drawTwoStepEI() {
   
 	// Show initial vertical line when hovering over the image
   function hlineMouseover(event) {
+
+		function maskExpectedImprovementCurves(x){
+
+			expectedImprovmentMask.selectAll(".EIMaskLeft")
+				.data([x])
+				.join("rect")
+				.attr("class", "EIMaskLeft")
+				.attr("y", yscaleLower.range()[1])
+				.attr("x", xscale.range()[0])
+				.attr("height", yscaleLower.range()[0] - yscaleLower.range()[1])
+				.attr("width", x - 5 - xscale.range()[0]);
+			expectedImprovmentMask.selectAll(".EIMaskRight")
+				.data([x])
+				.join("rect")
+				.attr("class", "EIMaskRight")
+				.attr("y", yscaleLower.range()[1])
+				.attr("x", x + 5)
+				.attr("height", yscaleLower.range()[0] - yscaleLower.range()[1])
+				.attr("width", xscale.range()[1] - x - 5);
+		}
+
+
 		let gp_space_points = scale_invert_points(points4, xscale, yscale);
 												
     // Get position of hline
     let x = event.offsetX
+		maskExpectedImprovementCurves(x);
     
 		// Fix hline position
 		hLine.attr("x1", x)
@@ -524,7 +547,6 @@ function drawTwoStepEI() {
 		modelMeanTwoStep.style("visibility", "visible");
 		redEnvelopeTwoStep.style("visibility", "visible");
 
-
 		// Need offsetX not event.x otherwise it does not account for margin (I think)
 		let x = event.offsetX
 
@@ -620,24 +642,18 @@ function drawTwoStepEI() {
       .data([dist])
       .join('path')
       .attr('class', 'meanTwoStep')
-      // .transition()
-      // .duration(500)
       .attr('d', d => modelLine(d));
     
     envelopeTwoStep.selectAll('.envelopeTwoStep')
       .data([dist])
       .join('path')
       .attr('class', 'envelopeTwoStep')
-      // .transition()
-      // .duration(500)
       .attr('d', d => area(d));
     
     envelope2TwoStep.selectAll('.envelope2TwoStep')
       .data([dist])
       .join('path')
       .attr('class', 'envelope2TwoStep')
-      // .transition()
-      // .duration(500)
 			.attr('d', d => area2(d));
   }
   
