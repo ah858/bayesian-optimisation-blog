@@ -210,9 +210,6 @@ function drawTwoStepEI() {
 		.attr("height", height)
 		// Transparent "white" so click events can be captured
 		.attr("fill", "#fff0");
-		// .on("mousemove", event => {
-		// 	hlineMouseover(event);
-		// });  
 
 	// Restrict circles to a common group to set
 	// attributes collectively and avoid selecting unwanted elements
@@ -535,72 +532,11 @@ function drawTwoStepEI() {
 			.attr("x2", x)
 			.attr("opacity", 0.5);
 
-		// Remove hover and click response on main image
-		// backgroundRect.attr("pointer-events", "none")
-		// 	.on("click", null);
-		
-		// Get array for point positions (the same as the positions found in hlineMouseover() )
-		// const index = d3.format(".0f")((xscale.invert(x) / 10) * x_axis_resolution);
 		let index = d3.format(".0f")(xscaleIndex.invert(x));
 
-    // POINTS CORRESPOND TO PLOTTED CONFIDENCE INTERVALS Update conditional dist
-    // let dist = conditional_dist_with_confidence_intervals(points4.map((d) => d.x),
-    //                                       points4.map((d) => d.y),
-    //                                       xtilde,
-		// 																			kernel);
-    // let points_new = createExtraPoints(dist, x, index);
-
-    // POINTS CORRESPOND TO BRUNO'S CHOSEN POINTS Update conditional dist
-    // let dist = conditional_distribution(points4.map((d) => xscale.invert(d.x)),
-		// 																		points4.map((d) => yscale.invert(d.y)),
-    //                                     xtilde,
-		// 																		kernel);
-    // let points_new = createExtraPointsFromDist(dist, x, index, 2);
-		// let points_ext = points4.concat(points_new)
-
 		let points_ext = points4.concat(d3.select(event.target).data())
-		
-		// Draw new circles
-		// potentialCircles.selectAll(".potentialCircles")
-		// 	.data(points_ext)
-		// 	.join("circle")
-		// 	.attr("class", "potentialCircles")
-		// 	.attr("cx", d => d.x)
-		// 	.attr("cy", d => d.y)
-		// 	// .on("click", event => {
-		// 	//   let tmp_point = d3.select(event.target).datum();
-		// 	//   drawGauss(points_new.indexOf(tmp_point));
-		// 	// })
-		// 	.transition()
-		// 	.duration(600)
-		// 	.attr("r", 7)
-		// 	.attr("fill", (d,i) => stackColourTwoStep[i+1]);
-		// 	// .style("fill", "lightgray");
-
 		update(points_ext);
 		drawThreshold(points_ext);
-
-		// // Incrementally show each one with the resulting Gaussian
-		// let len = points_new.length - 1;
-		
-		// // The first point is displayed without a delay
-		// drawGauss(len, true); --len;
-		// // Remaining points are looped through with a delay
-		// loopDrawGP(len)
-		
-		// function loopDrawGP(i) {
-		// 	setTimeout(function() {
-		// 		drawGauss(i);
-		// 		if (--i >= 0) loopDrawGP(i, false);   //  decrement i and call myLoop again if i > 0
-		// 	}, LOOP_DELAY)
-		// }
-	
-		// // Draw points in that iteration as black and show the max threshold
-		// function drawGauss(i) {
-		// 		let points_tmp = points4.concat(points_new[i]) // Clone array
-		// 		update(points_tmp);
-		// 		drawThreshold(points_tmp);
-		// }
 	}
 
   // Draw conditional distribution on image
@@ -703,27 +639,6 @@ function drawTwoStepEI() {
 		.attr("y2", y)
 		.attr("x1", xscale.range()[0])
 		.attr("x2", xscale.range()[1]);
-
-    // // Only expand in the red line for the first point
-    // if (!line.classed(".expanded")) {
-    //   line.attr("y1", y)
-    //     .attr("y2", y)
-    //     // .attr("x1", x) // Line 'grows' out from maximum point
-    //     // .attr("x2", x)
-    //     .attr("class", ".expanded")
-    //     // .transition()
-    //     // .delay(500) // Line enters the point by expanding out
-    //     // .duration(400)
-    //     .attr("x1", xscale.range()[0])
-    //     .attr("x2", xscale.range()[1]);
-    // } else {
-    // // Subsequent transitions just move the line up and down
-    //   line
-    //     // .transition()
-    //     // .duration(400)
-    //     .attr("y1", y)
-    //     .attr("y2", y);
-    // }
     
     // Disable dragging and turn points black
     circles.selectAll("circle")
@@ -743,8 +658,6 @@ function drawTwoStepEI() {
     
     // Position red envelope by adjusting clipPath and redEvelope
     clipPathTwoStep
-      // .transition()
-      // .duration(500)
 			.attr("height", y);
 			
 		redEnvelopeTwoStep.selectAll('.redEnvelope')
@@ -755,26 +668,6 @@ function drawTwoStepEI() {
       .attr('class', 'redEnvelope')
       .attr('d', d => area(d))
       .attr("clip-path","url(#theshold-clip-2-step)");
-
-		// redEnvelopeTwoStep.selectAll('.redEnvelope')
-    //   .data([dist])
-    //   .join(
-    //     enter => enter.append('path')
-		// 			// .attr("opacity", 0) // Initally the line is transparent so it can fade in
-		// 			)
-    //   .attr('class', 'redEnvelope')
-    //   .transition() // Smooth transition between positions
-    //   .duration(500)
-    //   .attr('d', d => area(d))
-    //   .attr("clip-path","url(#theshold-clip3)")
-    //   .transition() // Fade in the line the first time
-      // .delay(500)
-      // .duration(500)
-      // .ease(d3.easeLinear)
-			// .attr("opacity", 1);
-			
-
-			console.log(redEnvelopeTwoStep.selectAll('.redEnvelope'));
     
 	}
 	
