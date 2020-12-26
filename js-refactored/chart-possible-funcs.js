@@ -10,7 +10,6 @@ function drawChartPossibleFuncs() {
   
   const svg = d3.select("#chart-possible-funcs").append("svg").attr("viewBox", [0, 0, width, height]);
   
-  let colors = ["#003f5c", "#7a5195", "#ef5675", "#ffa600"];
   let num_gp_samples = 4;
   let max_sample_height = 0.85; // Constant to rescale sample-curve height to (roughly)
   let transition_dur = 2000; // Transition duration

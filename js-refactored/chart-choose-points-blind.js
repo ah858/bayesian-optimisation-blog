@@ -24,14 +24,20 @@ function drawChoosePointsBlind() {
   // ================================================
 
   const NUMBER_OF_GUESSES = 3;
+  const MODEL_TRANSITION_DURATION = 300;
   
+  // TODO: Delete these lines
   // Random points generator
-  let points_random1 = drawRandomPoints();
+  // let points_random1 = drawRandomPoints();
 
-  let dist_underlying = conditional_distribution(points_random1.map((d) => d.x),
-                                                    points_random1.map((d) => d.y),
-                                                    xtilde,
-                                                    kernel);
+  // Generate the underlying curve (dist_underlying):
+  let underlying_curve_y = sample_from_gp_prior(xtilde, kernel);
+  let underlying_curve = xtilde.map((d, i) => ({x: xtilde[i], y: underlying_curve_y[i]}));
+
+  // let dist_underlying = conditional_distribution(points_random1.map((d) => d.x),
+  //                                                   points_random1.map((d) => d.y),
+  //                                                   xtilde,
+  //                                                   kernel);
   
   // User selected points
   let points_chosen = [];
@@ -135,42 +141,48 @@ function drawChoosePointsBlind() {
   // ============================
   
   // Set up model mean and std deviations
-  const modelLine = d3.line()
-    .curve(d3.curveBasis)
-    .x(d => xscale(d.x))
-    .y(d => yscale(d.mean))
+  // const modelLine = d3.line()
+  //   .curve(d3.curveBasis)
+  //   .x(d => xscale(d.x))
+  //   .y(d => yscale(d.mean))
   
-  const area = d3.area()
-    .curve(d3.curveBasis)
-    .x(d => xscale(d.x))
-    .y0(d => yscale(d.lower))
-    .y1(d => yscale(d.upper));
+  // const area = d3.area()
+  //   .curve(d3.curveBasis)
+  //   .x(d => xscale(d.x))
+  //   .y0(d => yscale(d.lower))
+  //   .y1(d => yscale(d.upper));
   
-  const area2 = d3.area()
+  // const area2 = d3.area()
+  //   .curve(d3.curveBasis)
+  //   .x(d => xscale(d.x))
+  //   .y0(d => yscale(d.lower2))
+  //   .y1(d => yscale(d.upper2));
+  
+  const underlyingLine = d3.line()
     .curve(d3.curveBasis)
     .x(d => xscale(d.x))
-    .y0(d => yscale(d.lower2))
-    .y1(d => yscale(d.upper2));
+    .y(d => yscale(d.y))
   
   // ============================
   // Add model elements to svg
   // ============================
   
   // Model parameters
-  // const modelMean = svg.append("g")
-  //   .attr("stroke", "black")
-  //   .attr("fill", "transparent");
+  const modelMean = svg.append("g")
+    .attr("stroke", "black")
+    .attr("fill", "transparent");
 
-  // const envelope = svg.append("g")
-  //   .attr("stroke", "transparent")
-  //   .attr("fill", "rgba(0,0,100,0.05)");
+  const envelope = svg.append("g")
+    .attr("stroke", "transparent")
+    .attr("fill", "rgba(0,0,100,0.05)");
   
-  // const envelope2 = svg.append("g")
-  //   .attr("stroke", "transparent")
-  //   .attr("fill", "rgba(0,0,100,0.1)");
+  const envelope2 = svg.append("g")
+    .attr("stroke", "transparent")
+    .attr("fill", "rgba(0,0,100,0.1)");
   
   const underlyingMean = svg.append("g")
-    .attr("stroke", "red")
+    // .attr("stroke", "red")
+    .attr("stroke", colors[2])
     .attr("stroke-dasharray", (3, 5))
     .attr("stroke-width", 2)
     .attr("fill", "transparent");
@@ -183,18 +195,18 @@ function drawChoosePointsBlind() {
     .attr("stroke", "gray")
     .attr("stroke-dasharray", (3, 5))
     .attr("stroke-width", 2)
-    .attr("x1", -10) // Outside the plot
+    .attr("x1", -10) // Outside the plot. Needed so line doesn't show before it is positioned.
     .attr("x2", -10) // Outside the plot
     .attr("y1", yscale.range()[0])
     .attr("y2", yscale.range()[1]);
   
   // Use rect in the background to capture click events and handle point creation
-  const makeBackroundRectClickable = (object, dist_underlying) => object
+  const makeBackroundRectClickable = (object, underlying_curve) => object
       .on("click", event => {
-        points_chosen.push(getPoints(event, dist_underlying));
+        points_chosen.push(getPoints(event, underlying_curve));
         update();  
         if (points_chosen.length >= NUMBER_OF_GUESSES) {
-          showUnderlying()
+          showUnderlying(underlying_curve)
         };
         updateWeekCircle();
       })
@@ -213,7 +225,7 @@ function drawChoosePointsBlind() {
     .attr("height", height)
     // Transparent "white", a fill is required to capture click events
     .attr("fill", "#fff0")
-    .call(makeBackroundRectClickable, dist_underlying);
+    .call(makeBackroundRectClickable, underlying_curve);
   
   // Restrict circles to a common group to set attributes collectively and avoid selecting unwanted elements
   const circles = svg.append("g")
@@ -232,18 +244,19 @@ function drawChoosePointsBlind() {
   // Initial drawing  
   update();
 
-  function drawRandomPoints () {
-    return [{x: math.random(6, 12), y: math.random(-0.8, 0.8)}, 
-           {x: math.random(15, 22), y: math.random(-0.8, 0.8)},
-           {x: math.random(25, 32), y: math.random(-0.8, 0.8)},
-           {x: math.random(37, 45), y: math.random(-0.8, 0.8)}]
-  }
+  // TODO: Delete this section
+  // function drawRandomPoints () {
+  //   return [{x: math.random(6, 12), y: math.random(-0.8, 0.8)}, 
+  //          {x: math.random(15, 22), y: math.random(-0.8, 0.8)},
+  //          {x: math.random(25, 32), y: math.random(-0.8, 0.8)},
+  //          {x: math.random(37, 45), y: math.random(-0.8, 0.8)}]
+  // }
   
-  function getPoints(event, dist_underlying) {
+  function getPoints(event, underlying_curve) {
     let x_val = xscale.invert(event.offsetX) 
     
-    let index = d3.format(".0f")(((x_val-5)/45) * 201);
-    let y_val = dist_underlying[index]["mean"]
+    let index = d3.format(".0f")(((x_val-5)/45) * x_axis_resolution);
+    let y_val = underlying_curve[index].y;
 
     // updateWeekCircle();
     
@@ -281,8 +294,10 @@ function drawChoosePointsBlind() {
       .attr("cx", d => xscale(d.x))
       .attr("cy", d => yscale(d.y));
     
+
+    // TODO: Copy in conditional_dist_with_confidence_intervals function
     // Update conditional dist
-    const dist = conditional_distribution(points_chosen.map((d) => d.x),
+    const dist = conditional_dist_with_confidence_intervals(points_chosen.map((d) => d.x),
                                           points_chosen.map((d) => d.y),
                                           xtilde,
                                           kernel);
@@ -291,35 +306,41 @@ function drawChoosePointsBlind() {
     //   .data([dist])
     //   .join('path')
     //   .attr('class', 'mean')
+    //   .transition()
+    //   .duration(MODEL_TRANSITION_DURATION)
     //   .attr('d', d => modelLine(d));
     
     // envelope.selectAll('.envelope')
     //   .data([dist])
     //   .join('path')
     //   .attr('class', 'envelope')
+    //   .transition()
+    //   .duration(MODEL_TRANSITION_DURATION)
     //   .attr('d', d => area(d));
     
     // envelope2.selectAll('.envelope2')
     //   .data([dist])
     //   .join('path')
     //   .attr('class', 'envelope2')
+    //   .transition()
+    //   .duration(MODEL_TRANSITION_DURATION)
     //   .attr('d', d => area2(d));
     
     // Notify observable that the points have changed
     // svg.dispatch("input");
   }
   
-  function showUnderlying() {
-    const dist = conditional_distribution(points_random1.map((d) => d.x),
-                                          points_random1.map((d) => d.y),
-                                          xtilde,
-                                          kernel);
+  function showUnderlying(underlying_curve) {
+    // const dist = conditional_distribution(points_random1.map((d) => d.x),
+    //                                       points_random1.map((d) => d.y),
+    //                                       xtilde,
+    //                                       kernel);
     
     underlyingMean.selectAll('.underlyingMean')
-      .data([dist])
+      .data([underlying_curve])
       .join('path')
       .attr('class', 'underlyingMean')
-      .attr('d', d => modelLine(d))
+      .attr('d', d => underlyingLine(d))
       .attr("opacity", 1);
     
     backgroundRect.on("click", "null");
@@ -334,17 +355,21 @@ function drawChoosePointsBlind() {
   underlyingMean.selectAll('.underlyingMean')
     .attr("opacity", 0);
 
+  // TODO: Delete these lines
   // Random points generator
-  points_random1 = drawRandomPoints();
+  // points_random1 = drawRandomPoints();
+  // let dist_underlying = conditional_distribution(points_random1.map((d) => d.x),
+  //                                                   points_random1.map((d) => d.y),
+  //                                                   xtilde,
+  //                                                   kernel);
 
-  let dist_underlying = conditional_distribution(points_random1.map((d) => d.x),
-                                                    points_random1.map((d) => d.y),
-                                                    xtilde,
-                                                    kernel);
+  // Generate the underlying curve (dist_underlying):
+  let underlying_curve_y = sample_from_gp_prior(xtilde, kernel);
+  let underlying_curve = xtilde.map((d, i) => ({x: xtilde[i], y: underlying_curve_y[i]}));
 
   // User selected points
   points_chosen = [];
-  backgroundRect.call(makeBackroundRectClickable, dist_underlying);
+  backgroundRect.call(makeBackroundRectClickable, underlying_curve);
 
   updateWeekCircle(); 
   update();

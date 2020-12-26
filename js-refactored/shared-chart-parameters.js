@@ -1,10 +1,12 @@
 
 let width = 500; //document.getElementById("chart").offsetWidth
 let height = 250; // document.getElementById("chart").offsetWidth / 2
+let colors = ["#003f5c", "#7a5195", "#ef5675", "#ffa600"];
+let x_axis_resolution = 201;
 
 const NUM_Y_TICKS = 5;
 
-let xtilde = [...Array(201).keys()].map((i) => 5 + (i / 200 * 45))
+let xtilde = [...Array(x_axis_resolution).keys()].map((i) => 5 + (i / (x_axis_resolution-1) * 45))
 
 const margin = ({top:20, right:30, bottom: 50, left: 55})
 
@@ -112,8 +114,43 @@ const apply_kernel = (x1s, x2s, kernel) => {
   return math.matrix(covariance);
 }
 
-const conditional_distribution = (x, y, xtilde, kernel) => {
-  if(x.length == 0) return ({ mean: [{ x: 0, y: 0 }] });
+// TODO: Delete this code (removed during Bruno refactor)
+// const conditional_distribution = (x, y, xtilde, kernel) => {
+//   if(x.length == 0) return ({ mean: [{ x: 0, y: 0 }] });
+//   const Sigma = math.add(apply_kernel(x, x, kernel), math.multiply(math.identity(x.length), delta));
+//   const Sigmainv = math.inv(Sigma);
+//   const Omega = apply_kernel(xtilde, xtilde, kernel);
+//   const K = apply_kernel(x, xtilde, kernel);
+  
+//   const mean = math.multiply(math.multiply(math.transpose(K), Sigmainv), y)
+//     ._data;
+  
+//   const variance = math.diag(math.subtract(Omega, math.multiply(math.multiply(math.transpose(K), Sigmainv), K)))
+//     ._data;
+  
+//   const sd = math.sqrt(variance);
+  
+//   return mean.map((d, i) => ({ 
+//     x: xtilde[i], 
+//     mean: d, 
+//     var: variance[i], 
+//     sd: sd[i], 
+//     lower: d - 1.96 * sd[i], 
+//     upper: d + 1.96 * sd[i],
+//     lower2: d - 1.28 * sd[i],
+//     upper2: d + 1.28 * sd[i]
+//   }));
+// }
+
+// NEW BRUNO CODE FROM REFACTOR
+function conditional_distribution (x, y, xtilde, kernel) {
+  // Returns the mean and variance of the GP at points xtilde conditioned on observations (x, y)
+  if(x.length == 0) {
+    const prior_variance = apply_kernel([0], [0], kernel)._data[0][0];
+    const mean = xtilde.map((d) => 0);
+    const variance = xtilde.map((d) => prior_variance);
+    return {mean: mean, variance: variance};
+  }
   const Sigma = math.add(apply_kernel(x, x, kernel), math.multiply(math.identity(x.length), delta));
   const Sigmainv = math.inv(Sigma);
   const Omega = apply_kernel(xtilde, xtilde, kernel);
@@ -125,18 +162,29 @@ const conditional_distribution = (x, y, xtilde, kernel) => {
   const variance = math.diag(math.subtract(Omega, math.multiply(math.multiply(math.transpose(K), Sigmainv), K)))
     ._data;
   
-  const sd = math.sqrt(variance);
-  
-  return mean.map((d, i) => ({ 
+  return {
+    mean: mean,
+    variance: variance
+  };
+}
+
+const conditional_dist_to_plottable_confidence_intervals = (xtilde, mean, variance) => {
+  // Take an array of values of X xtilde, and the corresponding means and variances of the GP at these points
+  // and return a dict with confidence intervals marked
+    const sd = math.sqrt(variance);
+    return mean.map((d, i) => ({ 
     x: xtilde[i], 
-    mean: d, 
-    var: variance[i], 
-    sd: sd[i], 
-    lower: d - 1.96 * sd[i], 
+    mean: d,
+    lower: d - 1.96 * sd[i],    
     upper: d + 1.96 * sd[i],
     lower2: d - 1.28 * sd[i],
     upper2: d + 1.28 * sd[i]
   }));
+}
+
+const conditional_dist_with_confidence_intervals = (x, y, xtilde, kernel) => {
+  const dist = conditional_distribution(x, y, xtilde, kernel);
+  return conditional_dist_to_plottable_confidence_intervals(xtilde, dist.mean, dist.variance);
 }
 
 const kernel = squared_exponential_kernel(sigma, ell);
