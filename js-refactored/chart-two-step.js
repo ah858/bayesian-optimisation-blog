@@ -25,7 +25,8 @@ function drawTwoStepEI() {
 	// =========================
 	// let stackColourOneStep = ['#212121', '#d2d2d2', '#dbdbdb', '#e5e5e5', '#efefef', '#f9f9f9'];
 	let stackColourTwoStep = ['#2A363B', '#6C5B7B', '#C06C84', '#F67280', '#C06C84', '#6C5B7B'];
-	let stackColourOneStep = ['#2A363B', '#e6e2e9', '#f0dbe1', '#fccfd4', '#f0dbe1', '#e6e2e9']; // 90% lighter https://www.w3schools.com/colors/colors_picker.asp
+	// let stackColourOneStep = ['#2A363B', '#e6e2e9', '#f0dbe1', '#fccfd4', '#f0dbe1', '#e6e2e9']; // 90% lighter https://www.w3schools.com/colors/colors_picker.asp
+	let stackColourOneStep = ['#2A363B', 'white', 'white', 'white', 'white', 'white']; // 90% lighter https://www.w3schools.com/colors/colors_picker.asp
 
 	let stackColour = d3.scaleOrdinal().domain([0,1,2,3,4])
 		.range(d3.schemeSet3);
@@ -584,6 +585,26 @@ function drawTwoStepEI() {
       .transition()
       .duration(500)
 			.attr('d', d => area2(d));
+
+
+		let y = d3.min(points_arg, p => p.y);
+	
+		line.attr("y1", y)
+			.attr("y2", y)
+			.attr("x1", xscale.range()[0])
+			.attr("x2", xscale.range()[1]);
+			
+			clipPath
+				.attr("height", y);
+				
+			redEnvelope.selectAll('.redEnvelope')
+				.data([dist])
+				.join(
+					enter => enter.append('path')
+				)
+				.attr('class', 'redEnvelope')
+				.attr('d', d => area(d))
+				.attr("clip-path","url(#theshold-clip3)");
 	}
 	
 	function update(points_arg) {
@@ -660,12 +681,12 @@ function drawTwoStepEI() {
     clipPathTwoStep
 			.attr("height", y);
 			
-		redEnvelopeTwoStep.selectAll('.redEnvelope')
+		redEnvelopeTwoStep.selectAll('.redEnvelopeTwoStep')
       .data([dist])
 			.join(
 				enter => enter.append('path')
 			)
-      .attr('class', 'redEnvelope')
+      .attr('class', 'redEnvelopeTwoStep')
       .attr('d', d => area(d))
       .attr("clip-path","url(#theshold-clip-2-step)");
     
@@ -674,6 +695,8 @@ function drawTwoStepEI() {
 	function toggleTwoStep() {
 
 			if (twoStepShowing) {
+				intialUpdate(points4);
+
 				for (let n=5; n>=1; n--) { // TODO: Make upper limit dynamic depending on the number of confidence intervals
 					expectedImprovementGroup.selectAll(`.exp-imp-${n}`)
 						.attr('fill', stackColourOneStep[n]);
@@ -691,6 +714,9 @@ function drawTwoStepEI() {
 					.attr("fill", "rgba(0,0,100,0.1)");
 
 				backgroundRect.on("mousemove", event => null)
+				redEnvelope.style("visibility", "visible");
+				line.style("visibility", "visible");
+
 				hLine.style("visibility", "hidden");
 				potentialCircles.style("visibility", "hidden");
 				envelopeTwoStep.style("visibility", "hidden");
@@ -725,6 +751,8 @@ function drawTwoStepEI() {
 				backgroundRect.on("mousemove", event => {
 					hlineMouseover(event);
 				})
+				redEnvelope.style("visibility", "hidden");
+				line.style("visibility", "hidden");
 				hLine.style("visibility", "visible");
 				potentialCircles.style("visibility", "visible");
 				// envelopeTwoStep.style("visibility", "visible");
