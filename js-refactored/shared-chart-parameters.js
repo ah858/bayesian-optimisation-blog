@@ -93,8 +93,8 @@ const yGrid = (g, height, width) => {
 // Drawing Gaussian Process
 // ============================
 
-const sigma = 0.25
-const ell = 6.75 //1.5 
+const sigma = 0.35//0.25
+const ell = 4//6.75 //1.5 
 const delta = 0.005
 
 const squared_exponential_kernel = (sigma, ell) => {
