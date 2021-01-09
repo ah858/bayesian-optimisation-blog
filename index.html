@@ -217,32 +217,43 @@
 		<div class="cf mt6">
 		    <div class="fl w-100 w-50-ns ph2 pv0">
 		    	<h2>Exploring uncertainty</h2>
-		    </div>
-		    <div class="fl w-100 w-50-ns pv0">
 				<div id="chart-choose-points-with-variance"></div>
 			</div>
+		</div>
+		<div class="cf">
 		<!-- Discussion of a decision rule -->
 		    <div class="fl w-100 w-50-ns ph2 pv0">
 				<h2>Decision Rule</h2>
-			<p>
-				So far, we discussed the tension between exploration and exploitation and the necessity for uncertainty estimation to balance the two. Bayesian Optimization is an automatic approach to making design choices, however; we're still missing a decision rule.
-			</p>
+				<p>
+					So far, we discussed the tension between exploration and exploitation and the necessity for uncertainty estimation to balance the two. Bayesian Optimization is an automatic approach to making design choices, however; we're still missing a decision rule.
+				</p>
+				<h4>Acquisition Functions</h4>
+				<p>
+					Typically, in Bayesian Optimization approaches, one would define an acquisition function \(\alpha(x)\) which, loosely speaking, characterises the expected utility of picking a particular next input \(x\). The next input \(x\) is then automatically picked as whichever one maximises that acquisition function.For instance, for our naive approach of picking the point with the best expected cornering speed as predicted by our model, we were guided by acquisition function \(\alpha(x)\) that was equal to the expected predicted objective - \(\alpha(x) = \mathbb{E}_{y|x, \mathcal{D}}\left[y\right]\) - and we considered picking the point with the highest predicted objective:
+				</p>
+				<!-- TODO: Plot for simple acquisition function plot - alpha(x) = the predictive mean -->
+				<p><strong>TODO:</strong> Plot showing the simple acquisition function</p>
 
-			<p>
-				Typically, in Bayesian Optimization approaches, one would define an acquisition function \alpha(x) which, loosely speaking, characterises the expected utility of picking a particular next input x. The next input x is then automatically picked as whichever one maximises that acquisition function.For instance, for our naive approach of picking the point with the best expected cornering speed as predicted by our model, we were guided by acquisition function alpha(x) that was equal to the expected predicted objective - alpha(x) = E[y(x)] - and we considered picking the point with the highest predicted objective:
-			</p>
-			<!-- Simple acquisition function plot - alpha(x) = the predictive mean -->
+				<p>
+					This acquisition function was too greedy, however, not taking the uncertainty in the predictions into account.
+				</p>
 
-			<p>
-				This acquisition function was too greedy, however, not taking the uncertainty in the predictions into account.
-			</p>
+				<p>
+					This raises a question: what is the right acquisition function? From our goal, can we come up with an acquisition function that would lead us to the optimal rule for choosing an \(x\)?
+				</p>
+				<p>
+					It helps to first imagine that we're at the end of the design period, and we only have time to test one last wing prototype before we must report our inferred function minimum. Let's also say that at the end, we must return a design from the set of wing lengths we've actually tested in the lab. On the race day, we require a design we have utmost confidence in. 
+				</p>
 
-			<p>
-				This raises a question: what is the right acquisition function? From our goal, can we come up with an acquisition function that would lead us to the optimal rule for choosing an x?
-			</p>
+				<p>
+					Our final goal is to maximise the cornering speed of our final reported design; we could say that the utility of our final design is proportional to the reported cornering speed \(y^*: U(y^*) = y^*\). We'd of course want to report the best design found, so \(y^* = max \left(y_1 \dots y_N\right)\)
+				</p>
 
-			<!-- < start going side-by side again> -->
-
+				<p>
+					So far, we have tried lengths \((x_1, .., x_{N-1})\), and observed corresponding speeds \((y_1, \dots, y_{N-1})\). Given this, the <i>extra</i> utility we get from evaluating the last point at \(x_N\), and observing a cornering speed \(y_N\) is:
+				</p>
+				\[\lambda=\text{something cool}\]
+				<!-- < start going side-by side again> -->
 
 			</div>
 		</div>
