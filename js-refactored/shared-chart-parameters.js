@@ -94,8 +94,8 @@ const yGrid = (g, height, width) => {
 // ============================
 
 const sigma = 0.25
-const ell = 6.75 //1.5 
-const delta = 0.005
+const ell = 6.0 //1.5 
+const delta = 0.00001  // Does 0 noise break anything??
 
 const squared_exponential_kernel = (sigma, ell) => {
   const sigmasq = Math.pow(sigma, 2);

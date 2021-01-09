@@ -6,40 +6,58 @@
 	<link rel="stylesheet" href="https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css"/>
 	<script src="https://d3js.org/d3.v6.js"></script>
 	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/math/5.4.0/math.js"></script> -->
-  <script src="https://unpkg.com/mathjs@8.0.1/lib/browser/math.js"></script>
-  <!-- MathJax script import -->
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+	<script src="https://unpkg.com/mathjs@8.0.1/lib/browser/math.js"></script>
+	<!-- MathJax script import -->
+	<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
 	<link href="style.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
+	<!-- Is the padding necessary here? Could have some nice block colors otherwise-->
 <article class="pa3 pa3-ns">
-  
-  <h1 class="f3 f1-m f-headline-l">Bayesian optimisation</h1>
+	<!-- Header taken from: -->
+	<!-- https://tachyons.io/components/articles/left-title-top-border/index.html  -->
+	<!-- TODO: CSS magic to make it stack above text if device-width < threshold -->
+	<header class="fn fl-ns w-50-ns pr4-ns">
+		<h1 class="f2 lh-title fw9 mb3 mt0 pt3 bt bw2">
+			Bayesian Optimization
+		</h1>
+		<h2 class="f3 mid-gray lh-title">
+			a.h. &  b.m.
+		</h2>
+		<time class="f6 ttu tracked gray">Publication Date XX-01-2021</time>
+	</header>
 
+	<div class="cf">
+		<div class="fl w-100 w-50-ns pv0">
+
+			<div style="background-color:lightblue; border-radius: 5px;">
+				<h3>TO-DO List</h3>
+				<ul>
+					<li>Pick section titles</li>
+					<li>Page (1) Fix margins (2) Responsive mobile layout</li>
+					<li>Add viewbox support</li>
+					<li>Make graphics reset possible</li>
+					<li>Replace buttons with scroll event listeners (and add smoother transitions)</li>
+					<li>Add 'days left' timer on graphics (and annotations)</li>
+					<li>Show the score away from the highest point on the choice graphics</li>
+				</ul>
+			</div>
+			<p>
+				Bayesian Optimization is a powerful tool for automatic optimization of design choices. It has been used extensively in applications ranging from hyperparameter tuning for automatic machine learning to optimizing manufacturing and experiment design. We'll start off by introducing a typical, illustrative  problem setting for Bayesian Optimization, and show how the key components of Bayesian Optimization can automatise design decisions while significantly improving upon naive approaches.
+			</p>
+		</div>
+	</div>
 
 
 	<div class="mw9 center ph3-ns">
-		<div class="cf">
-		    <div class="fl w-100 w-50-ns pv0">
 
-				<div style="background-color: aquamarine; border-radius: 5px;">
-					<h3>TO-DO List</h3>
-					<ul>
-						<li>Pick section titles</li>
-						<li>Page (1) Fix margins (2) Responsive mobile layout</li>
-						<li>Add viewbox support</li>
-						<li>Make graphics reset possible</li>
-						<li>Replace buttons with scroll event listeners (and add smoother transitions)</li>
-						<li>Add 'days left' timer on graphics (and annotations)</li>
-						<li>Show the score away from the highest point on the choice graphics</li>
-					</ul>
-				</div>
-				<p>
-					Bayesian Optimization is a powerful tool for automatic optimization of design choices. It has been used extensively in applications ranging from hyperparameter tuning for automatic machine learning to optimizing manufacturing and experiment design. We'll start off by introducing a typical problem setting for Bayesian Optimization, and show how the key components of Bayesian Optimization can significantly improve upon a naive approach.
-				</p>
+		<!-- <div class="fl w-100 w-50-ns pv0 center"> -->
+		<div class="cf">
+			<div class="mw5 mw7-ns center mv4 pa3 ph5-ns">
+
 
 				<h2>The Problem</h2>
 				<p>
@@ -47,41 +65,22 @@
 				</p>
 
 				<p>
-					The biggest challenge is that it is both expensive and slow to test new wing sizes. Each wing size prototype takes around a week to manufacture, install on the vehicle and get tested by the driver. There are only a few weeks left until the next Grand Prix, however, so you have limited time to find the best design.
+					The challenge is that it is both expensive and slow to test new wing sizes. Each wing size prototype takes around a week to manufacture, install on the vehicle and get tested by the driver. There are only a few weeks left until the next Grand Prix, however, so you have limited time to find the best design.
 				</p>
-
-		    </div>
-		</div>
+				<!-- !!Include something about hoping to automate the process as well. -->
 
 		<!-- POSSIBLE FUNCTIONS -->
 
-		<!-- <div class="cf">
-		    <div class="fl w-100 w-50-ns ph2 pv0">
-		    	<h2>Possible functions</h2>
-		    </div>
-		</div>
-
-		<div class="cf"> <!-- ph2-ns ->
-		    <div class="fl w-100 w-50-ns ph2 pv0"> <!-- No vertical padding ->
-				<p>The problem is that we don't know what wing lengths correspond to the best speeds. <strong>Hover tap over the graph on the right to see what possible relationships could look like.</strong></p>
-		    </div>
-		    <div class="fl w-100 w-50-ns">
-		    	<div id="chart-possible-funcs"></div>
-		    </div>
-		</div> -->
-
-		<div class="cf">
-		    <div class="fl w-100 w-50-ns pv0">
 				<!-- <h3>Possible functions</h3> -->
 				<p>
-					This is a typical setting for Bayesian Optimization. We're trying to optimize an objective function \(f(x)\) - the vehicle's on track performance - as a function of the side-wing length \(x\). Unfortunately, we don't know what that function looks like: 
+					This is a typical setting for Bayesian Optimization. In this scenario, we're trying to optimize an objective function \(f(x)\) - the vehicle's on track performance - as a function of the side-wing length \(x\). Unfortunately, we don't know what that function looks like: 
 				</p>
 
 				<!-- Posssible Functions Plot (inline) -->
 		    	<div id="chart-possible-funcs"></div>
 				<!-- <h2>Choosing points blindly</h2> -->
 				<p>
-					The main challenge is that the objective function is expensive to evaluate. In our problem, it takes a long period of time to test a new prototype, and manufacturing the prototype is costly. Therefore, we can only ever observe the objective function at a limited number of points. Each evaluation is precious, we can't waste them.
+					Since the objective function is expensive to evaluate - both in terms of time and manufacturing cost - we can only ever hope to observe the objective function at a limited number of points. Each evaluation is precious, we can't waste them.
 				</p>
 
 				<p>
@@ -97,20 +96,6 @@
 		    
 
 		<!-- BLIND CHOICE OF POINTS -->
-<!-- <div class="cf">
-		    <div class="fl w-100 w-50-ns ph2 pv0">
-		    	<h2>Choosing points blindly</h2>
-		    </div>
-		</div> -->
-
-		<!-- <div class="cf"> <!-- ph2-ns ->
-		    <div class="fl w-100 w-50-ns ph2 pv0">
-		    	<p>Now let's look at the real data. Without knowing the function, can you find the optimal side wing in 5 days?</p>
-		    </div> <!-- No vertical padding ->
-		    <div class="fl w-100 w-50-ns">
-<!-- 		    	<div id="chart-choose-points-blind"></div>
- ->		    </div>
-		</div>-->
 
 		<div class="cf">
 		    <div class="fl w-100 w-50-ns pv0">
@@ -126,13 +111,10 @@
 		<!-- MEAN ONLY CHOICE OF POINTS -->
 
 		<div class="cf">
-		    <div class="fl w-100 w-50-ns ph2 pv0">
-		    	<h2>Choosing which designs to try</h2>
-		    </div>
-		</div>
+			<div class="mw5 mw7-ns center mv4 pa2 ph5-ns">
+		    <!-- <div class="fl w-100 w-50-ns ph2 pv0"> -->
+				<h2>Using a model</h2>
 
-		<div class="cf"> <!-- ph2-ns -->
-		    <div class="fl w-100 w-50-ns ph2 pv0">
 				<p>
 					There are multiple ways to approach picking which points to evaluate. We could try naively picking the points at random, or divide the design-space uniformly and perform a grid-search. However, both of these approaches would be inefficient - they ignore the feedback which we sequentially receive from each experiment.
 				</p>
@@ -142,18 +124,18 @@
 				</p>
 
 				<p>
-					Instead of just picking side-wing lengths blindly, the central idea of Bayesian optimization is to fit a model to the data to inform that choice. This would allow us to predict what vehicle's cornering speed - our objective - might be for wing lengths we haven't tested yet. This can give us a proxy for what the most promising regions to explore might be.
+					Instead of just picking side-wing lengths blindly, one of the central ideas of Bayesian optimization is to use a <strong>model for the data</strong> to inform that choice. This would allow us to predict what vehicle's cornering speed - our objective - might be for wing lengths we haven't tested yet. This can give us a proxy for what the most promising regions to explore might be.
 				</p>
 
 				<p>
-					By using a model, we could formulate a more effective automated strategy: we can simply pick the side-wing that is predicted to give the highest cornering speed by the model.
+					By using a model, we could formulate an automated strategy: pick the side-wing that is predicted to give the highest expected cornering speed by the model.
 				</p>
 
 				<!-- Plot: Choose points using only the mean of model predictions -->
 				<div id="chart-choose-points-with-mean"></div>
 
 				<p>
-					You might have noticed, however, that there is one evident issue with the approach outlined above.
+					You might have noticed, however, that there is an evident issue with that selection strategy.
 				</p>
 
 		    </div> <!-- No vertical padding -->
@@ -172,63 +154,57 @@
  
 		<div class="cf sticky-container" id="test-id"> <!-- ph2-ns -->
 		    <div class="fl w-100 w-50-ns ph2 pv0">
-				<p>
-					Starting with the setup on the right, let's see what would happen if we strictly followed the <i>"pick the best point predicted by the model strategy".</i>
-				</p>
-				<br> 
-
-		    	<div id="explore-exploit-text1">
+				<div class="mt6 mb4">
 					<p>
-						By picking only the best point as predicted by the model, we might eventually end up only picking points close to the one pretty good design that we found so far.
+						Starting with the setup on the right, let's see what would happen if we strictly followed the <i>"pick the point with the best expected cornering speed predicted by the model"</i> strategy.
 					</p>
-
-
-		    		<div id="explore-exploit-naive-point"></div> <!-- Use a div as the event trigger because it has 0 height. If the div had a non-zero height, the bounding box would cause assymetry in the scrolling down vs scrolling up IntersectionObserver calls. -->
-					<p>If we pick the best point that is predicted by the model, we end up choosing a point that is close to existing points we have already found.</p>
-					<p>
-						While doing so, we might be ignoring other unexplored parts of the search-space, where an even better design could be located.
-					</p>
-
-
+				</div>
 	<!-- 				<button id="button-explore-exploit-1">Pick naive point</button>
 	 -->
-					<p>This means that we have ignored the unexplored region of the search space (of smaller wing spans) where an even better design could be located.</p>
 
+		    	<div id="explore-exploit-text1" >
+					<div id="explore-exploit-naive-point"></div> <!-- Use a div as the event trigger because it has 0 height. If the div had a non-zero height, the bounding box would cause assymetry in the scrolling down vs scrolling up IntersectionObserver calls. -->
+					<div class="mt7 mb4">
+						<p>
+							If we pick the best point that is predicted by the model, we end up choosing a point really close to the previously tried designs that turned out fairly well.
+						</p>
+					</div>
+				</div>
+		    	<div id="explore-exploit-text2" >
+					<div id="explore-exploit-show-true"></div>
+					<div class="mt7 mb4">
+						<p>
+							While doing so, we are ignoring other unexplored parts of the search-space. In this case, there is a whole region of shorter side-wing length where an even better design could be located.
+						</p>
+					</div>
+				</div>
+
+				<!-- TODO: This should pop into view separately, even though nothing happens on the plot -->
+				<div class="mt6 mb4">
 					<p>
-						It should be clear that there is a trade-off between selecting inputs close to the 'best' points observed so far (exploiting) and traversing the design-space in search of more prospective regions (exploring). This trade-off plays a central role in Bayesian Optimization.
+						It should be clear that this greedy behaviour is bad news. There is clearly a trade-off between selecting inputs close to the 'best' points observed so far (exploiting) and traversing the design-space in search of more prospective regions (exploring). This trade-off plays a central role in Bayesian Optimization.
+					</p>
+				</div>
+
+				<div class="mt6 mb4">
+			    	<h3>The need for a <i>probabilistic</i> model</h3>
+					<p>
+						How do we know where to explore? Intuitively, we want to explore in areas where we believe there is a <strong>high probability</strong> that the design will be good. This can happen both in places where the model's mean prediction is high, or where the model's mean prediction is low, but the uncertainty in that prediction is high. Even though the expected value at a given point x might be low, if the uncertainty is high enough, the probability of that point being the best one we've seen so far might actually be substantial.
+					</p>
+					<p>
+						To identify these high-risk high-reward regions, we need to be able to evaluate a notion of uncertainty in the model's predictions. We need a model that can give us a full predictive distribution over the possible values for the objective.
+					</p>
+				</div>
+		    	<div id="explore-exploit-text3">
+		    		<div id="explore-exploit-show-variance"></div>
+					<p>
+						Hence, a key component of Bayesian Optimization is to utilise a probabilistic model. Having access to the predictive distribution from such a model allows us to obtain the probability of each outcome, and consequently helps us identify good regions to explore.
+					</p>
+					<p>
+						A model for Bayesian Optimization ought to maintain a statistical picture of the function’s overall form given our observations of it. Gaussian Processes are one popular approach to doing so for functions over continuous domains, as they give an analytical formula for the form of the predictive distribution. Here is an example:
 					</p>
 
-		    	</div>
-
-		    	<div id="explore-exploit-text2">
-			    	<h3>The need for a <i>probabilistic</i> model</h3>
-		    		<div id="explore-exploit-show-variance"></div>
-					<p>How do we know where to explore? We only want to explore in areas where there is a relatively large potential of observing a value that could be optimal, i.e. in those areas where our predictor is uncertain. Hence, in order to explore effectively we need estimates of uncertainty from the predictive model that we're using.</p> 
 				</div>
-
-<!-- 				<button id="button-explore-exploit-2">Show variance</button>
- -->
-
-		    	<div id="explore-exploit-text3">
-		    		<div id="explore-exploit-show-true"></div>
-					<p>Our goal is to build a statistical picture of the function’s overall form given our observations of it. One convenient approach to modelling functions over continuous domains that allows for a full Bayesian Treatment are Gaussian Process. These are widely used in the Bayesian Optimization literature in applications.</p>
-				</div>
-
-				<p>
-					How do we know where to explore? Naturally, there's little use in trying designs similar to the ones we've tried before that turned out to be bad. Intuitively, we want to explore in areas where we believe there is a high probability that the design will improve upon previous ones the most. This can happen both in places where the model's mean prediction is high, or where the model's mean prediction is low, but the uncertainty in that prediction is high. Even though the expected value at a given point x might be low, if the uncertainty is high enough, the probability of that point being the maximum might actually be substantial.
-				</p>
-
-				<p>
-					To assess these high-risk high-reward regions, we need to be able to evaluate a notion of uncertainty in the model's predictions. To explore effectively, we need a model that can give us a full predictive distribution over the possible values for the objective. Hence, a key component of Bayesian Optimization is to utilise a probabilistic model. Having access to the predictive distribution from such a model allows us to ascertain the probability of each outcome.
-				</p>
-
-				<p>
-					Hence, a model for Bayesian Optimization ought to maintain a statistical picture of the function’s overall form given our observations of it. Gaussian Processes are one popular approach to doing so for functions over continuous domains, as they give an analytical formula for the form of the predictive distribution. Here is an example:
-				</p>
-
-
-<!-- 				<button id="button-explore-exploit-3">Show true function</button>
- -->
 		    </div> <!-- No vertical padding -->
 		    <div class="fl w-100 w-50-ns ph2 pv2 sticky">
 		    	<div id="chart-explore-exploit"></div>
@@ -238,16 +214,14 @@
 
 		<!-- MEAN and VARIANCE CHOICE OF POINTS -->
 
-		<div class="cf">
+		<div class="cf mt6">
 		    <div class="fl w-100 w-50-ns ph2 pv0">
 		    	<h2>Exploring uncertainty</h2>
 		    </div>
 		    <div class="fl w-100 w-50-ns pv0">
 				<div id="chart-choose-points-with-variance"></div>
 			</div>
-		</div>
 		<!-- Discussion of a decision rule -->
-		<div class="cf">
 		    <div class="fl w-100 w-50-ns ph2 pv0">
 				<h2>Decision Rule</h2>
 			<p>

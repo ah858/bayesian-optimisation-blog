@@ -23,7 +23,7 @@ function drawChoosePointsBlind() {
   // const svg = d3.select("#chart-choose-points-with-mean").append("svg").attr("viewBox", [0, 0, width, height]);
   // ================================================
 
-  const NUMBER_OF_GUESSES = 3;
+  const NUMBER_OF_GUESSES = 5;
   const MODEL_TRANSITION_DURATION = 300;
   
   // TODO: Delete these lines
