@@ -53,7 +53,7 @@
 			<div class="mw5 mw7-ns center mv4 pa3 ph5-ns">
 
 
-				<h2>The Problem</h2>
+				<h2>A Problem</h2>
 				<p>
 					Imagine you're on the engineering design team for a Formula One car. The team lead decided that redesigning the vehicle’s side wing may improve its cornering speed. A new shape has been proposed, however, the length of the side-wing, which can vary within the regulation constraints of 5cm - 40cm, is yet to be decided. Your job is to find the length of the wing that gives optimal performance as measured by the top cornering speed the driver is able to achieve.
 				</p>
@@ -92,14 +92,16 @@
 		<!-- BLIND CHOICE OF POINTS -->
 
 		<div class="cf">
-		    <div class="fl w-100 w-50-ns pv0">
-		    	<div id="chart-choose-points-blind"></div>
-		    	 </div>
+			<div class="mw8 center">
+				<div class="fl w-100 w-70-ns pv0">
+					<div id="chart-choose-points-blind"></div>
+					</div>
 
-		    <div class="fl w-100 w-50-ns ph6 pv5">
-		    	<p class="i f6">We'll pick a new underlying function for you on each reset. We wouldn't want to make it too easy.</p>
-		   		<!-- <a class="f6 link dim br-pill ba ph3 pv1 dib black" href="#0">Play again</a> -->
-		    </div>
+				<div class="fl w-100 w-30-ns ph2 pv5">
+					<p class="i f6">We'll pick a new underlying function for you on each reset. We wouldn't want to make it too easy.</p>
+					<!-- <a class="f6 link dim br-pill ba ph3 pv1 dib black" href="#0">Play again</a> -->
+				</div>
+			</div>
 		</div>
 
 		<!-- MEAN ONLY CHOICE OF POINTS -->
@@ -148,7 +150,7 @@
  
 		<div class="cf sticky-container" id="test-id"> <!-- ph2-ns -->
 		    <div class="fl w-100 w-50-ns ph2 pv0">
-				<div class="mt6 mb4">
+				<div class="mb4">
 					<p>
 						Starting with the setup on the right, let's see what would happen if we strictly followed the <i>"pick the point with the best expected cornering speed predicted by the model"</i> strategy.
 					</p>
@@ -160,7 +162,7 @@
 					<div id="explore-exploit-naive-point"></div> <!-- Use a div as the event trigger because it has 0 height. If the div had a non-zero height, the bounding box would cause assymetry in the scrolling down vs scrolling up IntersectionObserver calls. -->
 					<div class="mt7 mb4">
 						<p>
-							If we pick the best point that is predicted by the model, we end up choosing a point really close to the previously tried designs that turned out fairly well.
+							In this case, by picking the best point predicted by the model, the chosen point ends up being really close to the previously tried designs that turned out fairly well.
 						</p>
 					</div>
 				</div>
@@ -168,34 +170,39 @@
 					<div id="explore-exploit-show-true"></div>
 					<div class="mt7 mb4">
 						<p>
-							While doing so, we are ignoring other unexplored parts of the search-space. In this case, there is a whole region of shorter side-wing length where an even better design could be located.
+							While doing so, we are ignoring other unexplored parts of the search-space where an even better design is located. By applying this strategy repeatedly, we would only ever explore the one local optimum we've found so far, while ignoring a better optimum.
 						</p>
+						<!-- TODO: Highlight the word better optimum, and show a line on the chart -->
 					</div>
 				</div>
 
 				<!-- TODO: This should pop into view separately, even though nothing happens on the plot -->
 				<div class="mt6 mb4">
 					<p>
-						It should be clear that this greedy behaviour is bad news. There is clearly a trade-off between selecting inputs close to the 'best' points observed so far (exploiting) and traversing the design-space in search of more prospective regions (exploring). This trade-off plays a central role in Bayesian Optimization.
+						There is clearly a trade-off between selecting inputs close to the 'best' points observed so far (exploiting) and traversing the design-space in search of more prospective regions (exploring). This trade-off plays a central role in Bayesian Optimization.
 					</p>
 				</div>
 
 				<div class="mt6 mb4">
-			    	<h3>The need for a <i>probabilistic</i> model</h3>
+			    	<!-- <h3>The need for a <i>probabilistic</i> model</h3> -->
 					<p>
-						How do we know where to explore? Intuitively, we want to explore in areas where we believe there is a <strong>high probability</strong> that the design will be good. This can happen both in places where the model's mean prediction is high, or where the model's mean prediction is low, but the uncertainty in that prediction is high. Even though the expected value at a given point x might be low, if the uncertainty is high enough, the probability of that point being the best one we've seen so far might actually be substantial.
-					</p>
-					<p>
-						To identify these high-risk high-reward regions, we need to be able to evaluate a notion of uncertainty in the model's predictions. We need a model that can give us a full predictive distribution over the possible values for the objective.
+						As presented, there is a key missing component to our model that would allow us to explore effectively. Intuitively, we want to explore in areas where we believe there is a <strong>high probability</strong> that the design will be good. This can happen both in places where the model's mean prediction is high, or where the model's mean prediction is low, but the uncertainty in that prediction is high. Even though the expected value at a given point might be low, if the uncertainty is high enough, the probability of that point being by far the best one we've seen so far might actually be relatively large.
 					</p>
 				</div>
 		    	<div id="explore-exploit-text3">
 		    		<div id="explore-exploit-show-variance"></div>
 					<p>
-						Hence, a key component of Bayesian Optimization is to utilise a probabilistic model. Having access to the predictive distribution from such a model allows us to obtain the probability of each outcome, and consequently helps us identify good regions to explore.
+						To identify these high-risk high-reward regions, we need to be able to evaluate a notion of uncertainty in the model's predictions. We need a model that can give us a full predictive distribution over the possible values for the objective. A model for Bayesian Optimization ought to maintain a statistical picture of the function’s overall form given our observations of it.
 					</p>
+					<!-- TODO: I don't stand by the above statement (2nd to last sentence). -->
 					<p>
-						A model for Bayesian Optimization ought to maintain a statistical picture of the function’s overall form given our observations of it. Gaussian Processes are one popular approach to doing so for functions over continuous domains, as they give an analytical formula for the form of the predictive distribution. Here is an example:
+						Hence, a key component of Bayesian Optimization is the use of a <strong>probabilistic</strong> model. Having access to the predictive distribution from such a model allows us to obtain the probability of each outcome, and consequently helps us identify good regions to explore.
+					</p>
+					<!-- The below sentence doesn't necessarily fit in there. It would go together with the whole paragraph on probabilistic models.-->
+					<p>
+						Gaussian Processes are one widely popular class of model for Bayesian Optimization of functions over continuous domains, like the one in this example. The formula for obtain the predictive distribution by marginalising out every possible hypothesis for the true function is analytical, and hence Gaussian Processes are great for obtaining reliable uncertainty estimates.</p>
+					<p>
+						To see what difference having the uncertainty estimates makes, give the optimization with a Gaussian Process model a go:
 					</p>
 
 				</div>
@@ -219,34 +226,39 @@
 		    <div class="fl w-100 w-50-ns ph2 pv0">
 				<h2>Decision Rule</h2>
 				<p>
-					So far, we discussed the tension between exploration and exploitation and the necessity for uncertainty estimation to balance the two. Bayesian Optimization is an automatic approach to making design choices, however; we're still missing a decision rule.
+					So far, we discussed the tension between exploration and exploitation and the motivation for using a probabilistic model to balance the two. Since Bayesian Optimization is an automatic approach to making design choices, however, we're still clearly missing one component: a decision rule for picking the next point.
 				</p>
 				<h4>Acquisition Functions</h4>
+				<!-- TODO: Good place for a: to find the maximum you need to find the maximum joke -->
 				<p>
-					Typically, in Bayesian Optimization approaches, one would define an acquisition function \(\alpha(x)\) which, loosely speaking, characterises the expected utility of picking a particular next input \(x\). The next input \(x\) is then automatically picked as whichever one maximises that acquisition function.For instance, for our naive approach of picking the point with the best expected cornering speed as predicted by our model, we were guided by acquisition function \(\alpha(x)\) that was equal to the expected predicted objective - \(\alpha(x) = \mathbb{E}_{y|x, \mathcal{D}}\left[y\right]\) - and we considered picking the point with the highest predicted objective:
+					Typically, in Bayesian Optimization approaches, one would define an acquisition function \(\alpha(x)\). The acquisition function, loosely speaking, characterises the expected utility of picking a particular point \(x\) as next input. The next \(x\) can then automatically be chosen as whichever one maximises the acquisition function.
+				</p>
+				<p>
+					To give an example, we can express the naive selection rule of "picking the point with the best expected cornering speed as predicted by the model" with an acquisition function. We could completely equivalently defined an acquisition function \(\alpha(x)\) that is equal to the expected predicted objective: \(\alpha(x) = \mathbb{E}_{y|x, \mathcal{D}}\left[y\right]\). By maximising this acquisition function, we would be picking the point with the highest predicted objective:
 				</p>
 				<!-- TODO: Plot for simple acquisition function plot - alpha(x) = the predictive mean -->
 				<p><strong>TODO:</strong> Plot showing the simple acquisition function</p>
 
 				<p>
-					This acquisition function was too greedy, however, not taking the uncertainty in the predictions into account.
-				</p>
-
-				<p>
-					This raises a question: what is the right acquisition function? From our goal, can we come up with an acquisition function that would lead us to the optimal rule for choosing an \(x\)?
+					This acquisition function had many short-comings as we saw, but this rises the question: what is the right acquisition function? From our goal, can we come up with an acquisition function that would lead us to the optimal rule for choosing an \(x\)? Let's try and do just that.
 				</p>
 				<p>
-					It helps to first imagine that we're at the end of the design period, and we only have time to test one last wing prototype before we must report our inferred function minimum. Let's also say that at the end, we must return a design from the set of wing lengths we've actually tested in the lab. On the race day, we require a design we have utmost confidence in. 
+					 Let's also say that in the end, we must return a design \(x^*\) from the set of wing lengths we've actually tested in the lab. On the race day, we require a design we have utmost confidence in. 
 				</p>
-
 				<p>
-					Our final goal is to maximise the cornering speed of our final reported design; we could say that the utility of our final design is proportional to the reported cornering speed \(y^*: U(y^*) = y^*\). We'd of course want to report the best design found, so \(y^* = max \left(y_1 \dots y_N\right)\)
+					Let's say that one the race day, the utility \(U\) of our final design \(x^*\) is proportional to its cornering speed \(y^*\), i.e. \(U(y^*) = y^*\). To maximise the utility, we'd naturally report the best design we've found during our experimentation: \(y^* = \max \left(y_1, \dots, y_N\right)\).
 				</p>
-
+				<p>
+					It helps to first imagine that we're at the end of the design period, and we only have time to test one last prototype before we must pick a design to be manufactured for the race.
+				</p>
 				<p>
 					So far, we have tried lengths \((x_1, .., x_{N-1})\), and observed corresponding speeds \((y_1, \dots, y_{N-1})\). Given this, the <i>extra</i> utility we get from evaluating the last point at \(x_N\), and observing a cornering speed \(y_N\) is:
 				</p>
-				\[\lambda=\text{something cool}\]
+				<!-- TODO: add color to equations -->
+				\[\lambda=\begin{cases}
+					y_N - \max\left(y_1, \dots, y_N\right) & \text{if } y_N > \max\left(y_1, \dots, y_N\right) \\[.5em]
+					0 & \text{if } y_N \leq \max\left(y_1, \dots, y_N\right)
+				\end{cases}\]
 				<!-- < start going side-by side again> -->
 
 			</div>
