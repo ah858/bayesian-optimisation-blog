@@ -230,33 +230,33 @@
 				<h4>Acquisition Functions</h4>
 				<!-- TODO: Good place for a: to find the maximum you need to find the maximum joke -->
 				<p>
-					Typically, to guide experiment selection in Bayesian Optimization approaches, one would define an acquisition function \(\alpha(x)\). Loosely speaking, the acquisition function characterises the expected utility of picking a particular point \(x\) as next input. The next \(x\) can then automatically be chosen as whichever one maximises the acquisition function: \(x_{\text{next}}=\arg \max_x \alpha(x)\)
+					Typically, to guide experiment selection in Bayesian Optimization, one would define an acquisition function \(\alpha(x)\). Loosely speaking, the acquisition function characterises how "good" a particular point \(x\) is expected to be as the next input. The next \(x\) can then automatically be chosen as whichever one maximises the acquisition function: \(x_{\text{next}}=\arg \max_x \alpha(x)\).
 				</p>
 				<p>
-					As an example, we can express the naive selection rule of "picking the point with the best expected cornering speed" with an acquisition function. We can define an acquisition function \(\alpha(x)\) that is equal to the expected predicted objective: \(\alpha(x) = \mathbb{E}_{y|x, \mathcal{D}}\left[y\right]\). By maximising this acquisition function, we would be picking the point with the highest predicted objective just as we did before:
+					As an example, an acquisition function can express the naive selection rule of "picking the point with the best expected cornering speed" (this is what we did before). We can define an acquisition function \(\alpha(x)\) that is equal to the expected predicted objective: \(\alpha(x) = \mathbb{E}_{y|x, \mathcal{D}}\left[y\right]\). By maximising this acquisition function, we would be picking the point with the highest predicted objective just as we did before:
 				</p>
 				<!-- TODO: Plot for simple acquisition function plot - alpha(x) = the predictive mean -->
 				<p><strong>TODO:</strong> Plot showing the simple acquisition function</p>
 
 				<p>
-					We've seen the many short-coming of this acquisition function, which leads to the question: what is the right acquisition function? Starting from our goal of finding the best side-wing design, can we come up with an acquisition function that would lead us to the optimal rule for choosing an \(x\)? Let's try and do just that.
+					We've seen the many short-comings of this acquisition, which leads to the question: what is the right acquisition function? Starting from our goal of finding the best side-wing design, can we come up with an acquisition function that would lead us to the optimal rule for choosing the next length \(x\) to test? Let's try and do just that.
 				</p>
 				<p>
 					<!-- TODO: Add a footnote saying that more general assumptions are possible (noise e.t.c.) -->
-					Let's start by concretely formulating our problem. During the experimentation phase, we get to sequentially select \(N\) points \(x_i \in \mathbb{R}\), and observe the corresponding output \(y_i=f(x_i) \). At the end, after these trials are complete, we want to return a final recommendation for a design \(x^*\). Let's say that in our problem we assume that in the end we must return a design \(x^*\) from the set of wing lengths we've actually tested in the lab. On the race day, we require a tested design we have utmost confidence in. 
+					We start by concretely formulating our problem. During the experimentation phase, we get to sequentially select \(N\) points \(x_i \in \mathbb{R}\), and observe the corresponding output \(y_i=f(x_i) \). At the end, after these trials are complete, we want to return a final recommendation for the optimal side-wing length \(x^*\). In our problem, we assume .. design \(x^*\) from the set of wing lengths we've actually tested in the lab. On the race day, we require a tested design we have utmost confidence in. 
 				</p>
 				<!-- <p>
 					 TODO: this quick note 
 					<i style="opacity: 0.7; font-size: 11pt;">(It's possible to formulate the optimization problem in other ways, including observations with noise, returning a point \(x^*\) that hasn't been tested, or having a non-fixed number of steps left.) </i>
 				</p> -->
 				<p>
-					Having defined our problem setup, let's also define our goal. We can define a utility function \(U(x^*)\) that characterise how good of our final design \(x^*\) is. Let's assume - for this problem - it is proportional to the achieved cornering speed \(y^* = f(x^*)\). In other words:
+					Having defined our problem setup, let's also define our goal. We can define a utility function \(U(x^*)\) that characterises how good our final design is. Let's assume — for this problem — it is proportional to the achieved cornering speed \(y^* = f(x^*)\). In other words:
 					\[U(x^*) = y^*\]
 					To maximise this utility, we'd naturally want to report the best design we've found during our experimentation: \(y^* = \max \left(y_1, \dots, y_N\right)\).
 				</p>
 				<!-- TODO: add color to equations -->
 				<p>
-					To arrive at a general acquisition function, it helps to first imagine that we're at the end of the design period; we only have time to test one last prototype before we must pick a design to be manufactured for the race. So far, we have tried side-wing lengths \((x_1, .., x_{N-1})\), and observed corresponding speeds \((y_1, \dots, y_{N-1})\). Given this, the <i>extra</i> utility we get from evaluating the last point at \(x_N\), and observing a cornering speed \(y_N\) is:
+					To arrive at a general acquisition function, it helps to first imagine that we're at the end of the design period; we only have time to test one last prototype before we must pick a design to be manufactured for the race. So far, we have tried side-wing lengths \((x_1, /dots, x_{N-1})\), and observed corresponding speeds \((y_1, \dots, y_{N-1})\). Given this, the <i>extra</i> utility we get from evaluating the last point at \(x_N\), and observing a cornering speed \(y_N\) is:
 				</p>
 				\[\begin{align}
 				\lambda &=\begin{cases}
@@ -268,7 +268,7 @@
 				\]
 				<!-- < start going side-by side again> -->
 				<p>
-					At the last step, we want to pick \(x_N\) to maximise this increase in utility. Of course, we don't know what the cornering speed \(y_N\) corresponding to the design \(x_N\) is going to be for sure, so we can maximise the <strong>expected improvement</strong> of the utility: 
+					At the last step, we want to pick \(x_N\) to maximise this increase in utility. Of course, we don't know what the cornering speed \(y_N\) corresponding to the design length \(x_N\) is going to be for sure, so we can maximise the <strong>expected improvement</strong> of the utility: 
 				</p>
 				\[\mathbb{E}_{y_N|x_N, \mathcal{D}} [\lambda] = \mathbb{E}_{y_N|x_N, \mathcal{D}} [\max(y_N - \tau, 0)]\]
 
