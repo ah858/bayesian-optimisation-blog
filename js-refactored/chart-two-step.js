@@ -408,7 +408,9 @@ function drawTwoStepEI() {
                                               kernel);
       
       let max_val = d3.max(points, p => p.y);
-      let exp_imp = expected_improvement(xgrid, dist_from_points.mean, math.sqrt(dist_from_points.variance), max_val);
+	//   let exp_imp = expected_improvement(xgrid, dist_from_points.mean, math.sqrt(dist_from_points.variance), max_val); // Changed the argument order in the helper function
+	  let exp_imp = expected_improvement(dist_from_points.mean, math.sqrt(dist_from_points.variance), max_val);
+
       return exp_imp;
     }
 	
@@ -510,10 +512,14 @@ function drawTwoStepEI() {
     let ei_plot_xgrid = subsample_array(xtilde, 2);
     let one_step_exp_imp = get_expected_improvement_from_points(gp_space_points, ei_plot_xgrid, kernel);
 
+
+	console.log(one_step_exp_imp);
+
     // Get two step EIs and prepend one-step EI
 
     let two_step_exp_imp = get_expected_improvement_against_xvals(gp_space_points, ei_plot_xgrid);
-        
+		
+
     let exp_imp_objects = calculated_culmulative_exp_imp(one_step_exp_imp, two_step_exp_imp, ei_plot_xgrid);
     
     // Scale to the space of the plot
@@ -521,9 +527,9 @@ function drawTwoStepEI() {
     // ==============================================
     
     // Group items
-    let grouped_stack_data = d3.group(exp_imp_objects, d => d.key)
-		
-		// Plot the stacks in reverse order so lowest traces are on top
+    let grouped_stack_data = d3.group(exp_imp_objects, d => d.key);
+
+	// Plot the stacks in reverse order so lowest traces are on top
     for (let n=5; n>=0; n--) { // TODO: Make upper limit dynamic depending on the number of confidence intervals
       expectedImprovementGroup.selectAll(`.exp-imp-${n}`)
         .data([grouped_stack_data.get(n)])//[all_stack_points[key_id]])
