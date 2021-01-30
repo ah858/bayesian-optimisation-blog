@@ -4,6 +4,8 @@ let height = 250; // document.getElementById("chart").offsetWidth / 2
 let colors = ["#003f5c", "#7a5195", "#ef5675", "#ffa600"];
 let x_axis_resolution = 201;
 
+const NUMBER_OF_GUESSES = 6;
+
 const NUM_Y_TICKS = 5;
 
 let xtilde = [...Array(x_axis_resolution).keys()].map((i) => 5 + (i / (x_axis_resolution-1) * 45))
@@ -93,9 +95,15 @@ const yGrid = (g, height, width) => {
 // Drawing Gaussian Process
 // ============================
 
-const sigma = 0.35//0.25
-const ell = 4//6.75 //1.5 
-const delta = 0.005
+// const sigma = 0.35//0.25
+// const ell = 4//6.75 //1.5 
+// const delta = 0.005
+// Kernel Variance Parameter
+const sigma = 0.36
+// Lengthscale Parameter
+const ell = 7.0 //1.5 
+// Noise variance (or standard deviation, not sure)
+const delta = 0.00001  // Does 0 noise break anything??
 
 const squared_exponential_kernel = (sigma, ell) => {
   const sigmasq = Math.pow(sigma, 2);
