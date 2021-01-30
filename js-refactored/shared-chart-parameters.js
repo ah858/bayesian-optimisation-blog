@@ -95,6 +95,9 @@ const yGrid = (g, height, width) => {
 // Drawing Gaussian Process
 // ============================
 
+// const sigma = 0.35//0.25
+// const ell = 4//6.75 //1.5 
+// const delta = 0.005
 // Kernel Variance Parameter
 const sigma = 0.36
 // Lengthscale Parameter
@@ -259,7 +262,9 @@ function normal_cdf (x) {
 	return math.add(0.5,math.dotMultiply(0.5, math.erf(x)));
 }
 
-function expected_improvement(x, mean_pred, std_pred, max_pred_hereto) {
+// TODO: Check if x argument is redundant here
+function expected_improvement(mean_pred, std_pred, max_pred_hereto) {
+// function expected_improvement(x, mean_pred, std_pred, max_pred_hereto) {
   // Based on eq. 44 in https://www.cs.ox.ac.uk/people/nando.defreitas/publications/BayesOptLoop.pdf
   const term1 = math.dotMultiply(math.subtract(mean_pred, max_pred_hereto), normal_cdf(math.dotDivide((math.subtract(mean_pred, max_pred_hereto)),std_pred)));
   const term2 = math.dotMultiply(std_pred, normal_pdf(max_pred_hereto, mean_pred, std_pred));
