@@ -150,7 +150,7 @@ function drawTwoStepEI() {
 	  .attr("stroke", "transparent")
 	  .attr("fill", "rgba(255,0,0,0.2)");
 	const clipPath = svg.append("clipPath")
-		  .attr("id", "theshold-clip3")
+		  .attr("id", "theshold-clip4")
 		  .append("rect")
 		  .attr("x", xscale.domain()[0])
 		  .attr("y", yscale.domain()[1])
@@ -172,7 +172,7 @@ function drawTwoStepEI() {
 	  .attr("stroke", "transparent")
 	  .attr("fill", "rgba(255,0,0,0.2)");
 	const clipPathTwoStep = svg.append("clipPath")
-		  .attr("id", "theshold-clip-2-step")
+		  .attr("id", "theshold-clip-4-step")
 		  .append("rect")
 		  .attr("x", xscale.domain()[0])
 		  .attr("y", yscale.domain()[1])
@@ -401,9 +401,6 @@ function drawTwoStepEI() {
 
 			loopEachMonteCarlo(0);
 
-			console.log(avg_max_exp_imp_return_val)
-			console.log(avg_max_exp_imp_return_val)
-
 			// TODO This returns undefined even though the value exists
 			return avg_max_exp_imp_return_val[0]
 
@@ -475,9 +472,6 @@ function drawTwoStepEI() {
 
 		// Draw Monte Carlo samples
 		loopMonteCarlo(0);
-
-		console.log(one_step_exp_imp);
-		console.log(two_step_cumulative_points)
 
 		expectedImprovementGroup.selectAll(`.exp-imp-two-step`)
 			.data([two_step_cumulative_points])
@@ -582,7 +576,7 @@ function drawTwoStepEI() {
 				)
 				.attr('class', 'redEnvelope')
 				.attr('d', d => area(d))
-				.attr("clip-path","url(#theshold-clip3)");
+				.attr("clip-path","url(#theshold-clip4)");
 	}
 	
 	function update(points_arg) {
@@ -619,18 +613,18 @@ function drawTwoStepEI() {
 			enter => enter.append("circle")
 				.attr("r", 7)
 				.attr("opacity", 1),
-			exit => exit
-				.attr("opacity", 1)
-				.call(exit => exit.transition() // fade out old points
-					.attr("opacity", 0)
-					.duration(1000)
-					.remove()
-					)
+			// exit => exit  // DISABLE POINT FADE OUT - this does not apply to points seperately
+			// 	.attr("opacity", 1)
+			// 	.call(exit => exit.transition() // fade out old points
+			// 		.attr("opacity", 0)
+			// 		.duration(1000)
+			// 		.remove()
+			// 		)
 		)
 		// Applies to merged selection of new and old elements
 		.attr("cx", d => d.x)
-				.attr("cy", d => d.y)
-				.attr("class", "two-step-circle");
+		.attr("cy", d => d.y)
+		.attr("class", "two-step-circle");
 
 			drawThreshold(points_arg);
 	}
@@ -649,11 +643,11 @@ function drawTwoStepEI() {
     let x = d3.least(points_arg, p => p.y).x;
     
     // drawExpectedImprovement(dist, yscale.invert(y));
-    
-		line.attr("y1", y)
-		.attr("y2", y)
-		.attr("x1", xscale.range()[0])
-		.attr("x2", xscale.range()[1]);
+
+	line.attr("y1", y)
+	.attr("y2", y)
+	.attr("x1", xscale.range()[0])
+	.attr("x2", xscale.range()[1]);
     
     // Disable dragging and turn points black
     circles.selectAll(".two-step-circle")
@@ -680,7 +674,7 @@ function drawTwoStepEI() {
 			)
       .attr('class', 'redEnvelopeTwoStep')
       .attr('d', d => area(d))
-      .attr("clip-path","url(#theshold-clip-2-step)");
+      .attr("clip-path","url(#theshold-clip-4-step)");
     
 	}
 	
