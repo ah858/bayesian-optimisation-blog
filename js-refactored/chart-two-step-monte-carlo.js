@@ -16,8 +16,9 @@ function drawTwoStepEI() {
 		{x: 150, y: 200},
 		{x: 500, y: 300}];
 
-	let LOOP_DELAY = 1500;
+	let LOOP_DELAY = 50;
 	let LOWER_GRAPHIC_HEIGHT_MULTIPLIER = 1.4;
+	let NUM_MONTE_CARLO_SAMPLES = 15;
 
 
 	// =========================
@@ -117,7 +118,7 @@ function drawTwoStepEI() {
 	const expectedImprovementArea = d3.area()
 		.curve(d3.curveBasis)
 		.x(d => xscale(d.x))
-	  .y0(d => yscaleLower.range()[0])
+	  	.y0(d => yscaleLower.range()[0])
 		.y1(d => yscaleLower(d.expected_improvement));
 
 	// const expectedImprovementMaskLeft = d3.rect()
@@ -149,7 +150,7 @@ function drawTwoStepEI() {
 	  .attr("stroke", "transparent")
 	  .attr("fill", "rgba(255,0,0,0.2)");
 	const clipPath = svg.append("clipPath")
-		  .attr("id", "theshold-clip3")
+		  .attr("id", "theshold-clip4")
 		  .append("rect")
 		  .attr("x", xscale.domain()[0])
 		  .attr("y", yscale.domain()[1])
@@ -171,7 +172,7 @@ function drawTwoStepEI() {
 	  .attr("stroke", "transparent")
 	  .attr("fill", "rgba(255,0,0,0.2)");
 	const clipPathTwoStep = svg.append("clipPath")
-		  .attr("id", "theshold-clip-2-step")
+		  .attr("id", "theshold-clip-4-step")
 		  .append("rect")
 		  .attr("x", xscale.domain()[0])
 		  .attr("y", yscale.domain()[1])
@@ -198,6 +199,9 @@ function drawTwoStepEI() {
 	  .attr("x2", xscale.range()[0]);
 	
 	const expectedImprovementGroup = svg.append("g")
+		.attr("fill", "gray");
+
+	const expectedImprovementOneStepGroup = svg.append("g")
 		.attr("fill", "gray");
 		
 	const expectedImprovmentMask = svg.append("g")
@@ -311,94 +315,104 @@ function drawTwoStepEI() {
 	// ============================
 	intialUpdate(points4);
 	// Draw Expected improvement curves
-	drawExpectedImprovement(points4);
-  
-	// Show initial vertical line when hovering over the image
-  function hlineMouseover(event) {
+	// drawExpectedImprovement(points4);
 
-		function maskExpectedImprovementCurves(x){
+	// TODO: Draw one-step EI curves
 
-			expectedImprovmentMask.selectAll(".EIMaskLeft")
-				.data([x])
-				.join("rect")
-				.attr("class", "EIMaskLeft")
-				.attr("y", yscaleLower.range()[1])
-				.attr("x", xscale.range()[0])
-				.attr("height", yscaleLower.range()[0] - yscaleLower.range()[1])
-				.attr("width", x - 5 - xscale.range()[0]);
-			expectedImprovmentMask.selectAll(".EIMaskRight")
-				.data([x])
-				.join("rect")
-				.attr("class", "EIMaskRight")
-				.attr("y", yscaleLower.range()[1])
-				.attr("x", x + 5)
-				.attr("height", yscaleLower.range()[0] - yscaleLower.range()[1])
-				.attr("width", xscale.range()[1] - x - 5);
-		}
+	
 
-		let gp_space_points = scale_invert_points(points4, xscale, yscale);
-												
-    // Get position of hline
-    let x = event.offsetX
-		maskExpectedImprovementCurves(x);
-    
-		// Fix hline position
-		hLine.attr("x1", x)
-      .attr("x2", x);
-    
-		// Draw potential circles
-		
-		// let index = d3.format(".0f")((xscale.invert(x) / 10) * 201);
-		let index = d3.format(".0f")(xscaleIndex.invert(x));
-
-
-    // POINTS CORRESPOND TO PLOTTED CONFIDENCE INTERVALS Update conditional dist
-    // let dist = conditional_dist_with_confidence_intervals(gp_space_points.map((d) => d.x),
-    //                                       gp_space_points.map((d) => d.y),
-    //                                       xtilde,
-		// 																			kernel);
-    // let points_new = createExtraPoints(dist, x, index);
-
-    // POINTS CORRESPOND TO BRUNO'S CHOSEN POINTS Update conditional dist
-    let dist = conditional_distribution(gp_space_points.map((d) => d.x),
-                                          gp_space_points.map((d) => d.y),
-                                          xtilde,
-																					kernel);
-						
-    let points_new = createExtraPointsFromDist(dist, x, index, 2);
-    
-    // Draw grey circles for possible points
-    potentialCircles.selectAll(".potentialCircles")
-      .data(points_new)
-			.join("circle")
-			.attr("class", "potentialCircles")
-      // .attr("r", 4)
-      .attr("r", 7)
-      .attr("cx", d => d.x)
-			.attr("cy", d => d.y)
-			.attr("fill", (d,i) => stackColourTwoStep[i+1])
-			.on("mouseover", event => {   
-				drawXPoints(event);
-			})
-			.on("mouseout", event => {   
-				line.style("visibility", "hidden");
-				envelopeTwoStep.style("visibility", "hidden");
-				envelope2TwoStep.style("visibility", "hidden");
-				modelMeanTwoStep.style("visibility", "hidden");
-				redEnvelopeTwoStep.style("visibility", "hidden");
-
-			});;
-	}
-  
   // TODO: Expectation of the (best) EI for each x-slice i.e. for each x-slice you need to do 5xEI weighted calculations (averaging over maximums).
   
   // TODO: Vectorise EI code
   
-	// Draw the expected improvement
+	// Monte Carlo EI implementation
+	function drawExpectedImprovementMonteCarlo(plot_space_points){
 
-  function drawExpectedImprovement(plot_space_points) {
+		function randomly_sample_expected_improvement(points, x, mean, variance, xgrid){
 
-    let gp_space_points = scale_invert_points(plot_space_points, xscale, yscale);
+			let y_sample = mean + math.sqrt(variance) * sample_random_normal();
+			let tmp_points = points.concat({x: x, y: y_sample});
+			let exp_imp = get_expected_improvement_from_points(tmp_points, xgrid, kernel);
+			let max_exp_imp = math.max(exp_imp);
+
+			return ({
+				points_tmp: tmp_points,
+				max_exp_imp: max_exp_imp
+			})
+
+		}
+
+		function plot_expected_improvement_for_x_val(dist, x, xgrid, points){
+
+			function loopEachMonteCarlo(i) {
+				setTimeout(function() {
+
+					// Fix hline position
+					hLine.attr("x1", xscale(x))
+						.attr("x2", xscale(x));
+
+					avg_max_exp_imp = drawEachMonteCarlo(i, avg_max_exp_imp);
+					if (i++ < NUM_MONTE_CARLO_SAMPLES) {loopEachMonteCarlo(i);}   //  increment i and call myLoop depending on if condition
+					else {
+						avg_max_exp_imp_return_val.push(avg_max_exp_imp)
+					}
+				}, LOOP_DELAY)
+			}
+		
+			// Draw points in that iteration as black and show the max threshold
+			function drawEachMonteCarlo(i, avg_max_exp_imp) {
+
+				let {points_tmp, max_exp_imp} = randomly_sample_expected_improvement(points, x, mean, variance, xgrid);
+
+				// Combine new result with current Monte Carlo estimate
+				avg_max_exp_imp = (max_exp_imp + i * avg_max_exp_imp) / (i+1);
+				let exp_imp_point = {x: x, expected_improvement: avg_max_exp_imp}; // For plotting 2-step histogram
+
+				// TODO Show GP with the new points and update the avg_max_exp_imp bar chart
+				let converted_points = points_tmp.map(d => ({x: xscale(d.x), y: yscale(d.y)}))
+				update(converted_points);
+				
+				// Draw histogram bars for 2-step EI
+				expectedImprovementGroup.selectAll(`.exp-imp-${index}`)
+					.data([exp_imp_point])
+					.join(
+						enter => enter.append('rect')
+							.attr('class', `exp-imp-${index}`) // No dot here
+							.attr('fill', 'lightblue')
+							.attr("width", 10)
+					)
+					.attr("x", d => xscale(d.x))
+					// Offset height by 1-step EI
+					.attr("y", d => yscaleLower(one_step_exp_imp[index] + d.expected_improvement))
+					.attr("height", d => yscaleLower(0) - yscaleLower(one_step_exp_imp[index] + d.expected_improvement));
+		
+				return avg_max_exp_imp
+			}
+
+			// Get x index
+			let index = xgrid.indexOf(x);
+
+			// Calculate (mean, var) at that x value
+			let mean = dist["mean"][index];
+			let variance = dist["variance"][index];
+
+			let avg_max_exp_imp = 0;
+			let avg_max_exp_imp_return_val = []; // Append the return value to array because it can't be returned directly from setInterval loop
+
+			loopEachMonteCarlo(0);
+
+			// TODO This returns undefined even though the value exists
+			return avg_max_exp_imp_return_val[0]
+
+		}
+
+		function subsample_array(array, sampling_rate) {
+			let subsampled = [];
+			for (let i = 0; i < array.length; i = i+sampling_rate) {
+				subsampled.push(array[i]);
+			}
+			return subsampled;
+		}
 
     function get_expected_improvement_from_points(points, xgrid, kernel) {
       
@@ -407,140 +421,71 @@ function drawTwoStepEI() {
                                               xgrid,
                                               kernel);
       
-      let max_val = d3.max(points, p => p.y);
-	//   let exp_imp = expected_improvement(xgrid, dist_from_points.mean, math.sqrt(dist_from_points.variance), max_val); // Changed the argument order in the helper function
-	  let exp_imp = expected_improvement(dist_from_points.mean, math.sqrt(dist_from_points.variance), max_val);
-
+			let max_val = d3.max(points, p => p.y);
+			// let exp_imp = expected_improvement(xgrid, dist_from_points.mean, math.sqrt(dist_from_points.variance), max_val);
+      let exp_imp = expected_improvement(dist_from_points.mean, math.sqrt(dist_from_points.variance), max_val);
       return exp_imp;
-    }
+		}
+		
+		function loopMonteCarlo(i) {
+			setTimeout(function() {
+				drawMonteCarlo(i);
+				i = i + 3;
+				if (i < ei_plot_xgrid.length) loopMonteCarlo(i);   //  decrement i and call myLoop again if i > 0
+			}, (LOOP_DELAY * NUM_MONTE_CARLO_SAMPLES + 700) )  // Time loop delay so each cycle can finish
+		}
 	
-    /**
-    * Return object array with culmulative EI values for plotting as a D3 path
-    * @param  {Array of arrays} array_of_exp_imp    
-          Array of expected improvements (EI) different sample points. 
-          [[1-step array], [2-step point 1], ..., [2-step point n]]
-    * @param  {Array of integers} corresponding_xvals 
-					X values that correspond to points used to calculate the EI arrays.
-    * @return {Array of objects}      
-					A list of objects with each points x-coord, EI value, and key for which sub-array it originated from.
-    */
-    function calculated_culmulative_exp_imp(one_step_exp_imp, two_step_exp_imp, xgrid){
-      
-      let culmulative_vals = [...one_step_exp_imp];
+		// Draw points in that iteration as black and show the max threshold
+		function drawMonteCarlo(i) {
+			let x = ei_plot_xgrid[i];
+			let max_exp_imp = plot_expected_improvement_for_x_val(dist_from_points, x, ei_plot_xgrid, gp_space_points)
 
-			let exp_imp_objects = [];
-      
-      // Add objects for each one-step point
-      for (let i=0; i < xgrid.length; i++) {
-        // let xval = 10 * i / one_step_exp_imp.length; //TODO: Arbitrary constant of 10?
-        exp_imp_objects.push({"x": xgrid[i], "expected_improvement": one_step_exp_imp[i], "key": 0 });
-			}
+			two_step_cumulative_points.push({x: x, expected_improvement: max_exp_imp + one_step_exp_imp[i]})
 			
-			// Add 
-      
-      // Add objects for each two-step point
-      for (let i = 0; i < two_step_exp_imp.length; i++){
-        // For each subarray element
-        for (let j = 0; j < xgrid.length; j++){
-          culmulative_vals[j] = two_step_exp_imp[i][j] + culmulative_vals[j];
-          
-          exp_imp_objects.push({"x": xgrid[j], "expected_improvement": culmulative_vals[j], "key": (i+1)});
-        }
-      }
-      
-      return exp_imp_objects
-    }
-    
-    /**
-    * Normalise a list of probabilities
-    * @param  {Array of numbers}  probability_weights Array of unormalised probabilities
-    * @return {Array of numbers}                      Array of normalised probabilities
-    */
-    function normalise_weights(weights) {
-      let weights_sum = weights.reduce((a, b) => a + b, 0);
-      let normalised_w = weights.map(d => d / weights_sum);
-      return normalised_w
-    }
-    
-    function get_expected_improvement_against_xvals(prev_points_gp_space, xgrid) { 
-      // Note, this dist operates on a different grid than xtilde
-       let dist = conditional_distribution(prev_points_gp_space.map((d) => d.x),
-                                        prev_points_gp_space.map((d) => d.y),
-                                        xgrid,
-                                        kernel);
-      // Subsampled grid to use in the inner evaluation of the maximum for 2nd-step EI:
-      let subsampled_xgrid = subsample_array(xgrid, 5);
-      
-			// TODO: Calculate the probability weights and 2-step arrays dyamically
-      // let probability_weights = [0.0584409, 0.175847, 0.325062, 0.398942, 0.325062, 0.175847, 0.0584409 ];
-			// let two_step_exp_imp = [[],[],[],[],[],[],[]];
-      let probability_weights = [0.175847, 0.325062, 0.398942, 0.325062, 0.175847];
-			let two_step_exp_imp = [[],[],[],[],[]];
-      // let probability_weights = [0.325062, 0.398942, 0.325062 ];
-			// let two_step_exp_imp = [[],[],[]];
-			let normalised_prob = normalise_weights(probability_weights);
-			let number_of_confidence_intervals = probability_weights.length;
-
-      for (let i = 0; i < xgrid.length; i++) {
-        let y_samples = gaussian_confidence_intervals(dist.mean[i], dist.variance[i], 2) // Change the 1 at the end to get more points
-        let points_samples = y_samples.map((d, i) => ({x: xgrid[i], y: d}));
-        
-        for (let j=0; j <= number_of_confidence_intervals-1; j++) { // Iterate over the number of confidence intervals points
-          let points_xval = prev_points_gp_space.concat(points_samples[j]);
-          let exp_imp = get_expected_improvement_from_points(points_xval, subsampled_xgrid, kernel);
-          
-          let max_exp_imp = math.max(exp_imp);
-          
-          two_step_exp_imp[j].push(normalised_prob[j] * max_exp_imp);
-        }
-      }
-      
-      return two_step_exp_imp; 
-		}     
-		
-		function subsample_array(array, sampling_rate) {
-			let subsampled = [];
-			for (let i = 0; i < array.length; i = i+sampling_rate) {
-				subsampled.push(array[i]);
-			}
-			return subsampled;
+			// console.log(avg_ei);
 		}
 	
-    // ==============================================
-    // NEW CODE  
-    // ==============================================
-    let ei_plot_xgrid = subsample_array(xtilde, 2);
-    let one_step_exp_imp = get_expected_improvement_from_points(gp_space_points, ei_plot_xgrid, kernel);
+		// Calculate GP distribution for one-step points
+		let gp_space_points = scale_invert_points(plot_space_points, xscale, yscale);
+		let ei_plot_xgrid = subsample_array(xtilde, 2);
+		let dist_from_points = conditional_distribution(gp_space_points.map((d) => d.x),
+																										gp_space_points.map((d) => d.y),
+																										ei_plot_xgrid,
+																										kernel);
+
+		// Calculate one-step EI
+		let one_step_exp_imp = get_expected_improvement_from_points(gp_space_points, ei_plot_xgrid, kernel);
+
+		let one_step_array = one_step_exp_imp.map((d,i) => ({x: ei_plot_xgrid[i], expected_improvement: d}));
+
+		expectedImprovementOneStepGroup.selectAll(`.exp-imp-one-step`)
+			.data([one_step_array])
+			.enter()
+			.append('path')
+			.attr('class', `exp-imp-one-step`) // No dot here
+			.attr('d', d => expectedImprovementArea(d))
+			.attr('fill', stackColourOneStep[0])
+			.attr('stroke', 'transparent');
 
 
-	console.log(one_step_exp_imp);
+		let two_step_cumulative_points = []
 
-    // Get two step EIs and prepend one-step EI
+		// Draw Monte Carlo samples
+		loopMonteCarlo(0);
 
-    let two_step_exp_imp = get_expected_improvement_against_xvals(gp_space_points, ei_plot_xgrid);
-		
+		expectedImprovementGroup.selectAll(`.exp-imp-two-step`)
+			.data([two_step_cumulative_points])
+			.enter()
+			.append('path')
+			.attr('class', `exp-imp-two-step`) // No dot here
+			.attr('d', d => expectedImprovementArea(d))
+			// .attr('fill', stackColourOneStep[1])
+			.attr('stroke', 'black');
+											
+		// TODO: Draw 1-step EI curve
+		// TODO: Add culmulative 2-step onto 1-step
+		// TODO: Convert histogram of 2-step EI into curve
 
-    let exp_imp_objects = calculated_culmulative_exp_imp(one_step_exp_imp, two_step_exp_imp, ei_plot_xgrid);
-    
-    // Scale to the space of the plot
-    // let scaled_exp_imp_objects = exp_imp_objects.map((d) => ({x: xscale(d.x), y: d.y}));
-    // ==============================================
-    
-    // Group items
-    let grouped_stack_data = d3.group(exp_imp_objects, d => d.key);
-
-	// Plot the stacks in reverse order so lowest traces are on top
-    for (let n=5; n>=0; n--) { // TODO: Make upper limit dynamic depending on the number of confidence intervals
-      expectedImprovementGroup.selectAll(`.exp-imp-${n}`)
-        .data([grouped_stack_data.get(n)])//[all_stack_points[key_id]])
-        .enter()
-        .append('path')
-        .attr('class', `exp-imp-${n}`) // No dot here
-        // .attr('d', d => expectedImprovementLine(d))
-				.attr('d', d => expectedImprovementArea(d))
-				.attr('fill', stackColourOneStep[n])
-				.attr('stroke', 'transparent');
-		}
 	}
 
 	// Create candidate points to show potential Gaussian Process
@@ -631,36 +576,58 @@ function drawTwoStepEI() {
 				)
 				.attr('class', 'redEnvelope')
 				.attr('d', d => area(d))
-				.attr("clip-path","url(#theshold-clip3)");
+				.attr("clip-path","url(#theshold-clip4)");
 	}
 	
 	function update(points_arg) {
-  
-    // Update conditional dist
-    const dist = conditional_dist_with_confidence_intervals(points_arg.map((d) => xscale.invert(d.x)),
-                                          points_arg.map((d) => yscale.invert(d.y)),
-                                          xtilde,
-                                          kernel);
-    
-    // Draw model
-    modelMeanTwoStep.selectAll('.meanTwoStep')
-      .data([dist])
-      .join('path')
-      .attr('class', 'meanTwoStep')
-      .attr('d', d => modelLine(d));
-    
-    envelopeTwoStep.selectAll('.envelopeTwoStep')
-      .data([dist])
-      .join('path')
-      .attr('class', 'envelopeTwoStep')
-      .attr('d', d => area(d));
-    
-    envelope2TwoStep.selectAll('.envelope2TwoStep')
-      .data([dist])
-      .join('path')
-      .attr('class', 'envelope2TwoStep')
-			.attr('d', d => area2(d));
-  }
+	
+		// Update conditional dist
+		const dist = conditional_dist_with_confidence_intervals(points_arg.map((d) => xscale.invert(d.x)),
+											points_arg.map((d) => yscale.invert(d.y)),
+											xtilde,
+											kernel);
+		
+		// Draw model
+		modelMeanTwoStep.selectAll('.meanTwoStep')
+		.data([dist])
+		.join('path')
+		.attr('class', 'meanTwoStep')
+		.attr('d', d => modelLine(d));
+		
+		envelopeTwoStep.selectAll('.envelopeTwoStep')
+		.data([dist])
+		.join('path')
+		.attr('class', 'envelopeTwoStep')
+		.attr('d', d => area(d));
+		
+		envelope2TwoStep.selectAll('.envelope2TwoStep')
+		.data([dist])
+		.join('path')
+		.attr('class', 'envelope2TwoStep')
+				.attr('d', d => area2(d));
+
+		circles.selectAll(".two-step-circle")
+		.data(points_arg)
+		.join(
+			// Special handling for new elements only
+			enter => enter.append("circle")
+				.attr("r", 7)
+				.attr("opacity", 1),
+			// exit => exit  // DISABLE POINT FADE OUT - this does not apply to points seperately
+			// 	.attr("opacity", 1)
+			// 	.call(exit => exit.transition() // fade out old points
+			// 		.attr("opacity", 0)
+			// 		.duration(1000)
+			// 		.remove()
+			// 		)
+		)
+		// Applies to merged selection of new and old elements
+		.attr("cx", d => d.x)
+		.attr("cy", d => d.y)
+		.attr("class", "two-step-circle");
+
+			drawThreshold(points_arg);
+	}
   
   // Draw the maximum threshold and red envelope
   function drawThreshold(points_arg) {
@@ -676,26 +643,24 @@ function drawTwoStepEI() {
     let x = d3.least(points_arg, p => p.y).x;
     
     // drawExpectedImprovement(dist, yscale.invert(y));
-    
-		line.attr("y1", y)
-		.attr("y2", y)
-		.attr("x1", xscale.range()[0])
-		.attr("x2", xscale.range()[1]);
+
+	line.attr("y1", y)
+	.attr("y2", y)
+	.attr("x1", xscale.range()[0])
+	.attr("x2", xscale.range()[1]);
     
     // Disable dragging and turn points black
-    circles.selectAll("circle")
+    circles.selectAll(".two-step-circle")
       .data(points_arg)
       .join()
       .on('mousedown.drag', null)
-      .transition()
       .attr("fill", "black");
     
     // Color maximum point red
-    circles.selectAll("circle")
+    circles.selectAll(".two-step-circle")
       .data(points_arg)
       .join()
       .filter(d => d.y === y)
-      .transition()
       .attr("fill", "red");
     
     // Position red envelope by adjusting clipPath and redEvelope
@@ -709,7 +674,7 @@ function drawTwoStepEI() {
 			)
       .attr('class', 'redEnvelopeTwoStep')
       .attr('d', d => area(d))
-      .attr("clip-path","url(#theshold-clip-2-step)");
+      .attr("clip-path","url(#theshold-clip-4-step)");
     
 	}
 	
@@ -747,6 +712,9 @@ function drawTwoStepEI() {
 
 
 			} else {
+
+				drawExpectedImprovementMonteCarlo(points4);
+
 				// Set 2-step stack colours
 				for (let n=5; n>=1; n--) { // TODO: Make upper limit dynamic depending on the number of confidence intervals
 					expectedImprovementGroup.selectAll(`.exp-imp-${n}`)
@@ -769,11 +737,11 @@ function drawTwoStepEI() {
 					// .attr("stroke-dasharray", (3, 5))
 					// .attr("stroke-width", 2);
 
-				backgroundRect.on("mousemove", event => {
-					hlineMouseover(event);
-				})
+				// backgroundRect.on("mousemove", event => {
+				// 	hlineMouseover(event);
+				// })
 				redEnvelope.style("visibility", "hidden");
-				line.style("visibility", "hidden");
+				// line.style("visibility", "hidden");
 				hLine.style("visibility", "visible");
 				potentialCircles.style("visibility", "visible");
 				// envelopeTwoStep.style("visibility", "visible");
