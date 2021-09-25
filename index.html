@@ -58,11 +58,11 @@
 
 				<h2>A Problem</h2>
 				<p>
-					Imagine you're on the engineering design team for a Formula One car. The team lead decided that redesigning the vehicle’s side wing may improve its cornering speed. A new shape has been proposed, however, the length of the side-wing, which can vary within the regulation constraints of 5cm - 40cm, is yet to be decided. Your job is to find the length of the wing that gives optimal performance as measured by the top cornering speed the driver is able to achieve.
+					Imagine you're on the engineering design team for a Formula One car. The team lead decided that redesigning the vehicle’s side wing may improve its cornering speed. A new shape has been proposed, however, the length of the side-wing, which can vary within the regulation constraints of 5cm - 40cm, is yet to be decided. Your job is to find the length of the wing that gives optimal performance as measured by the cornering speed the driver is able to achieve.
 				</p>
 
 				<p>
-					The challenge is that it is both expensive and slow to test new wing sizes. Each wing size prototype takes around a week to manufacture, install on the vehicle and get tested by the driver. There are only a few weeks left until the next Grand Prix, however, so you have limited time to find the best design.
+					The challenge is: it is both expensive and slow to test new wing sizes. Each wing size prototype takes around a week to manufacture, install on the vehicle and get tested by the driver. There are only a few weeks left until the next Grand Prix, however, so you have limited time to find the best design.
 				</p>
 				<!-- !!Include something about hoping to automate the process as well. -->
 
@@ -70,7 +70,7 @@
 
 				<!-- <h3>Possible functions</h3> -->
 				<p>
-					This is a typical setting for Bayesian Optimization. In this scenario, we're trying to optimize an objective function \(f(x)\) - the vehicle's on track performance - as a function of the side-wing length \(x\). Unfortunately, we don't know what that function looks like: 
+					This is a typical setting for Bayesian Optimization. In this problem, we're trying to optimize an objective function \(f(x)\) - the vehicle's on track performance - as a function of the side-wing length \(x\). Unfortunately, we don't know what that function looks like: 
 				</p>
 
 				<!-- Posssible Functions Plot (inline) -->
@@ -81,7 +81,7 @@
 				</p>
 
 				<p>
-					For these reasons, we need an efficient testing strategy. The tools of Bayesian Optimization are designed for situations like this.
+					For these reasons, we need an efficient testing strategy. The tools of Bayesian Optimization are designed to make optimal use of each of the tests in situations like this.
 				</p>
 
 		        <p>
@@ -115,15 +115,16 @@
 				<h2>Using a model</h2>
 
 				<p>
-					There are multiple ways to approach picking which points to evaluate. We could try naively picking the points at random, or divide the design-space uniformly and perform a grid-search. However, both of these approaches would be inefficient - they ignore the feedback which we sequentially receive from each experiment.
+					There are multiple ways to approach picking which points to evaluate. We could try naively picking the points at random, or divide the design-space uniformly into a grid. However, both of these approaches would be suboptimal - they ignore the feedback which we sequentially receive from each experiment.
 				</p>
 
 				<p>
 					To pick the next point, we want to utilise the information about which previously evaluated inputs turned out to be good, and which ones turned out to be bad. We want to focus our search on the most promising areas of the design space.
 				</p>
 
+				<!-- TODO: Mention that the model is data dependent-->
 				<p>
-					Instead of just picking side-wing lengths blindly, one of the central ideas of Bayesian optimization is to use a <strong>model for the data</strong> to inform that choice. This would allow us to predict what vehicle's cornering speed - our objective - might be for wing lengths we haven't tested yet. This can give us a proxy for what the most promising regions to explore might be.
+					Instead of just picking side-wing lengths blindly, one of the central ideas of Bayesian optimization is to use a <strong>model</strong> for the data to inform that choice. This would allow us to make predictions for the vehicle's cornering speed — our objective — for wing lengths we haven't tested yet. This can give us a proxy for what the most promising regions to explore might be.
 				</p>
 
 				<p>
@@ -173,7 +174,7 @@
 					<div id="explore-exploit-show-true"></div>
 					<div class="mt7 mb4">
 						<p>
-							While doing so, we are ignoring other unexplored parts of the search-space where an even better design is located. By applying this strategy repeatedly, we would only ever explore the one local optimum we've found so far, while ignoring a better optimum.
+							While doing so, we are ignoring other unexplored parts of the search-space where an even better design could be located. By applying this strategy repeatedly, we would only ever explore the one local optimum we've found so far. We'd never find the better optimum in the unexplored region.
 						</p>
 						<!-- TODO: Highlight the word better optimum, and show a line on the chart -->
 					</div>
@@ -189,7 +190,7 @@
 				<div class="mt6 mb4">
 			    	<!-- <h3>The need for a <i>probabilistic</i> model</h3> -->
 					<p>
-						As presented, there is a key missing component to our model that would allow us to explore effectively. Intuitively, we want to explore in areas where we believe there is a <strong>high probability</strong> that the design will be good. This can happen both in places where the model's mean prediction is high, or where the model's mean prediction is low, but the uncertainty in that prediction is high. Even though the expected value at a given point might be low, if the uncertainty is high enough, the probability of that point being by far the best one we've seen so far might actually be relatively large.
+						As presented, there is a key missing component to our model that would allow us to explore effectively, however. Intuitively, we want to explore in areas where we believe there is a <strong>high probability</strong> that the design could be good. This can happen both in places where the model's mean prediction is high, or where the model's mean prediction is low, but the uncertainty in that prediction is high. Even though the <i>expected</i> value at a given point might be low, if we are uncertain enough, the probability of that point being by far the best one we've seen so far might actually be relatively large.
 					</p>
 				</div>
 		    	<div id="explore-exploit-text3">
@@ -199,11 +200,13 @@
 					</p>
 					<!-- TODO: I don't stand by the above statement (2nd to last sentence). -->
 					<p>
-						Hence, a key component of Bayesian Optimization is the use of a <strong>probabilistic</strong> model. Having access to the predictive distribution from such a model allows us to obtain the probability of each outcome, and consequently helps us identify good regions to explore.
+						Hence, a key component of Bayesian Optimization is the use of a <strong>probabilistic</strong> model. A probabilistic model simply keeps track of all the possible objective functions, and weights them according to how likely they are given the data seen so far. Predictions from such a model tell us not only the most likely outcome for a given input, but also the probability of each other outcome as well, and consequently helps us identify good regions to explore.
 					</p>
 					<!-- The below sentence doesn't necessarily fit in there. It would go together with the whole paragraph on probabilistic models.-->
 					<p>
-						Gaussian Processes are one widely popular class of model for Bayesian Optimization of functions over continuous domains, like the one in this example. The formula for obtain the predictive distribution by marginalising out every possible hypothesis for the true function is analytical, and hence Gaussian Processes are great for obtaining reliable uncertainty estimates.</p>
+						Gaussian Processes are one widely popular class of model for Bayesian Optimization of functions over <i>continuous</i> domains, like the one in this example. The formula for obtain the predictive distribution by marginalising out every possible hypothesis for the true function is analytical, and hence Gaussian Processes are great for obtaining reliable uncertainty estimates.
+					</p>
+					<!-- TODO: is the 2nd sentence above really necessary-->
 					<p>
 						To see what difference having the uncertainty estimates makes, give the optimization with a Gaussian Process model a go:
 					</p>
@@ -228,47 +231,46 @@
 			<div class="mw5 mw7-ns center mv4 pa3 ph5-ns">
 				<h2>Decision Rule</h2>
 				<p>
-					So far, we discussed the tension between exploration and exploitation and the motivation for using a probabilistic model as a key component of Bayesian Optimization to help balance the two. Since Bayesian Optimization is an <i>automatic</i> approach to making design choices, however, we're still clearly missing one component: a decision rule for picking the next point.
+					So far, we discussed the tension between exploration and exploitation and the motivation for using a probabilistic model as a key component in Bayesian Optimization in order to help balance the two. Since Bayesian Optimization is an <i>automatic</i> approach to designing experiments, however, we're still clearly missing one component: a decision rule for selecting the next point.
 				</p>
 				<h4>Acquisition Functions</h4>
 				<!-- TODO: Good place for a: to find the maximum you need to find the maximum joke -->
 				<p>
-					Typically, to guide experiment selection in Bayesian Optimization, one would define an acquisition function \(\alpha(x)\). Loosely speaking, the acquisition function characterises how "good" a particular point \(x\) is expected to be as the next input. The next \(x\) can then automatically be chosen as whichever one maximises the acquisition function: \(x_{\text{next}}=\arg \max_x \alpha(x)\).
+					Typically, to guide experiment selection in Bayesian Optimization, one would define an <strong>acquisition function</strong> \(\alpha(x)\). In loose terms, the acquisition function characterises how "good" a particular point \(x\) is as the next point to try out, i.e. how valuable it will be to observe the true objective in response to this input. If we can formulate such an acquisition function, the next \(x\) could then automatically be chosen as the input that maximises the acquisition function: \(x_{\text{next}}=\underset{x}{\operatorname{argmax}} \alpha(x)\). We could turn picking the next experiment into an optimization problem.
 				</p>
 				<p>
-					As an example, an acquisition function can express the naive selection rule of "picking the point with the best expected cornering speed" (this is what we did before). We can define an acquisition function \(\alpha(x)\) that is equal to the expected predicted objective: \(\alpha(x) = \mathbb{E}_{y|x, \mathcal{D}}\left[y\right]\). By maximising this acquisition function, we would be picking the point with the highest predicted objective just as we did before:
+					This might seem a bit ironic: in order to solve an optimization problem — find \(x^*=\underset{x}{\operatorname{argmax}} f(x)\)) — we introduced another one — maximise the acquisition function. The idea is that the acquisition function is (hopefully) much less expensive to evaluate than the true objective.
+				</p>
+				<p>
+					As an example, an acquisition function can express the naive selection rule of "picking the point with the best expected cornering speed" - the naive strategy we suggested before. We can define an acquisition function \(\alpha(x)\) that is equal to the expected predicted objective: \(\alpha(x) = \mathbb{E}_{y|x, \mathcal{D}}\left[y\right]\). By maximising this acquisition function, we would be picking the point with the highest predicted objective just as before:
 				</p>
 				<!-- TODO: Plot for simple acquisition function plot - alpha(x) = the predictive mean -->
 				<p><strong>TODO:</strong> Plot showing the simple acquisition function</p>
 
 				<p>
-					We've seen the many short-comings of this acquisition, which leads to the question: what is the right acquisition function? Starting from our goal of finding the best side-wing design, can we come up with an acquisition function that would lead us to the optimal rule for choosing the next length \(x\) to test? Let's try and do just that.
+					We've seen the many short-comings of this acquisition, which leads to the question: what is the right acquisition function? Starting from the goal of finding the best side-wing design, can we come up with an acquisition function that would lead us to the optimal rule for choosing the next length \(x\) to test? Let's try and do just that.
 				</p>
 				<p>
 					<!-- TODO: Add a footnote saying that more general assumptions are possible (noise e.t.c.) -->
-					We start by concretely formulating our problem. During the experimentation phase, we get to sequentially select \(N\) points \(x_i \in \mathbb{R}\), and observe the corresponding output \(y_i=f(x_i) \). At the end, after these trials are complete, we want to return a final recommendation for the optimal side-wing length \(x^*\). In our problem, we assume .. design \(x^*\) from the set of wing lengths we've actually tested in the lab. On the race day, we require a tested design we have utmost confidence in. 
+					We can start by concretely formulating our problem. During the experimentation phase, we get to sequentially select \(N\) inputs \(x_i \in \mathbb{R}\), and observe the corresponding output \(y_i=f(x_i) \). At the end, after these trials are complete, we want to return a final recommendation for the optimal side-wing length \(x^*\). We'll assume that we have to recommend a design \(x^*\) from the set of wing lengths that we've actually tested in the lab <a href="#footnote-1">[1]</a>. On the race day, we require a tested design we have utmost confidence in. 
 				</p>
-				<!-- <p>
-					 TODO: this quick note 
-					<i style="opacity: 0.7; font-size: 11pt;">(It's possible to formulate the optimization problem in other ways, including observations with noise, returning a point \(x^*\) that hasn't been tested, or having a non-fixed number of steps left.) </i>
-				</p> -->
 				<p>
-					Having defined our problem setup, let's also define our goal. We can define a utility function \(U(x^*)\) that characterises how good our final design is. Let's assume — for this problem — it is proportional to the achieved cornering speed \(y^* = f(x^*)\). In other words:
+					Having defined our problem setup, let's also be precise about our goal. We can define a utility function \(U(x^*)\) final design is. Let's assume — for this problem — it is proportional to the achieved cornering speed \(y^* = f(x^*)\). In other words:
 					\[U(x^*) = y^*\]
-					To maximise this utility, we'd naturally want to report the best design we've found during our experimentation: \(y^* = \max \left(y_1, \dots, y_N\right)\).
-				</p>
+					To maximise this utility, we'd naturally want to report the best design we've found during our experimentation:
+					\[x^*_{\text{final}} = x_{i^*}\quad\text{ where }i^*=\underset{i}{\operatorname{argmax}} y_i\]
 				<!-- TODO: add color to equations -->
-				<p>
-					To arrive at a general acquisition function, it helps to first imagine that we're at the end of the design period; we only have time to test one last prototype before we must pick a design to be manufactured for the race. So far, we have tried side-wing lengths \((x_1, /dots, x_{N-1})\), and observed corresponding speeds \((y_1, \dots, y_{N-1})\). Given this, the <i>extra</i> utility we get from evaluating the last point at \(x_N\), and observing a cornering speed \(y_N\) is:
+					To arrive at a general acquisition function, it helps to first consider the case when we're almost at the end of the design period; we only have time to test one last prototype before we must pick a design to be manufactured for the race. So far, we have tried side-wing lengths \((x_1, \dots, x_{N-1})\) and observed corresponding speeds \((y_1, \dots, y_{N-1})\). Given these, the <i>extra</i> utility we would get from evaluating the last point at \(x_N\), and hypothetically observing a cornering speed \(y_N\) is:
 				</p>
 				\[\begin{align}
 				\lambda &=\begin{cases}
-					y_N - \max\left(y_1, \dots, y_{N-1}\right) & \text{if } y_N > \max\left(y_1, \dots, y_{N-1}\right) \\[.5em]
-					0 & \text{if } y_N \leq \max\left(y_1, \dots, y_{N-1}\right)
+					\class{dark-pink}{y_N - \max\left(y_1, \dots, y_{N-1}\right)} & \class{dark-pink}{\text{if } y_N > \max\left(y_1, \dots, y_{N-1}\right)} \\[.5em]
+					\class{blue}{0} & \class{blue}{\text{if } y_N \leq \max\left(y_1, \dots, y_{N-1}\right)}
 				\end{cases} \\
-				&=\max(y_N - \underbrace{\max\left(y_1, \dots, y_{N-1}\right)}_{\tau}, 0)
+				&=\max(\class{dark-pink}{y_N - \underbrace{\max\left(y_1, \dots, y_{N-1}\right)}_{\tau}}, \class{blue}{0})
 				\end{align}
 				\]
+				Let's break this down. <span class="dark-pink">If the output \(y_N\) observed with the last tried design \(x_N\) is better than the best design seen in the \(N - 1\) previous designs</span>
 				<!-- < start going side-by side again> -->
 				<p>
 					At the last step, we want to pick \(x_N\) to maximise this increase in utility. Of course, we don't know what the cornering speed \(y_N\) corresponding to the design length \(x_N\) is going to be for sure, so we can maximise the <strong>expected improvement</strong> of the utility: 
@@ -280,6 +282,13 @@
 					<strong>TODO</strong>...
 					So, in practice, a good acquisition function has to balance what's desirable from a theoretical point of view, with what's computationally tractable..
 				</p>
+			</div>
+		</div>
+		<div class="cf">
+		<!-- FOOTNOTES -->
+			<div class="mw5 mw7-ns center mv4 pa3 ph5-ns">
+		    	<h2 style="color:grey">Footnotes</h2>
+				<p id="footnote-1"><strong class="gold">[1]</strong> It's possible to formulate the optimization problem in other ways, including observations with noise, returning a point \(x^*\) that hasn't been tested, or having a non-fixed number of steps left.</p>
 			</div>
 		</div>
 
