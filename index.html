@@ -269,9 +269,11 @@
 					We've seen the short-comings of this acquisition, which leads to the question: what is the right acquisition function? Starting from the goal of finding the best side-wing design, can we come up with an acquisition function that would lead us to the optimal rule for choosing the next length \(x\) to test? Let's try and do just that.
 				</p>
 				<p>
-					<!-- TODO: Add a footnote saying that more general assumptions are possible (noise e.t.c.) -->
-					We can start by concretely formulating our problem. During the experimentation phase, we get to sequentially select \(N\) inputs \(x_i \in \mathbb{R}\), and observe the corresponding output \(y_i=f(x_i) \). At the end, after these trials are complete, we want to return a final recommendation for the optimal side-wing length \(x^*\). We'll assume that we have to recommend a design \(x^*\) from the set of wing lengths that we've actually tested in the lab <a href="#footnote-1">[1]</a>. On the race day, we require a tested design we have utmost confidence in. 
+					We can start by concretely formulating our problem. During the experimentation phase, we get to sequentially select \(N\) inputs \(x_i \in \mathbb{R}\), and observe the corresponding output \(y_i=f(x_i) \). At the end, after these trials are complete, we want to return a final recommendation for the optimal side-wing length \(x^*\). We'll assume that we have to recommend a design \(x^*\) from the set of wing lengths that we've actually tested in the lab <a class="gold link dim collapsible-button footnote-button" href="#0"></a>. On the race day, we require a tested design we have utmost confidence in. 
 				</p>
+				<div class="collapsible-content footnote-content ph3 center gold bl bw2">
+					It's possible to formulate the optimization problem in other ways, including observations with noise, returning a point \(x^*\) that hasn't been tested, or having a non-fixed number of steps left.
+				</div>
 				<p>
 					Having defined our problem setup, let's also be precise about our goal. We can define a utility function \(U(x^*)\) final design is. Let's assume — for this problem — it is proportional to the achieved cornering speed \(y^* = f(x^*)\). In other words:
 					\[U(x^*) = y^*\]
@@ -348,13 +350,6 @@
 				<p>
 					 (i.e. \(x_N = \underset{x_N'}{\operatorname{argmax}}\mathbb{E}_{y_N'|x_N', \mathcal{D}} [\max(y_N - \class{dark-green}{\tau}, 0)]\) ). 
 				</p>
-			</div>
-		</div>
-		<div class="cf">
-		<!-- FOOTNOTES -->
-			<div class="mw5 mw7-ns center mv4 pa3 ph5-ns">
-		    	<h2 style="color:grey">Footnotes</h2>
-				<p id="footnote-1"><strong class="gold">[1]</strong> It's possible to formulate the optimization problem in other ways, including observations with noise, returning a point \(x^*\) that hasn't been tested, or having a non-fixed number of steps left.</p>
 			</div>
 		</div>
 
@@ -456,6 +451,7 @@
 	<script src="./js-refactored/chart-gp-sandox.js"></script>		
 	<script src="./js-refactored/chart-two-step.js"></script>
 	<script src="./js-refactored/chart-two-step-monte-carlo.js"></script>
+	<script src="./js-refactored/collapsible-footnote.js"></script>
         
 </article>
 
