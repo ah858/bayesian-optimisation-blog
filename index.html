@@ -278,28 +278,32 @@
 					Having defined our problem setup, let's also be precise about our goal. We can define a utility function \(U(x^*)\) final design is. Let's assume — for this problem — it is proportional to the achieved cornering speed \(y^* = f(x^*)\). In other words:
 					\[U(x^*) = y^*\]
 					To maximise this utility, we'd naturally want to report the best design we've found during our experimentation:
-					\[x^*_{\text{final}} = x_{i^*}\quad\text{ where }i^*=\underset{i}{\operatorname{argmax}} y_i\]
+					\[x^*_{\text{final}} = x_{\class{light-red}{i^*}}\quad\text{ where }\class{light-red}{i^*}=\underset{i}{\operatorname{argmax}} y_i\]
 				<!-- TODO: add color to equations -->
 					To arrive at a general acquisition function, it helps to first consider the case when we're almost at the end of the design period; we only have time to test one last prototype before we must pick a design to be manufactured for the race. So far, we have tried side-wing lengths \((x_1, \dots, x_{N-1})\) and observed corresponding speeds \((y_1, \dots, y_{N-1})\). Given these, we can define the <i>extra</i> utility we would get from evaluating the last point at \(x_N\), and (hypothetically) observing a cornering speed \(y_N\):
 				</p>
 				\[\begin{align}
-				\lambda &=\begin{cases}
-					y_N - \max\left(y_1, \dots, y_{N-1}\right) & \class{dark-pink}{\text{if } y_N > \max\left(y_1, \dots, y_{N-1}\right)} \\[.5em]
-					{0} & \class{blue}{\text{if } y_N \leq \max\left(y_1, \dots, y_{N-1}\right)}
+				\lambda_N &=\begin{cases}
+					\class{light-purple}{y_N - \max\left(y_1, \dots, y_{N-1}\right)} & \class{dark-pink}{\text{if } y_N > \max\left(y_1, \dots, y_{N-1}\right)} \\[.5em]
+					\class{black}{0} & \class{blue}{\text{if } y_N \leq \max\left(y_1, \dots, y_{N-1}\right)}
 				\end{cases} \\
-				&=\max(\class{dark-pink}{y_N - \underbrace{\max\left(y_1, \dots, y_{N-1}\right)}_{\class{dark-green}{\tau}}}, \class{blue}{0})
+				&=\max(\class{light-purple}{y_N - \max\left(y_1, \dots, y_{N-1}\right)}, \class{black}{0})
 				\end{align}
 				\]
 				<p>
-					Let's break this down. <span class="dark-pink">If the output \(y_N\) observed with the last tried design \(x_N\) is better than the best design seen in the \(N - 1\) previous attempts, \(x_N\) will be returned as the optimal design. The extra gain in utility of the final design will be \(\class{dark-pink}{ y_N - \max (y_1, \dots, y_{N-1})}\). </span> <span class="blue">If the output \(y_N\) is not better than that of previous designs, the extra utility will be \(0\), as one of the previous \(N-1\) designs will be returned.</span>
+					Let's break this down. <span class="dark-pink">If the output \(y_N\) is <strong>better</strong> than the best design seen in the previous \(N - 1\) steps, \(x_N\) will be returned as the optimal design.</span> The extra gain in utility of the final design will be \(\class{light-purple}{ y_N - \max (y_1, \dots, y_{N-1})}\). </span> <span class="blue">If the output \(y_N\) is not better than that of previous designs, the extra utility will be \(0\), as one of the previous \(N-1\) designs will be returned.</span>
 				</p>
 				<!-- < start going side-by side again> -->
 				<p>
-					We want to pick \(x_N\) as to maximise this increase in utility. Of course, a-priori, we don't know what the cornering speed \(y_N\) corresponding to the design length \(x_N\) is going to be. Instead, we can maximise the <strong>expected improvement</strong> in the utility: 
+					We want to pick \(x_N\) as to maximise this increase in utility. Of course, <i>a-priori</i>, we don't know what the cornering speed \(y_N\) corresponding to a given design length \(x_N\) is going to be. Instead, we can maximise the <strong>expected improvement</strong> in the utility: 
 				</p>
-				\[\mathbb{E}_{y_N|x_N, \mathcal{D}} [\lambda] = \mathbb{E}_{y_N|x_N, \mathcal{D}} [\max(y_N - \class{dark-green}{\tau}, 0)]\]
+				\[\mathbb{E}_{y_N|x_N, \mathcal{D}_N} [\lambda_N] = \mathbb{E}_{y_N|x_N, \mathcal{D}_N} [\max(y_N - \max\left(y_1, \dots, y_{N-1}\right), 0)]\]
 				<p>
-					That is, we want to maximise the extra utility from observing \((x_N, y_N)\) averaged over the probability density of obtaining a particular output \(y_N\) in response to input \(x_N\). The formula for the expected improvement above then becomes our <i>optimal</i> acquisition function in the \(N\)-th step. We visualize this <strong>1-step</strong> expected improvement below:
+					That is, we want to maximise the extra utility from observing \((x_N, y_N)\) averaged over the probability density of obtaining a particular output \(y_N\) in response to input \(x_N\). The formula for the expected improvement above then becomes our <i>optimal</i> acquisition function in the \(N\)-th step:
+					\[\alpha_N(x_N)=\mathbb{E}_{y_N|x_N, \mathcal{D}_N} [\lambda_N]\]
+				</p>
+				<p>
+					We visualize this <strong>1-step</strong> expected improvement below:
 				</p>
 
 				<p><strong>TODO:</strong> 1-step expected improvement visualisation</p>
