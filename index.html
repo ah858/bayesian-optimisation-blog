@@ -291,7 +291,7 @@
 				\end{align}
 				\]
 				<p>
-					Let's break this down. <span class="dark-pink">If the output \(y_N\) is <strong>better</strong> than the best design seen in the previous \(N - 1\) steps, \(x_N\) will be returned as the optimal design.</span> The extra gain in utility of the final design will be \(\class{light-purple}{ y_N - \max (y_1, \dots, y_{N-1})}\). </span> <span class="blue">If the output \(y_N\) is not better than that of previous designs, the extra utility will be \(0\), as one of the previous \(N-1\) designs will be returned.</span>
+					Let's break this down. <span class="dark-pink">If the output \(y_N\) is <strong>better</strong> than the best design seen in the previous \(N - 1\) steps, \(x_N\) will be returned as the optimal design.</span> The extra gain in utility of the final design will be \(\class{light-purple}{ y_N - \max (y_1, \dots, y_{N-1})}\). </span> <span class="blue">If the output \(y_N\) is not better than that of previous designs, the extra utility will be \(\class{black}{0}\), as one of the previous \(N-1\) designs will be returned.</span>
 				</p>
 				<!-- < start going side-by side again> -->
 				<p>
@@ -308,33 +308,46 @@
 
 				<p><strong>TODO:</strong> 1-step expected improvement visualisation</p>
 				<p>
-					This acquisition function is also relatively easy to compute. We just need to take the expectation over a \(1\)-dimensional random variable \(y_N\). We can either use <a href="https://en.wikipedia.org/wiki/Monte_Carlo_method#Overview" class="link">Monte-Carlo sampling</a>, or in the case where the predictive distribution is a Gaussian, a simple <a class="link">exact formula</a> exists.
+					This acquisition function is also relatively easy to compute. We just need to take the expectation with respect to \(y_N\) conditioned on the data we've seen so far. We can either use <a href="https://en.wikipedia.org/wiki/Monte_Carlo_method#Overview" class="link">Monte-Carlo sampling</a>, or in the case where the predictive distribution is a Gaussian, a simple <a class="link">exact formula</a> exists <a class="gold link dim collapsible-button footnote-button" href="#0"></a>.
 				</p>
-				<strong>TODO: </strong>Citation for exact formula above
+				<div class="collapsible-content footnote-content ph3 center gold bl bw2">
+					If the predictive distribution is a Gaussian – <span class="gray">\(p(y_N|x_N, \mathcal{D}_N)=\mathcal{N}(y_N; \mu, \sigma)\)</span> – then the 1-step expected improvement is:
+
+					<span class="gray">
+					\[\max(\mu - y_{max}, 0)+\sigma \varphi\left(\frac{\mu - y_{max}}{\sigma}\right)-\left|\mu - y_{max}\right| \Phi\left(\frac{\mu - y_{max}}{\sigma}\right)\]
+					</span>
+					See <a class="link light-blue dim" href="https://arxiv.org/pdf/1807.02811.pdf">"A Tutorial on Bayesian Optimization" by Peter I. Frazier</a> for details.
+				</div>
 
 				<p>
-					What's then the optimal point to pick when we have \(2\) steps left then? In a similar way, we can think about the expected extra utility from picking a particular input \(x_{N-1}\) and observing a particular output \(y_{N-1}\). We'll assume that we then pick the last input \(x_N\) optimally according to the above formula. Then, the expected increase in utility is the sum of <i>the improvement seen in step \(N-1\)</i> and <i>expected improvement seen in step \(N\) afterwards</i>:
+					What's then the optimal point to pick when we have \(2\) steps left then? In a similar way, we can think about the expected extra utility in the steps <i>following</i> hypothetically picking a particular input \(x_{N-1}\) and observing a some output \(y_{N-1}\). The contributions to this extra utility will come from two places. Firstly, from the immediate improvement from the output observed at step \(N-1\):
+				</p>
+				\[\lambda_{N-1}=\max(y_{N - 1} - \max (y_1, \dots, y_{N-2}), 0)\]
+				<p>
+					And from the improvement from the <strong>expected</strong> improvement at step \(N\) (expected, since the outcome \(y_N\) is unknown): \(\mathbb{E}_{y_{N} \mid x_{N}, \mathcal{D}_{N}}\left[\lambda_{N}\right]\)
+				</p>
+				<p>
+					We'll assume that we then <span class="red"> pick the last input \(x_N\) optimally</span>, i.e. by maximising this expected improvement in the last step. Then, the total expected improvement from step \(N-1\) onwards becomes:
 				</p>
 				\[
-				\displaylines{
-					{\lambda_{N-1}}=\underbrace{\max(y_{N - 1} - \max (y_1, \dots, y_{N-2}), 0)}_{\text{improvement in step }N-1} + \underbrace{\mathbb{E}_{y_N|\class{dark-red}{x^*_N}, \mathcal{D}} [\max(y_N - \max (y_1, \dots, y_{N-2}), 0)}_{\text{expected improvement in step }N}]\\
-					\text{where: } \class{dark-red}{x^*_N = \underset{x_N'}{\operatorname{argmax}}\mathbb{E}_{y_N'|x_N', \mathcal{D}}}
-				}
+					\underbrace{\lambda_{N-1}}_{\text{improvement in step }N-1} + \underbrace{\class{red}{\max_{x_N'}} \mathbb{E}_{y_N|\class{red}{x_N'}, \mathcal{D}_N} \left[\lambda_N\right]}_{\text{(optimal) expected improvement in step }N} \\
 				\]
 				<p>
 					Of course, at the point of picking \(x_{N-1}\), we again do not know the value of \(y_{N-1}\). To obtain the best possible outcome in expectation, we average out all the possibilities to arrive at the optimal acquistion function at step \(N-1\):
-					\[
-						\alpha_{N-1}(x_{N-1})=\mathbb{E}_{y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}}\left[\class{purple}{\lambda_{N-1}} \right]\\
-					\]
-					\[
-					\begin{align}
-						\alpha_{N-1}(x_{N-1})=\mathbb{E}_{y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}}\Big[&\max(y_{N - 1} - \max (y_1, \dots, y_{N-2}), 0)\\
-							&+ \mathbb{E}_{y_N|{\class{red}{x^*_N}}, \mathcal{D}} [\max(y_N - \max (y_1, \dots, y_{N-2}), 0)\Big]
-					\end{align}
-					\]
 				</p>
+					\[
+				\begin{align}
+					\alpha_{N-1}(x_{N-1})=&\mathbb{E}_{y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}}\left[\lambda_{N-1} + {\max_{x_N'}}\ \mathbb{E}_{y_N|{x_N'}, \mathcal{D}_N} \left[\lambda_N\right] \right]\\
+					=& \class{green}{\mathbb{E}_{y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}} \left[ \lambda_{N-1}\right]} + \class{blue}{\mathbb{E}_{y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}}\left[\max_{x_N'} \mathbb{E}_{y_N|{x_N'}, \mathcal{D}_N} \left[\lambda_N \right]\right]}
+				\end{align}
+					\]
+				<a class="collapsible-button light-blue link dim bl bw2 ph3" href="#0">Math Legend</a>
+				<div class="collapsible-content light-blue bl bw2 ph3">
+					\(\lambda_i = \) - the improvement in the maximimum output at step \(i\)
+					\(\lambda_{N-1} = \max \left(y_{N-1}-\max \left(y_{1}, \ldots, y_{N-2}\right), 0\right)\)
+				</div>
 				<p>
-					Again, we arrived at an acqusition function that will give us the optimal decision when we have \(2\) steps left. This expression naturally decomposes into the sum of the immediate expected improvement, and the expected improvement in the next step. Hence, by optimizing it we are both trying to pick a point that is likely to be good, but also likely to set us up for the last point chosen to be good.
+					Again, we arrived at an acqusition function that will give us the optimal decision when we have \(2\) steps left. This expression naturally decomposes into the sum of the <span class="green">immediate (1-step) expected improvement</span>, and the <span class="blue">expectation of the expected improvement in the next step</span>. Hence, by optimizing it we are both trying to pick a point that is likely to be good, but also likely to set us up for the last point chosen to be good.
 				</p>
 				<p>
 					<strong>TODO:</strong> Put the 2-step EI plot here
