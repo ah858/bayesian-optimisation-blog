@@ -313,14 +313,16 @@
 				<div class="collapsible-content footnote-content ph3 center gold bl bw2">
 					If the predictive distribution is a Gaussian – <span class="gray">\(p(y_N|x_N, \mathcal{D}_N)=\mathcal{N}(y_N; \mu, \sigma)\)</span> – then the 1-step expected improvement is:
 
-					<span class="gray">
+					<div class="gray scrollable-mathjax">
 					\[\max(\mu - y_{max}, 0)+\sigma \varphi\left(\frac{\mu - y_{max}}{\sigma}\right)-\left|\mu - y_{max}\right| \Phi\left(\frac{\mu - y_{max}}{\sigma}\right)\]
-					</span>
+					</div>
+					where \(\varphi(\cdot)\) is the standard normal probability density function and \(\Phi(\cdot)\) is the respective cumulative distribution function. 
+
 					See <a class="link light-blue dim" href="https://arxiv.org/pdf/1807.02811.pdf">"A Tutorial on Bayesian Optimization" by Peter I. Frazier</a> for details.
 				</div>
 
 				<p>
-					What's then the optimal point to pick when we have \(2\) steps left then? In a similar way, we can think about the expected extra utility in the steps <i>following</i> hypothetically picking a particular input \(x_{N-1}\) and observing a some output \(y_{N-1}\). The contributions to this extra utility will come from two places. Firstly, from the immediate improvement from the output observed at step \(N-1\):
+					What's then the optimal point to pick when there are \(2\) steps left then? In a similar way, we can think about the expected extra utility in the steps <i>following</i> hypothetically picking a particular input \(x_{N-1}\) and observing a some output \(y_{N-1}\). The contributions to this extra utility will come from two places. Firstly, from the immediate improvement from the output observed at step \(N-1\):
 				</p>
 				\[\lambda_{N-1}=\max(y_{N - 1} - \max (y_1, \dots, y_{N-2}), 0)\]
 				<p>
@@ -330,7 +332,7 @@
 					We'll assume that we then <span class="red"> pick the last input \(x_N\) optimally</span>, i.e. by maximising this expected improvement in the last step. Then, the total expected improvement from step \(N-1\) onwards becomes:
 				</p>
 				\[
-					\underbrace{\lambda_{N-1}}_{\text{improvement in step }N-1} + \underbrace{\class{red}{\max_{x_N'}} \mathbb{E}_{y_N|\class{red}{x_N'}, \mathcal{D}_N} \left[\lambda_N\right]}_{\text{(optimal) expected improvement in step }N} \\
+					\underbrace{\lambda_{N-1}}_{\text{improvement in step }N-1} + \underbrace{\class{red}{\max_{x_N'}} \overbrace{\mathbb{E}_{y_N|\class{red}{x_N'}, \mathcal{D}_N} \left[\lambda_N\right]}^{\text{(1-step) expected improvement in step }N}}_{\text{optimal expected improvement in step }N} \\
 				\]
 				<p>
 					Of course, at the point of picking \(x_{N-1}\), we again do not know the value of \(y_{N-1}\). To obtain the best possible outcome in expectation, we average out all the possibilities to arrive at the optimal acquistion function at step \(N-1\):
@@ -343,18 +345,45 @@
 					\]
 				<a class="collapsible-button light-blue link dim bl bw2 ph3" href="#0">Math Legend</a>
 				<div class="collapsible-content light-blue bl bw2 ph3">
-					\(\lambda_i = \) - the improvement in the maximimum output at step \(i\)
-					\(\lambda_{N-1} = \max \left(y_{N-1}-\max \left(y_{1}, \ldots, y_{N-2}\right), 0\right)\)
+					<p class="gray f6">Notation is ready to forget on a first read, so here are some helpers:</p>
+					<ul class="list pl0">
+						<li>
+							\(\class{blue}{\lambda_i}\) - improvement in the maximimum observed objective at step \(i\): \(\max \left(y_{i}-\max \left(y_{1}, \ldots, y_{i-1}\right), 0\right)\)
+						</li>
+						<li>
+							\(\class{blue}{\mathbb{E}_{y_{i} \mid x_{i}, \mathcal{D}_{i}}\left[\cdot\right]}\) - expectation with respect to the predicted output \(y_{i}\) at input \(x_{i}\) conditioned on all the data observed at step \(i\).
+						</li>
+						<li>
+							\(\class{blue}{\mathcal{D}_i}\) - data observed at step \(i\): \(\big((x_1, y_1), \dots, (x_{i-1}, y_{i-1})\big)\)
+						</li>
+					</ul>
 				</div>
 				<p>
-					Again, we arrived at an acqusition function that will give us the optimal decision when we have \(2\) steps left. This expression naturally decomposes into the sum of the <span class="green">immediate (1-step) expected improvement</span>, and the <span class="blue">expectation of the expected improvement in the next step</span>. Hence, by optimizing it we are both trying to pick a point that is likely to be good, but also likely to set us up for the last point chosen to be good.
+					Again, we arrived at an acqusition function that will give us the optimal decision when there are \(2\) steps remaining. This expression naturally decomposes into the sum of the <span class="green">immediate (1-step) expected improvement</span>, and the <span class="blue">expectation of the expected improvement in the next step</span>. By optimizing the <span class="green">first term</span>, we are trying to pick a point that is likely to improve the most upon the current best. By optimizing the <span class="blue">second term</span>, we are picking a point that will provide most useful information about the function to make the largest possible improvement in the next step. The \(2\)-step expected improvement balances the first <i>myopic</i> goal with the second far-sighted one.
 				</p>
 				<p>
 					<strong>TODO:</strong> Put the 2-step EI plot here
 				</p>
 				<p>
-					This acqusition is, however, already strikingly harder to compute numerically. No analytical solution is known even when the model's predictions are of a simple form such as a Gaussian.
+					This acqusition is, however, already strikingly harder to compute numerically. No analytical solution is known even when the model's predictions are of a simple form (such as a Gaussian).
 				</p>
+				<p>
+					Let's take a closer look into why this is the case. Especially, the <span class="blue">second term</span> is of interest – that's the one posing a challenge:
+				</p>
+				\[\underbrace{\class{blue}{\mathbb{E}_{y_{N-1} \mid x_{N-1}, \mathcal{D}_{N-1}}\Big[}\underbrace{\class{blue}{\max_{x_{N}^{\prime}}} \overbrace{\class{blue}{\mathbb{E}_{y_{N} \mid x_{N}^{\prime}, \mathcal{D}_{N}}\left[\lambda_{N}\right]}}^{\text{I}}}_{\text{II}}\class{blue}{\Big]}}_{\text{III}}\]
+				Here are the steps necessary to compute this quantity for just a single value of \(x_{N-1}\):
+				<ul class="list pl0">
+					<li>
+						\(\text{I}\). The inner term is just a 1-step expected improvement. As we already discussed before, this is quite simple to compute, with a closed-form solution when \(y_N|x_N^\prime, \mathcal{D}_N\) is Gaussian-distributed.
+					</li>
+					<li>
+						\(\text{II}\). Find the maximum of the 1-step expected improvement from step \(\text{I}\). This is an equivalent to maximising the acqusition function as if it were the last step.
+					</li>
+					<li>
+						\(\text{III}\). Compute the expectation of the quantity in \(\text{II}\). One obvious way to approximate this would be to sample \(y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}\) and average \(\text{II}\) over the drawn samples. However, computing \(\text{II}\) already required maximising over the input space; now we have to do so for every sample. 
+					</li>
+				</ul>
+				It's hopefully clear that this is a ...
 				<p>
 					One could try sampling to evaluate the expectations, but the nested computation of \(\class{red}{x_N^*}\) within the outer expectation over \(y_{N-1}\) makes it challenging. For each sample of \(y_{N-1}\), the optimal input at step \(N\) – \(\class{red}{x_N^*}\) – will be different; it will have to be recomputed for every sample. As finding \(\class{red}{x_N^*}\) is an optimization problem itself, this means we would have to solve an optimization problem many times (as many time as there are samples) just to evaluate the acquisition function \(\alpha_{N-1}(x_{N-1})\) once.
 				</p>
