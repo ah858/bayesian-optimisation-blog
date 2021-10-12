@@ -264,6 +264,7 @@
 				</div>
 				<!-- TODO: Plot for simple acquisition function plot - alpha(x) = the predictive mean -->
 				<p><strong>TODO:</strong> Plot showing the simple acquisition function</p>
+				<img src="expected-value-acquisition.png">
 
 				<p>
 					We've seen the short-comings of this acquisition, which leads to the question: what is the right acquisition function? Starting from the goal of finding the best side-wing design, can we come up with an acquisition function that would lead us to the optimal rule for choosing the next length \(x\) to test? Let's try and do just that.
@@ -279,7 +280,6 @@
 					\[U(x^*) = y^*\]
 					To maximise this utility, we'd naturally want to report the best design we've found during our experimentation:
 					\[x^*_{\text{final}} = x_{\class{light-red}{i^*}}\quad\text{ where }\class{light-red}{i^*}=\underset{i}{\operatorname{argmax}} y_i\]
-				<!-- TODO: add color to equations -->
 					To arrive at a general acquisition function, it helps to first consider the case when we're almost at the end of the design period; we only have time to test one last prototype before we must pick a design to be manufactured for the race. So far, we have tried side-wing lengths \((x_1, \dots, x_{N-1})\) and observed corresponding speeds \((y_1, \dots, y_{N-1})\). Given these, we can define the <i>extra</i> utility we would get from evaluating the last point at \(x_N\), and (hypothetically) observing a cornering speed \(y_N\):
 				</p>
 				\[\begin{align}
@@ -307,6 +307,7 @@
 				</p>
 
 				<p><strong>TODO:</strong> 1-step expected improvement visualisation</p>
+				<img src="1step-expected-improvement.png">
 				<p>
 					This acquisition function is also relatively easy to compute. We just need to take the expectation with respect to \(y_N\) conditioned on the data we've seen so far. We can either use <a href="https://en.wikipedia.org/wiki/Monte_Carlo_method#Overview" class="link">Monte-Carlo sampling</a>, or in the case where the predictive distribution is a Gaussian, a simple <a class="link">exact formula</a> exists <a class="gold link dim collapsible-button footnote-button" href="#0"></a>.
 				</p>
