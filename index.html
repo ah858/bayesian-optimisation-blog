@@ -362,6 +362,16 @@
 					Again, we arrived at an acqusition function that will give us the optimal decision when there are \(2\) steps remaining. This expression naturally decomposes into the sum of the <span class="green">immediate (1-step) expected improvement</span>, and the <span class="blue">expectation of the expected improvement in the next step</span>. By optimizing the <span class="green">first term</span>, we are trying to pick a point that is likely to improve the most upon the current best. By optimizing the <span class="blue">second term</span>, we are picking a point that will provide most useful information about the function to make the largest possible improvement in the next step. The \(2\)-step expected improvement balances the first <i>myopic</i> goal with the second far-sighted one.
 				</p>
 				<p>
+					The second term – the <span class="blue">expectation of the expected improvement in the next step</span> – warrants a closer look to get some intuition for what it's doing:
+
+					This term says:
+					1. consider every possible value that the output \(y_{N-1}\) could take in response to \(x_{N-1}\)
+					2. For each of those values calculate the best 1-step expected improvement in the next step.
+					3. Average the best 1-step expected improvements by their prob.
+
+					We can visualise this acquisition 
+				</p>
+				<p>
 					<strong>TODO:</strong> Put the 2-step EI plot here
 				</p>
 				<p>
@@ -372,15 +382,15 @@
 				</p>
 				\[\underbrace{\class{blue}{\mathbb{E}_{y_{N-1} \mid x_{N-1}, \mathcal{D}_{N-1}}\Big[}\underbrace{\class{blue}{\max_{x_{N}^{\prime}}} \overbrace{\class{blue}{\mathbb{E}_{y_{N} \mid x_{N}^{\prime}, \mathcal{D}_{N}}\left[\lambda_{N}\right]}}^{\text{I}}}_{\text{II}}\class{blue}{\Big]}}_{\text{III}}\]
 				Here are the steps necessary to compute this quantity for just a single value of \(x_{N-1}\):
-				<ul class="list pl0">
-					<li>
-						\(\text{I}\). The inner term is just a 1-step expected improvement. As we already discussed before, this is quite simple to compute, with a closed-form solution when \(y_N|x_N^\prime, \mathcal{D}_N\) is Gaussian-distributed.
+				<ul class="list pl1">
+					<li class="mv1">
+						\(\text{I}\). This inner part is just a 1-step expected improvement. As mentioned before, this term is quite simple to compute; there ia a closed-form solution when \(y_N|x_N^\prime, \mathcal{D}_N\) is Gaussian-distributed.
 					</li>
-					<li>
-						\(\text{II}\). Find the maximum of the 1-step expected improvement from step \(\text{I}\). This is an equivalent to maximising the acqusition function as if it were the last step.
+					<li class="mv1">
+						\(\text{II}\). To compute this expression we need to numerically optimize the 1-step expected improvement expression from step \(\text{I}\) to find its maximum. This computation is equivalent to finding the maximum of the optimal acqusition function at the \(N\)-th step of the Bayesian Optimization procedure. Now, however, we need to perform this computation just to evaluate the optimal acquisition function at one point.
 					</li>
-					<li>
-						\(\text{III}\). Compute the expectation of the quantity in \(\text{II}\). One obvious way to approximate this would be to sample \(y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}\) and average \(\text{II}\) over the drawn samples. However, computing \(\text{II}\) already required maximising over the input space; now we have to do so for every sample. 
+					<li class="mv1">
+						\(\text{III}\). To compute this term we need to take the expectation of the quantity in \(\text{II}\). One obvious way to approximate this is to sample \(y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}\) and average \(\text{II}\) over the drawn samples. The quantity \(\text{II}\) needs to be recomputed for every sample. Since computing this quantity was an optimization problem, this is rather computationally burdensome. 
 					</li>
 				</ul>
 				It's hopefully clear that this is a ...
