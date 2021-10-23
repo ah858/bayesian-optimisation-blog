@@ -236,14 +236,14 @@
 				<h4>Acquisition Functions</h4>
 				<!-- TODO: Good place for a: to find the maximum you need to find the maximum joke -->
 				<p>
-					Typically, to guide experiment selection in Bayesian Optimization, one would define an <strong>acquisition function</strong> \(\alpha(x)\). In loose terms, the acquisition function characterises how "good" a particular point \(x\) is as the next point to try out, i.e. how valuable it will be to observe the true objective in response to this input. If we had an expression for such an acquisition function, the next input \(x\) could then automatically be chosen as the input that maximises said acquisition function: \(x_{\text{next}}=\underset{x}{\operatorname{argmax}} \alpha(x)\). We could turn picking the next experiment into an optimization problem.
+					Typically, to guide experiment selection in Bayesian Optimization, one would define an <strong>acquisition function</strong> \(\alpha(x)\). In loose terms, the acquisition function would characterise how "good" a particular point \(x\) is as the next point to try out, i.e. how valuable it will be to observe the true objective in response to this input. If we had an expression for such an acquisition function, the next input \(x\) could then automatically be chosen as the input that maximises said acquisition function: \(x_{\text{next}}=\underset{x}{\operatorname{argmax}} \alpha(x)\). We could turn picking the next experiment into an optimization problem.
 				</p>
 				<p>
-					This might seem a bit ironic: in order to solve an optimization problem — find \(x^*=\underset{x}{\operatorname{argmax}} f(x)\) — we introduced another one: maximising the acquisition function. The idea is that the acquisition function is (hopefully) much less expensive to evaluate than the true objective. In our Formula 1 example, evaluating the true objective necessitates manufacture of a component. Evaluating the acquisition function requires only compute.
+					This might seem a bit ironic: in order to solve an optimization problem <span class="gray">(finding the design maximising the objective \(x^*=\underset{x}{\operatorname{argmax}} f(x)\))</span> we introduced another one: maximising the acquisition function. The idea is that the acquisition function is (hopefully) much less expensive to evaluate than the true objective. In our Formula 1 example, evaluating the true objective necessitates manufacture of a component, which is time-consuming and monetarily costly. Evaluating the acquisition function requires only compute, and will hopefully be quick.
 				</p>
 
 				<p>
-					As an example, an acquisition function can express the naive selection rule of "picking the point with the best expected cornering speed" - the naive strategy we suggested before. At each step \(i\), we can define an acquisition function \(\alpha_i(x_i)\) that is equal to the expected predicted objective:
+					As an example, an acquisition function can express the naive selection rule of "picking the point with the best expected cornering speed" – the naive strategy we suggested before. At each step \(i\), we can define an acquisition function \(\alpha_i(x_i)\) that is equal to the expected predicted objective:
 				</p>
 				<div class="cf">
 					<div class="mw8 center">
@@ -269,18 +269,20 @@
 				<p>
 					We've seen the short-comings of this acquisition, which leads to the question: what is the right acquisition function? Starting from the goal of finding the best side-wing design, can we come up with an acquisition function that would lead us to the optimal rule for choosing the next length \(x\) to test? Let's try and do just that.
 				</p>
+				<h3>Optimal Acquisition Function</h3>
 				<p>
-					We can start by concretely formulating our problem. During the experimentation phase, we get to sequentially select \(N\) inputs \(x_i \in \mathbb{R}\), and observe the corresponding output \(y_i=f(x_i) \). At the end, after these trials are complete, we want to return a final recommendation for the optimal side-wing length \(x^*\). We'll assume that we have to recommend a design \(x^*\) from the set of wing lengths that we've actually tested in the lab <a class="gold link dim collapsible-button footnote-button" href="#0"></a>. On the race day, we require a tested design we have utmost confidence in. 
+					We can start by concretely formulating our problem. During the experimentation phase, we get to sequentially select \(N\) inputs \(x_i \in \mathbb{R}\), and observe the corresponding output \(y_i=f(x_i) \). At the end, after these trials are complete, we want to return a final recommendation for the optimal side-wing length \(x^*\). We'll assume that we <i>have to</i> recommend a design \(x^*\) from the set of wing lengths that were tested in the lab <a class="gold link dim collapsible-button footnote-button" href="#0"></a>. On the race day, we require a tested design we have utmost confidence in. 
 				</p>
 				<div class="collapsible-content footnote-content ph3 center gold bl bw2">
 					It's possible to formulate the optimization problem in other ways, including observations with noise, returning a point \(x^*\) that hasn't been tested, or having a non-fixed number of steps left.
 				</div>
 				<p>
-					Having defined our problem setup, let's also be precise about our goal. We can define a utility function \(U(x^*)\) final design is. Let's assume — for this problem — it is proportional to the achieved cornering speed \(y^* = f(x^*)\). In other words:
-					\[U(x^*) = y^*\]
+					Having defined our problem setup, let's also be precise about our goal. We can define a utility function \(U(x^*)\) that quantifies how good the final design is. Let's assume — for this problem — it is proportional to the cornering speed \(y^* = f(x^*)\). In other words:
+					\[U(x^*) = y^* = f(x^*)\]
 					To maximise this utility, we'd naturally want to report the best design we've found during our experimentation:
-					\[x^*_{\text{final}} = x_{\class{light-red}{i^*}}\quad\text{ where }\class{light-red}{i^*}=\underset{i}{\operatorname{argmax}} y_i\]
-					To arrive at a general acquisition function, it helps to first consider the case when we're almost at the end of the design period; we only have time to test one last prototype before we must pick a design to be manufactured for the race. So far, we have tried side-wing lengths \((x_1, \dots, x_{N-1})\) and observed corresponding speeds \((y_1, \dots, y_{N-1})\). Given these, we can define the <i>extra</i> utility we would get from evaluating the last point at \(x_N\), and (hypothetically) observing a cornering speed \(y_N\):
+					\[x^*_{\text{final}} = x_{\class{light-red}{i^*}}\quad\text{ where }\class{light-red}{i^*}=\underset{i\in \{1,\dots, N\}}{\operatorname{argmax}} y_i\]
+
+					To arrive at a general acquisition function, it helps to first consider the specific case when we're almost at the end of the design period; we only have time to test one last prototype before we must pick a design to be manufactured for the race. So far, we have tried side-wing lengths \((x_1, \dots, x_{N-1})\) and observed corresponding speeds \((y_1, \dots, y_{N-1})\). Given these, we can define the <i>extra</i> utility we would get from evaluating the last point at \(x_N\), and (hypothetically) observing a cornering speed \(y_N\):
 				</p>
 				\[\begin{align}
 				\lambda_N &=\begin{cases}
@@ -322,15 +324,18 @@
 					See <a class="link light-blue dim" href="https://arxiv.org/pdf/1807.02811.pdf">"A Tutorial on Bayesian Optimization" by Peter I. Frazier</a> for details.
 				</div>
 
+				<h4>Optimal Acquisition Function with 2 steps left</h4>
 				<p>
-					What's then the optimal point to pick when there are \(2\) steps left then? In a similar way, we can think about the expected extra utility in the steps <i>following</i> hypothetically picking a particular input \(x_{N-1}\) and observing a some output \(y_{N-1}\). The contributions to this extra utility will come from two places. Firstly, from the immediate improvement from the output observed at step \(N-1\):
+					What's then the optimal point to pick when there are \(2\) steps left? In a similar way, we can think about the expected extra utility in the steps <i>following</i> hypothetically picking a particular input \(x_{N-1}\) and observing a some output \(y_{N-1}\). The contributions to this extra utility will come from two places. Firstly, from the immediate improvement from the output observed at step \(N-1\):
 				</p>
-				\[\lambda_{N-1}=\max(y_{N - 1} - \max (y_1, \dots, y_{N-2}), 0)\]
+				\[\lambda_{N-1}\overset{\small \operatorname{def}}{=}\max(y_{N - 1} - \max (y_1, \dots, y_{N-2}), 0)\]
 				<p>
-					And from the improvement from the <strong>expected</strong> improvement at step \(N\) (expected, since the outcome \(y_N\) is unknown): \(\mathbb{E}_{y_{N} \mid x_{N}, \mathcal{D}_{N}}\left[\lambda_{N}\right]\)
+					And, secondly, from the (1-step) <strong>expected</strong> improvement at step \(N\) (expected, since the outcome \(y_N\) is unknown):
+
+						\[\mathbb{E}_{y_{N} \mid x_{N}, \mathcal{D}_{N}}\left[\lambda_{N}\right]\]
 				</p>
 				<p>
-					We'll assume that we then <span class="red"> pick the last input \(x_N\) optimally</span>, i.e. by maximising this expected improvement in the last step. Then, the total expected improvement from step \(N-1\) onwards becomes:
+					We'll assume that after the current step, we then <span class="red"> pick the last input \(x_N\) optimally</span>, i.e. by maximising this expected improvement in the last step. Then, the total expected improvement from step \(N-1\) onwards (after observing a particular pair \((x_{N-1}, y_{N-1})\)) becomes:
 				</p>
 				\[
 					\underbrace{\lambda_{N-1}}_{\text{improvement in step }N-1} + \underbrace{\class{red}{\max_{x_N'}} \overbrace{\mathbb{E}_{y_N|\class{red}{x_N'}, \mathcal{D}_N} \left[\lambda_N\right]}^{\text{(1-step) expected improvement in step }N}}_{\text{optimal expected improvement in step }N} \\
@@ -360,7 +365,7 @@
 					</ul>
 				</div>
 				<p>
-					Again, we arrived at an acqusition function that will give us the optimal decision when there are \(2\) steps remaining. This expression naturally decomposes into the sum of the <span class="green">immediate (1-step) expected improvement</span>, and the <span class="blue">expectation of the expected improvement in the next step</span>. By optimizing the <span class="green">first term</span>, we are trying to pick a point that is likely to improve the most upon the current best. By optimizing the <span class="blue">second term</span>, we are picking a point that will provide most useful information about the function to make the largest possible improvement in the next step. The \(2\)-step expected improvement balances the first <i>myopic</i> goal with the second far-sighted one.
+					Again, we arrived at an acqusition function that will give us the optimal decision when there are \(2\) steps remaining. This expression naturally decomposes into the sum of the <span class="green">immediate (1-step) expected improvement</span>, and the <span class="blue">expectation of the expected improvement in the next step</span>. By optimizing the <span class="green">first term</span>, we are trying to pick a point that is likely to improve the most upon the current best. By optimizing the <span class="blue">second term</span>, we are picking a point that will provide most useful information about the function to make the largest possible improvement in the step afterwards. The \(2\)-step expected improvement balances the first <i>myopic</i> goal with the second far-sighted one.
 				</p>
 				<p>
 					The second term – the <span class="blue">expectation of the expected improvement in the next step</span> – warrants a closer look to get some intuition for what it's doing:
@@ -398,6 +403,7 @@
 				<p>
 					One could try sampling to evaluate the expectations, but the nested computation of \(\class{red}{x_N^*}\) within the outer expectation over \(y_{N-1}\) makes it challenging. For each sample of \(y_{N-1}\), the optimal input at step \(N\) – \(\class{red}{x_N^*}\) – will be different; it will have to be recomputed for every sample. As finding \(\class{red}{x_N^*}\) is an optimization problem itself, this means we would have to solve an optimization problem many times (as many time as there are samples) just to evaluate the acquisition function \(\alpha_{N-1}(x_{N-1})\) once.
 				</p>
+				<h3>What actually makes a good acquistion function</h3>
 				<p>
 					We could of course continue in a similar way derive optimal acqusitions for when there are \(3\) steps left, \(4\) steps left, and so forth, but the expressions gets harder and harder to compute. With \(3\) steps left, to evaluate the acquisition function once, we would have to optimize the \(2\)-step expected improvement many times over, which is already barely tractable.
 				</p>
@@ -406,6 +412,12 @@
 				</p>
 				<p>
 					 (i.e. \(x_N = \underset{x_N'}{\operatorname{argmax}}\mathbb{E}_{y_N'|x_N', \mathcal{D}} [\max(y_N - \class{dark-green}{\tau}, 0)]\) ). 
+				</p>
+				<p>
+					One common option is to use the acquisition function that's optimal for the last step — the 1-step expected improvement — but at every step of the process. This obviously has downsides – an acquisition that at every step assumes this is the last step is unlikely to pick more "explorative" points that might be useful in the long run. On the other hand, it's computationally a very efficient approach.
+				</p>
+				<p>
+					For these reasons, many acquisition functions and various ways to approximate them have been proposed in the literature.
 				</p>
 			</div>
 		</div>
