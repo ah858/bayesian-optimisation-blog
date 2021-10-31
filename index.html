@@ -365,7 +365,7 @@
 					</ul>
 				</div>
 				<p>
-					Again, we arrived at an acqusition function that will give us the optimal decision when there are \(2\) steps remaining. This expression naturally decomposes into the sum of the <span class="green">immediate (1-step) expected improvement</span>, and the <span class="blue">expectation of the expected improvement in the next step</span>. By optimizing the <span class="green">first term</span>, we are trying to pick a point that is likely to improve the most upon the current best. By optimizing the <span class="blue">second term</span>, we are picking a point that will provide most useful information about the function to make the largest possible improvement in the step afterwards. The \(2\)-step expected improvement balances the first <i>myopic</i> goal with the second far-sighted one.
+					Again, we arrived at an acqusition function that will give us the optimal decision when there are \(2\) steps remaining. This expression naturally decomposes into the sum of the <span class="green">immediate (1-step) expected improvement</span>, and the <span class="blue">expectation of the expected improvement in the next step</span>. By optimizing the <span class="green">first term</span>, we are trying to pick a point that is likely to improve the most upon the current best. By optimizing the <span class="blue">second term</span>, we are picking a point that will provide most useful information about the function in order to make the largest possible improvement in the step that follows. The \(2\)-step expected improvement balances the first <i>myopic</i> goal with the second far-sighted one.
 				</p>
 				<p>
 					The second term – the <span class="blue">expectation of the expected improvement in the next step</span> – warrants a closer look to get some intuition for what it's doing:
@@ -380,6 +380,25 @@
 				<p>
 					<strong>TODO:</strong> Put the 2-step EI plot here
 				</p>
+				<p>TODO describe the 2step plot</p>
+				<p>
+					The plot below shows the \(2\)-step expected improvement broken down into those two components. The acquisition value for each \(x\), shown on the bottom axis, is broken down into the two components, the bottom {color(green to match eq. above?)} part showing the \(1\)-step expected improvement, and the top part showing the expected future improvement.
+					
+					The top curve is broken down into multiple pieces: each sub-curve corresponds to a hypothetical observation \(y_{N-1}\) at the current step. The sub-curve shows the <i>best achievable</i> expected improvement in the next step, conditioned on this observation of \(y_{N-1}\). The value is also weighted by the probability of observing this particular value of \(y_{N-1}\)<a class="gold link dim collapsible-button footnote-button" href="#0"></a>.
+				</p>
+				<div class="collapsible-content footnote-content ph3 center gold bl bw2">
+					<p>
+					To make this figure, we approximate the predictive distribution (which, in the figure, is a Gaussian) for \(y_{N-1}\) conditioned on \(x_{N-1}, \mathcal{D}_{N-1}\) with a discrete distribution.
+					We do this, because it would have been impossible to make this figure if we considered every possible hypothetical value for \(y_{N-1}\), since \(y_{N-1}\) is continuous.
+					We chose to discretise the distribution for \(y_{N-1}\) at \(5\) locations: at the mean, at the mean \(\pm 1\) standard deviation, and at the mean \(\pm 2\) standard deviations.
+					</p>
+					<p>
+					If you are particularly curious about the approximation, here are some more technical details: the probabilities for each of the \(5\) outcomes are assigned to be the closest possible match to the true predictive distribution, in the sense that the approximate distribution \(q\) minimises the KL-divergence to the true distribution \(p\):
+					\[q=\underset{q^\prime}{\operatorname{argmin}} KL[q^\prime||p]\]
+
+					This can done by making the weights be proportional to the probability density function of the true distribution at these locations (such that they still sum to \(1\)).
+					</p>
+				</div>
 				<p>
 					This acqusition is, however, already strikingly harder to compute numerically. No analytical solution is known even when the model's predictions are of a simple form (such as a Gaussian).
 				</p>
