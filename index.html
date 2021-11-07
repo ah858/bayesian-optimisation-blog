@@ -311,7 +311,7 @@
 				<p><strong>TODO:</strong> 1-step expected improvement visualisation</p>
 				<img src="1step-expected-improvement.png">
 				<p>
-					This acquisition function is also relatively easy to compute. We just need to take the expectation with respect to \(y_N\) conditioned on the data we've seen so far. We can either use <a href="https://en.wikipedia.org/wiki/Monte_Carlo_method#Overview" class="link">Monte-Carlo sampling</a>, or in the case where the predictive distribution is a Gaussian, a simple <a class="link">exact formula</a> exists <a class="gold link dim collapsible-button footnote-button" href="#0"></a>.
+					This acquisition function is also relatively easy to compute. We just need to take an expectation of a <a class="hover-simple-function">very simple function</a> with respect to \(y_N\) conditioned on the data we've seen so far. We can either use <a href="https://en.wikipedia.org/wiki/Monte_Carlo_method#Overview" class="link">Monte-Carlo sampling</a>, or in the case where the predictive distribution is a Gaussian, a simple <a class="link">exact formula</a> exists <a class="gold link dim collapsible-button footnote-button" href="#0"></a>.
 				</p>
 				<div class="collapsible-content footnote-content ph3 center gold bl bw2">
 					If the predictive distribution is a Gaussian – <span class="gray">\(p(y_N|x_N, \mathcal{D}_N)=\mathcal{N}(y_N; \mu, \sigma)\)</span> – then the 1-step expected improvement is:
@@ -335,7 +335,7 @@
 						\[\mathbb{E}_{y_{N} \mid x_{N}, \mathcal{D}_{N}}\left[\lambda_{N}\right]\]
 				</p>
 				<p>
-					We'll assume that after the current step, we then <span class="red"> pick the last input \(x_N\) optimally</span>, i.e. by maximising this expected improvement in the last step. Then, the total expected improvement from step \(N-1\) onwards (after observing a particular pair \((x_{N-1}, y_{N-1})\)) becomes:
+					We'll assume that after the current \((N-1)\)-th step, we then <span class="red"> pick the last input \(x_N\) optimally</span>, i.e. by maximising this expected improvement in the last step. Then, the total expected improvement from step \(N-1\) onwards (after observing a particular pair \((x_{N-1}, y_{N-1})\)) becomes:
 				</p>
 				\[
 					\underbrace{\lambda_{N-1}}_{\text{improvement in step }N-1} + \underbrace{\class{red}{\max_{x_N'}} \overbrace{\mathbb{E}_{y_N|\class{red}{x_N'}, \mathcal{D}_N} \left[\lambda_N\right]}^{\text{(1-step) expected improvement in step }N}}_{\text{optimal expected improvement in step }N} \\

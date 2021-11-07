@@ -63,3 +63,9 @@ h2 {
 .scrollable-equation{
   overflow-x: auto;
 }
+
+
+hover-simple-function-img:hover:after {
+  content: url(truncated_linear.svg); /* no need for qoutes */
+  display: block;
+}
