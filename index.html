@@ -368,23 +368,46 @@
 					Again, we arrived at an acqusition function that will give us the optimal decision when there are \(2\) steps remaining. This expression naturally decomposes into the sum of the <span class="green">immediate (1-step) expected improvement</span>, and the <span class="blue">expectation of the expected improvement in the next step</span>. By optimizing the <span class="green">first term</span>, we are trying to pick a point that is likely to improve the most upon the current best. By optimizing the <span class="blue">second term</span>, we are picking a point that will provide most useful information about the function in order to make the largest possible improvement in the step that follows. The \(2\)-step expected improvement balances the first <i>myopic</i> goal with the second far-sighted one.
 				</p>
 				<p>
-					The second term – the <span class="blue">expectation of the expected improvement in the next step</span> – warrants a closer look to get some intuition for what it's doing:
-
+					The second term — the <span class="blue">expectation of the expected improvement in the next step</span> — warrants a closer look to get some intuition for it.
+				</p>
+				\[
+				\begin{align}
+				&\class{blue}{\mathbb{E}_{y_{N-1} \mid x_{N-1}, \mathcal{D}_{N-1}}\Big[\max_{x_{N}^{\prime}} \mathbb{E}_{y_{N} \mid x_{N}^{\prime}, \mathcal{D}_{N}}\left[\lambda_{N}\right]\Big]}=\\
+				=&
+				\underbrace{\int_{y_{N-1}\in \mathbb{R}}}_{1.}
+				\underbrace{\left(\max_{x_{N}^{\prime}} \mathbb{E}_{y_{N} \mid x_{N}^{\prime}, \mathcal{D}_{N}}\left[\lambda_{N}\right]\right)}_{2.}
+				\underbrace{p\left(y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}\right)
+				dy_{N-1}}_{3.}
+				\end{align}
+				\]
+				<p>
 					This term says:
-					1. consider every possible value that the output \(y_{N-1}\) could take in response to \(x_{N-1}\)
-					2. For each of those values calculate the best 1-step expected improvement in the next step.
-					3. Average the best 1-step expected improvements by their prob.
+					<ul class="list pl3">
+						<li class="mv1">
+							\(1.\) Consider every possible value that the output \(y_{N-1}\) could hypothetically take in response to \(x_{N-1}\).
+						</li>
+						<li class="mv1">
+							\(2.\) For each of those values calculate the <i>best</i> 1-step expected improvement in the next step.
+						</li>
+						<li class="mv1">
+							\(3.\) Average those best 1-step expected improvements weighted by the probability of the hypothetical observations \(y_{N-1}\).
+						</li>
+					</ul>
 
-					We can visualise this acquisition 
+					We can visualise this acquisition broken down in this way: 
 				</p>
 				<p>
-					<strong>TODO:</strong> Put the 2-step EI plot here
+					<strong>TODO: Only keep the top plot</strong>
 				</p>
-				<p>TODO describe the 2step plot</p>
+				<div class="cf"> <!-- ph2-ns -->
+					<div class="fl w-100 w-50-ns ph2 pv0"></div> <!-- No vertical padding -->
+						<div id="chart-two-step"></div>
+					<div class="fl w-100 w-50-ns"></div>
+				</div>
+		
 				<p>
-					The plot below shows the \(2\)-step expected improvement broken down into those two components. The acquisition value for each \(x\), shown on the bottom axis, is broken down into the two components, the bottom {color(green to match eq. above?)} part showing the \(1\)-step expected improvement, and the top part showing the expected future improvement.
-					
-					The top curve is broken down into multiple pieces: each sub-curve corresponds to a hypothetical observation \(y_{N-1}\) at the current step. The sub-curve shows the <i>best achievable</i> expected improvement in the next step, conditioned on this observation of \(y_{N-1}\). The value is also weighted by the probability of observing this particular value of \(y_{N-1}\)<a class="gold link dim collapsible-button footnote-button" href="#0"></a>.
+					The plot above shows (on the bottom axis) the \(2\)-step expected improvement broken down into the two components. The <span class="green">green part</span> of the curve {match equation to plot or plot to equation} shows the <span class="green">immediate \(1\)-step expected improvement</span>. The top part shows the <span class="blue">expected improvement in next step</span>. 
+					This part is further sub-divided into contributions corresponding to each hypothetical observation of \(y_{N-1}\) at the current step. Each sub-part is equal to the <i>best achievable</i> expected improvement in the next step conditioned on this observation of \(y_{N-1}\), weighted by the probability of observing this particular value of \(y_{N-1}\)<a class="gold link dim collapsible-button footnote-button" href="#0"></a>. The plot also shows, for each hypothetical observation \(y_{N-1}\), the optimal input \(x_N\) that would be chosen at the next step.
 				</p>
 				<div class="collapsible-content footnote-content ph3 center gold bl bw2">
 					<p>
@@ -399,17 +422,16 @@
 					This can done by making the weights be proportional to the probability density function of the true distribution at these locations (such that they still sum to \(1\)).
 					</p>
 				</div>
+				<h4>Computational Tractability</h4>
 				<p>
-					This acqusition is, however, already strikingly harder to compute numerically. No analytical solution is known even when the model's predictions are of a simple form (such as a Gaussian).
-				</p>
-				<p>
-					Let's take a closer look into why this is the case. Especially, the <span class="blue">second term</span> is of interest – that's the one posing a challenge:
+					This acquisition is, however, already strikingly harder to compute numerically compared to the \(1-step\) expected improvement. No analytical solution is known even when the model's predictions are of a simple form (such as a Gaussian). To see clearly why, let's look at what we need to compute. We saw that the <span class="green">first term</span> is just the \(1\)-step expected improvement, which is quite simple to compute; there ia a closed-form solution when \(y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}\) is Gaussian-distributed. Hence, let's look closer at the <span color="blue">second</span> term and how to compute it, since that's the troublesome one:
 				</p>
 				\[\underbrace{\class{blue}{\mathbb{E}_{y_{N-1} \mid x_{N-1}, \mathcal{D}_{N-1}}\Big[}\underbrace{\class{blue}{\max_{x_{N}^{\prime}}} \overbrace{\class{blue}{\mathbb{E}_{y_{N} \mid x_{N}^{\prime}, \mathcal{D}_{N}}\left[\lambda_{N}\right]}}^{\text{I}}}_{\text{II}}\class{blue}{\Big]}}_{\text{III}}\]
-				Here are the steps necessary to compute this quantity for just a single value of \(x_{N-1}\):
+
+				Here are the steps necessary to compute this quantity for a particular value of \(x_{N-1}\):
 				<ul class="list pl1">
 					<li class="mv1">
-						\(\text{I}\). This inner part is just a 1-step expected improvement. As mentioned before, this term is quite simple to compute; there ia a closed-form solution when \(y_N|x_N^\prime, \mathcal{D}_N\) is Gaussian-distributed.
+						\(\text{I}\). This inner part is just a 1-step expected improvement. As mentioned before, this term is simple to compute for a particular \(x^\prime_{N}\).
 					</li>
 					<li class="mv1">
 						\(\text{II}\). To compute this expression we need to numerically optimize the 1-step expected improvement expression from step \(\text{I}\) to find its maximum. This computation is equivalent to finding the maximum of the optimal acqusition function at the \(N\)-th step of the Bayesian Optimization procedure. Now, however, we need to perform this computation just to evaluate the optimal acquisition function at one point.
@@ -421,6 +443,9 @@
 				It's hopefully clear that this is a ...
 				<p>
 					One could try sampling to evaluate the expectations, but the nested computation of \(\class{red}{x_N^*}\) within the outer expectation over \(y_{N-1}\) makes it challenging. For each sample of \(y_{N-1}\), the optimal input at step \(N\) – \(\class{red}{x_N^*}\) – will be different; it will have to be recomputed for every sample. As finding \(\class{red}{x_N^*}\) is an optimization problem itself, this means we would have to solve an optimization problem many times (as many time as there are samples) just to evaluate the acquisition function \(\alpha_{N-1}(x_{N-1})\) once.
+				</p>
+				<p>
+					Add to this that for each hypothetical observation \(y_{N-1}\) we need to update the model with that observation to compute term \(\text{I}\)...
 				</p>
 				<h3>What actually makes a good acquistion function</h3>
 				<p>
@@ -461,6 +486,7 @@
 			<div class="mw5 mw7-ns center mv4 pa3 ph5-ns">
 		    	<h2>Later blog sections</h2>
 			</div>
+			<p><strong>TODO: Delete?</strong> I think none of these are necessarily still relevant</p>
 		</div>
 
 		<div class="cf">
@@ -474,12 +500,6 @@
 				</div>
 
 
-				<div class="cf"> <!-- ph2-ns -->
-					<div class="fl w-100 w-50-ns ph2 pv0"></div> <!-- No vertical padding -->
-						<div id="chart-two-step"></div>
-					<div class="fl w-100 w-50-ns"></div>
-				</div>
-		
 				<div class="cf"> <!-- ph2-ns -->
 					<div class="fl w-100 w-50-ns ph2 pv0"></div> <!-- No vertical padding -->
 						<div id="chart-two-step-monte-carlo"></div>
