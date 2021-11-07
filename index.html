@@ -311,8 +311,11 @@
 				<p><strong>TODO:</strong> 1-step expected improvement visualisation</p>
 				<img src="1step-expected-improvement.png">
 				<p>
-					This acquisition function is also relatively easy to compute. We just need to take an expectation of a <a class="hover-simple-function">very simple function</a> with respect to \(y_N\) conditioned on the data we've seen so far. We can either use <a href="https://en.wikipedia.org/wiki/Monte_Carlo_method#Overview" class="link">Monte-Carlo sampling</a>, or in the case where the predictive distribution is a Gaussian, a simple <a class="link">exact formula</a> exists <a class="gold link dim collapsible-button footnote-button" href="#0"></a>.
+					This acquisition function is also relatively easy to compute. We just need to take an expectation of a very simple function<a class="gold link dim collapsible-button footnote-button" href="#0"></a> with respect to \(y_N\) conditioned on the data we've seen so far. We can either use <a href="https://en.wikipedia.org/wiki/Monte_Carlo_method#Overview" class="link">Monte-Carlo sampling</a>, or in the case where the predictive distribution is a Gaussian distribution, a simple <a class="link">exact formula</a> exists <a class="gold link dim collapsible-button footnote-button" href="#0"></a>.
 				</p>
+				<div class="collapsible-content footnote-content ph3 center gold bl bw2">
+					<img src="truncated_linear.svg">
+				</div>
 				<div class="collapsible-content footnote-content ph3 center gold bl bw2">
 					If the predictive distribution is a Gaussian – <span class="gray">\(p(y_N|x_N, \mathcal{D}_N)=\mathcal{N}(y_N; \mu, \sigma)\)</span> – then the 1-step expected improvement is:
 
