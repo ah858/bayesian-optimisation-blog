@@ -10,7 +10,7 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 body {
-  counter-reset: footnote;
+  counter-reset: footnoteButtonCounter 0 footnoteContentCounter 0;
 }
 
 /* Increase font size if screen width >768px */
@@ -44,8 +44,8 @@ h2 {
 }
 
 .footnote-button::before {
-  counter-increment: footnote;
-  content: "[" counter(footnote) "]";
+  counter-increment: footnoteButtonCounter;
+  content: "[" counter(footnoteButtonCounter) "]";
 }
 
 /* Style the collapsible content. Note: hidden by default */
@@ -57,7 +57,8 @@ h2 {
 }
 
 .footnote-content::before{
-  content: "[" counter(footnote) "]";
+  counter-increment: footnoteContentCounter;
+  content: "[" counter(footnoteContentCounter) "]";
 }
 
 .scrollable-equation{

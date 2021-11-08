@@ -311,9 +311,10 @@
 				<p><strong>TODO:</strong> 1-step expected improvement visualisation</p>
 				<img src="1step-expected-improvement.png">
 				<p>
-					This acquisition function is also relatively easy to compute. We just need to take an expectation of a very simple function<a class="gold link dim collapsible-button footnote-button" href="#0"></a> with respect to \(y_N\) conditioned on the data we've seen so far. We can either use <a href="https://en.wikipedia.org/wiki/Monte_Carlo_method#Overview" class="link">Monte-Carlo sampling</a>, or in the case where the predictive distribution is a Gaussian distribution, a simple <a class="link">exact formula</a> exists <a class="gold link dim collapsible-button footnote-button" href="#0"></a>.
+					This acquisition function is also relatively easy to compute. We just need to take an expectation of a rather simple function<a class="gold link dim collapsible-button footnote-button" href="#0"></a> with respect to \(y_N\) conditioned on the data we've seen so far. We can either use <a class="dark-blue link dim" href="https://en.wikipedia.org/wiki/Monte_Carlo_method#Overview">Monte-Carlo sampling</a>, or in the case where the predictive distribution is a Gaussian distribution, a simple <a class="link">exact formula</a> exists <a class="gold link dim collapsible-button footnote-button" href="#0"></a>.
 				</p>
 				<div class="collapsible-content footnote-content ph3 center gold bl bw2">
+					The "simple" function of \(y_N\). It's essentially like a shifted <a class="dark-blue link dim" href="https://en.wikipedia.org/wiki/Rectifier_(neural_networks)">ReLU</a> function.
 					<img src="truncated_linear.svg">
 				</div>
 				<div class="collapsible-content footnote-content ph3 center gold bl bw2">
