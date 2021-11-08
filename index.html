@@ -36,7 +36,8 @@
 			<div>
 			<!-- <div> -->
 				<p>
-					Bayesian Optimization is a powerful tool for automatic optimization of design choices. It has been used extensively in applications ranging from hyperparameter tuning for automatic machine learning to optimizing manufacturing and experiment design. We'll start off by introducing a typical, illustrative  problem setting for Bayesian Optimization, and show how the key components of Bayesian Optimization can automatise design decisions while significantly improving upon naive approaches.
+					<!-- We'll start off by introducing a typical, illustrative  problem setting for Bayesian Optimization, and show how the key components of Bayesian Optimization can automatise design decisions while significantly improving upon naive approaches.
+					Bayesian Optimization is a principled framework for dealing with <i>design problems</i> – problems where we want to optimize for something in the face of uncertainty. It has been used extensively in practical optimization problems in the face of uncertainty: from hyperparameter tuning for automatic machine learning to optimizing manufacturing, or experiment design in synthetic biology.  We wanted to highlight how probabilistic reasoning (the "Bayesian" part of Bayesian Optimization) helps us to deal with the "uncertainty" bit, i.e. how it allows us to reason over the possible future observations to help us find a point close to the maximum the quickest. -->
 				</p>
 				<!-- <p>
 					To-dos moved to: <a href="https://github.com/ah858/bayesian-optimisation-blog/projects/1">here</a>
@@ -449,19 +450,19 @@
 				</p>
 				<h3>What actually makes a good acquistion function</h3>
 				<p>
-					On this note, we could continue this blog in a similar way to derive optimal acqusitions for when there are \(3\) steps left, \(4\) steps left, and so forth. These expressions will get exponentially harder and harder to compute, to the point where we won't be able to plot them.
+					On this note, we could continue this blog in a similar way to derive optimal acqusitions for when there are \(3\) steps left, \(4\) steps left, and so forth. These expressions will get exponentially harder and harder to compute, to the point where we wouldn't be able to use them in any practical problem, or plot them to get intuition for how they work.
 				</p>
 				<p>
-					So, in practice, a good acquisition function has to balance what's desirable from a theoretical point of view, with what's computationally tractable. Actually using the optimal acquisition function is rarely possible (except for the very last step).
+					So, in practice, a good acquisition function has to balance what's desirable from a theoretical point of view, with what's computationally tractable. Actually using the optimal acquisition function is rarely possible (except for the very last \(1\) or \(2\) steps of the optimization problem).
 				</p>
 				<p>
-					 (i.e. \(x_N = \underset{x_N'}{\operatorname{argmax}}\mathbb{E}_{y_N'|x_N', \mathcal{D}} [\max(y_N - \class{dark-green}{\tau}, 0)]\) ). 
+					One common option is to use the acquisition function that's optimal for the last step — the \(1\)-step expected improvement — but at every step of the process. This obviously has downsides – an acquisition that at every step assumes it's the last step is unlikely to pick more "explorative" points that might be useful in the long run. On the other hand, it's computationally a very efficient approach.
 				</p>
 				<p>
-					One common option is to use the acquisition function that's optimal for the last step — the 1-step expected improvement — but at every step of the process. This obviously has downsides – an acquisition that at every step assumes this is the last step is unlikely to pick more "explorative" points that might be useful in the long run. On the other hand, it's computationally a very efficient approach.
+					For these reasons, many other acquisition functions and various ways to approximate them have been proposed in the literature. Some are motivated in other ways than the "decision-theoretic" motivation outlined in this blog. For instance, some are motivated from an information-theoretic perspective (e.g. <a class="link dark-blue dim" href="https://jmlr.csail.mit.edu/papers/volume13/hennig12a/hennig12a.pdf">ES</a>, <a class="link dark-blue dim" href="https://arxiv.org/abs/1406.2541">PES</a>, <a class="link dark-blue dim" href="https://arxiv.org/abs/1703.01968">MES</a>), whilst other are being argued for on the basis of their <i>asymptotic</i> optimality (e.g. <a class="link dark-blue dim" href="https://arxiv.org/abs/1206.6457">UCB</a>). Yet other researcher will try to develop acquisitions for more specialised scenarios: for instance, some try to tackle the case when data is collected in batches rather a single example at a time, whilst others might consider the case when observations arrive asynchronously. The range of trade-offs considered and extensions to the Bayesian Optimization framework is broad. If you need convincing (or just want to see what's out there), this timeless survey paper — <a class="dark-blue link dim" href="https://ieeexplore.ieee.org/document/7352306">Taking the Human Out of the Loop</a> — does a great job of covering <i>a lot</i>.
 				</p>
 				<p>
-					For these reasons, many acquisition functions and various ways to approximate them have been proposed in the literature.
+					The goal of this blog was really to get at the core of what Bayesian Optimization is: an automated approach to tackling <i>design problems</i> – problems where we want to optimize for something in the face of uncertainty. We wanted to highlight how probabilistic reasoning (the "Bayesian" part of Bayesian Optimization) helps us to deal with the "uncertainty" bit, i.e. how it allows us to reason over the possible future observations to help us find a point close to the maximum the quickest.
 				</p>
 			</div>
 		</div>
