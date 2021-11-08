@@ -311,9 +311,10 @@
 				<p><strong>TODO:</strong> 1-step expected improvement visualisation</p>
 				<img src="1step-expected-improvement.png">
 				<p>
-					This acquisition function is also relatively easy to compute. We just need to take an expectation of a very simple function<a class="gold link dim collapsible-button footnote-button" href="#0"></a> with respect to \(y_N\) conditioned on the data we've seen so far. We can either use <a href="https://en.wikipedia.org/wiki/Monte_Carlo_method#Overview" class="link">Monte-Carlo sampling</a>, or in the case where the predictive distribution is a Gaussian distribution, a simple <a class="link">exact formula</a> exists <a class="gold link dim collapsible-button footnote-button" href="#0"></a>.
+					This acquisition function is also relatively easy to compute. We just need to take an expectation of a rather simple function<a class="gold link dim collapsible-button footnote-button" href="#0"></a> with respect to \(y_N\) conditioned on the data we've seen so far. We can either use <a class="dark-blue link dim" href="https://en.wikipedia.org/wiki/Monte_Carlo_method#Overview">Monte-Carlo sampling</a>, or in the case where the predictive distribution is a Gaussian distribution, a simple <a class="link">exact formula</a> exists <a class="gold link dim collapsible-button footnote-button" href="#0"></a>.
 				</p>
 				<div class="collapsible-content footnote-content ph3 center gold bl bw2">
+					The "simple" function of \(y_N\). It's essentially like a shifted <a class="dark-blue link dim" href="https://en.wikipedia.org/wiki/Rectifier_(neural_networks)">ReLU</a> function.
 					<img src="truncated_linear.svg">
 				</div>
 				<div class="collapsible-content footnote-content ph3 center gold bl bw2">
@@ -338,7 +339,7 @@
 						\[\mathbb{E}_{y_{N} \mid x_{N}, \mathcal{D}_{N}}\left[\lambda_{N}\right]\]
 				</p>
 				<p>
-					We'll assume that after the current \((N-1)\)-th step, we will <span class="red"> pick the last input \(x_N\) optimally</span> (why wouldn't we?) by maximising this expected improvement in the last step. Then, the total expected improvement from step \(N-1\) onwards (after observing a particular pair \((x_{N-1}, y_{N-1})\)) becomes:
+					We'll assume that after the current \((N-1)\)-th step, we will <span class="red">pick the last input \(x_N\) optimally</span> (why wouldn't we?) by maximising this expected improvement in the last step. Then, the total expected improvement from step \(N-1\) onwards (after observing a particular pair \((x_{N-1}, y_{N-1})\)) becomes:
 				</p>
 				\[
 					\underbrace{\lambda_{N-1}}_{\text{improvement in step }N-1} + \underbrace{\class{red}{\max_{x_N'}} \overbrace{\mathbb{E}_{y_N|\class{red}{x_N'}, \mathcal{D}_N} \left[\lambda_N\right]}^{\text{(1-step) expected improvement in step }N}}_{\text{optimal expected improvement in step }N} \\
@@ -427,7 +428,7 @@
 				</div>
 				<h4>Computational Tractability</h4>
 				<p>
-					This acquisition is, however, already strikingly harder to compute numerically compared to the \(1\)-step expected improvement. No analytical solution is known even when the model's predictions are of a simple form (such as a Gaussian). To clearly see why, let's look at what we need to compute. We'll focus on the <span color="blue">second</span> term, since that's the troublesome one:
+					This acquisition is, however, already strikingly harder to compute numerically compared to the \(1-step\) expected improvement. No analytical solution is known even when the model's predictions are of a simple form (such as a Gaussian). To see clearly why, let's look at what we need to compute. We saw that the <span class="green">first term</span> is just the \(1\)-step expected improvement, which is quite simple to compute; there ia a closed-form solution when \(y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}\) is Gaussian-distributed. Hence, let's look closer at the <span color="blue">second</span> term and how to compute it, since that's the troublesome one:
 				</p>
 				\[\underbrace{\class{blue}{\mathbb{E}_{y_{N-1} \mid x_{N-1}, \mathcal{D}_{N-1}}\Big[}\underbrace{\class{blue}{\max_{x_{N}^{\prime}}} \overbrace{\class{blue}{\mathbb{E}_{y_{N} \mid x_{N}^{\prime}, \mathcal{D}_{N}}\left[\lambda_{N}\right]}}^{\text{I}}}_{\text{II}}\class{blue}{\Big]}}_{\text{III}}\]
 
@@ -444,7 +445,7 @@
 					</li>
 				</ul>
 				<p>
-				    It's hopefully clear that this is computationally a pretty hard task. Well, ok, we did actually compute this \(2\)-step optimal acquisition function to make the interactive plot above, which (hopefully) runs in your browser. It's just-about tractable on this one-dimensional problem. Going beyond \(2\) steps, e.g. to compute \(3\)-step or \(4\)-step optimal acquisition functions gets intractable really fast.
+				    It's hopefully clear that this is computationally a pretty hard task. Well, ok, we did actually compute this \(2\)-step optimal acquisition function to make the interactive plot above, which (hopefully) runs in your browser. It's just-about tractable on this one-dimensional problem. Going beyond \(2\) steps, e.g. to compute \(3\)-step or \(4\)-step optimal acquisition functions gets intractable really fast though.
 				</p>
 				<h3>What actually makes a good acquistion function</h3>
 				<p>
