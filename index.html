@@ -59,7 +59,7 @@
 
 				<h2>A Problem</h2>
 				<p>
-					Imagine you're on the engineering design team for a Formula One car. The team lead decided that redesigning the vehicle’s side wing may improve its cornering speed. A new shape has been proposed, however, the length of the side-wing, which can vary within the regulation constraints of 5cm - 40cm, is yet to be decided. Your job is to find the length of the wing that gives optimal performance as measured by the cornering speed the driver is able to achieve.
+					Imagine you're on the engineering design team for a Formula One car. The team lead decided that redesigning the vehicle’s front wing may improve its cornering speed. A new shape has been proposed, however, the length of the front-wing, which can vary within the regulation constraints of 5cm - 40cm, is yet to be decided. Your job is to find the length of the wing that gives optimal performance as measured by the cornering speed the driver is able to achieve.
 				</p>
 
 				<p>
@@ -71,7 +71,7 @@
 
 				<!-- <h3>Possible functions</h3> -->
 				<p>
-					This is a typical setting for Bayesian Optimization. In this problem, we're trying to optimize an objective function \(f(x)\) - the vehicle's on track performance - as a function of the side-wing length \(x\). Unfortunately, we don't know what that function looks like: 
+					This is a typical setting for Bayesian Optimization. In this problem, we're trying to optimize an objective function \(f(x)\) - the vehicle's on track performance - as a function of the front-wing length \(x\). Unfortunately, we don't know what that function looks like: 
 				</p>
 
 				<!-- Posssible Functions Plot (inline) -->
@@ -125,11 +125,11 @@
 
 				<!-- TODO: Mention that the model is data dependent-->
 				<p>
-					Instead of just picking side-wing lengths blindly, one of the central ideas of Bayesian optimization is to use a <strong>model</strong> for the data to inform that choice. This would allow us to make predictions for the vehicle's cornering speed — our objective — for wing lengths we haven't tested yet. This can give us a proxy for what the most promising regions to explore might be.
+					Instead of just picking front-wing lengths blindly, one of the central ideas of Bayesian optimization is to use a <strong>model</strong> for the data to inform that choice. This would allow us to make predictions for the vehicle's cornering speed — our objective — for wing lengths we haven't tested yet. This can give us a proxy for what the most promising regions to explore might be.
 				</p>
 
 				<p>
-					By using a model, we could formulate an automated strategy: pick the side-wing that is predicted to give the highest expected cornering speed by the model.
+					By using a model, we could formulate an automated strategy: pick the front-wing that is predicted to give the highest expected cornering speed by the model.
 				</p>
 
 				<!-- Plot: Choose points using only the mean of model predictions -->
@@ -268,11 +268,11 @@
 				<img src="expected-value-acquisition.png">
 
 				<p>
-					We've seen the short-comings of this acquisition, which leads to the question: what is the right acquisition function? Starting from the goal of finding the best side-wing design, can we come up with an acquisition function that would lead us to the optimal rule for choosing the next length \(x\) to test? Let's try and do just that.
+					We've seen the short-comings of this acquisition, which leads to the question: what is the right acquisition function? Starting from the goal of finding the best front-wing design, can we come up with an acquisition function that would lead us to the optimal rule for choosing the next length \(x\) to test? Let's try and do just that.
 				</p>
 				<h3>Optimal Acquisition Function</h3>
 				<p>
-					We can start by concretely formulating our problem. During the experimentation phase, we get to sequentially select \(N\) inputs \(x_i \in \mathbb{R}\), and observe the corresponding output \(y_i=f(x_i) \). At the end, after these trials are complete, we want to return a final recommendation for the optimal side-wing length \(x^*\). We'll assume that we <i>have to</i> recommend a design \(x^*\) from the set of wing lengths that were tested in the lab <a class="gold link dim collapsible-button footnote-button" href="#0"></a>. On the race day, we require a tested design we have utmost confidence in. 
+					We can start by concretely formulating our problem. During the experimentation phase, we get to sequentially select \(N\) inputs \(x_i \in \mathbb{R}\), and observe the corresponding output \(y_i=f(x_i) \). At the end, after these trials are complete, we want to return a final recommendation for the optimal front-wing length \(x^*\). We'll assume that we <i>have to</i> recommend a design \(x^*\) from the set of wing lengths that were tested in the lab <a class="gold link dim collapsible-button footnote-button" href="#0"></a>. On the race day, we require a tested design we have utmost confidence in. 
 				</p>
 				<div class="collapsible-content footnote-content ph3 center gold bl bw2">
 					It's possible to formulate the optimization problem in other ways, including observations with noise, returning a point \(x^*\) that hasn't been tested, or having a non-fixed number of steps left.
@@ -283,7 +283,7 @@
 					To maximise this utility, we'd naturally want to report the best design we've found during our experimentation:
 					\[x^*_{\text{final}} = x_{\class{light-red}{i^*}}\quad\text{ where }\class{light-red}{i^*}=\underset{i\in \{1,\dots, N\}}{\operatorname{argmax}} y_i\]
 
-					To arrive at a general acquisition function, it helps to first consider the specific case when we're almost at the end of the design period; we only have time to test one last prototype before we must pick a design to be manufactured for the race. So far, we have tried side-wing lengths \((x_1, \dots, x_{N-1})\) and observed corresponding speeds \((y_1, \dots, y_{N-1})\). Given these, we can define the <i>extra</i> utility we would get from evaluating the last point at \(x_N\), and (hypothetically) observing a cornering speed \(y_N\):
+					To arrive at a general acquisition function, it helps to first consider the specific case when we're almost at the end of the design period; we only have time to test one last prototype before we must pick a design to be manufactured for the race. So far, we have tried front-wing lengths \((x_1, \dots, x_{N-1})\) and observed corresponding speeds \((y_1, \dots, y_{N-1})\). Given these, we can define the <i>extra</i> utility we would get from evaluating the last point at \(x_N\), and (hypothetically) observing a cornering speed \(y_N\):
 				</p>
 				\[\begin{align}
 				\lambda_N &=\begin{cases}
