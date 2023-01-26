@@ -59,11 +59,11 @@
 
 				<h2>A Problem</h2>
 				<p>
-					Imagine you're on the engineering design team for a Formula One car. The team lead decided that redesigning the vehicle’s front wing may improve its cornering speed. A new shape has been proposed, however, the length of the front-wing, which can vary within the regulation constraints of 5cm - 40cm, is yet to be decided. Your job is to find the length of the wing that gives optimal performance as measured by the cornering speed the driver is able to achieve.
+					Imagine you're on the engineering design team for a Formula One car. The team lead decided that redesigning the vehicle’s front wing may improve its cornering speed. A new shape has been proposed, however, the length of the front-wing, which can vary within the regulation constraints of 5cm - 50cm, is yet to be decided. Your job is to find the length of the wing that gives optimal performance as measured by the cornering speed the driver is able to achieve.
 				</p>
 
 				<p>
-					The challenge is: it is both expensive and slow to test new wing sizes. Each wing size prototype takes around a week to manufacture, install on the vehicle and get tested by the driver. There are only a few weeks left until the next Grand Prix, however, so you have limited time to find the best design.
+					The challenge is: it is both expensive and slow to test new wing sizes. Each wing size prototype takes around a week to manufacture, install on the vehicle and get tested by the driver. There are only a few weeks left until the next Grand Prix, so you have limited time to find the best design.
 				</p>
 				<!-- !!Include something about hoping to automate the process as well. -->
 
@@ -71,14 +71,14 @@
 
 				<!-- <h3>Possible functions</h3> -->
 				<p>
-					This is a typical setting for Bayesian Optimization. In this problem, we're trying to optimize an objective function \(f(x)\) - the vehicle's on track performance - as a function of the front-wing length \(x\). Unfortunately, we don't know what that function looks like: 
+					This is a typical setting for Bayesian Optimization. In this problem, we're trying to optimize an objective function \(f(x)\) — the vehicle's on track performance — as a function of the front-wing length \(x\). Unfortunately, we don't know what that function looks like: 
 				</p>
 
 				<!-- Posssible Functions Plot (inline) -->
 		    	<div id="chart-possible-funcs"></div>
 				<!-- <h2>Choosing points blindly</h2> -->
 				<p>
-					Since the objective function is expensive to evaluate - both in terms of time and manufacturing cost - we can only ever hope to observe the objective function at a limited number of points. Each evaluation is precious, we can't waste them.
+					Since the objective function is expensive to evaluate — both in terms of time and manufacturing cost — we can only ever hope to observe the objective function at a limited number of points. Each evaluation is precious, we can't waste them.
 				</p>
 
 				<p>
@@ -86,7 +86,7 @@
 				</p>
 
 		        <p>
-					Before we get on to how they work, however, try to have a go at picking the points yourself. There are 5 weeks left until the next race, so use the evaluations wisely:
+					Before we get on to how they work, however, try to have a go at picking the points yourself. There are 5 weeks left until the next race – use the evaluations wisely:
 				</p>
 
 		    </div>
@@ -116,20 +116,20 @@
 				<h2>Using a model</h2>
 
 				<p>
-					There are multiple ways to approach picking which points to evaluate. We could try naively picking the points at random, or divide the design-space uniformly into a grid. However, both of these approaches would be suboptimal - they ignore the feedback which we sequentially receive from each experiment.
-				</p>
+					There are multiple ways to approach picking which points to evaluate. We could try naively picking the points at random, or divide the design-space uniformly into a grid. However, both of these approaches would be suboptimal – they ignore the feedback which we sequentially receive from each experiment.
+				<!-- </p>
 
-				<p>
+				<p> -->
 					To pick the next point, we want to utilise the information about which previously evaluated inputs turned out to be good, and which ones turned out to be bad. We want to focus our search on the most promising areas of the design space.
 				</p>
 
 				<!-- TODO: Mention that the model is data dependent-->
 				<p>
-					Instead of just picking front-wing lengths blindly, one of the central ideas of Bayesian optimization is to use a <strong>model</strong> for the data to inform that choice. This would allow us to make predictions for the vehicle's cornering speed — our objective — for wing lengths we haven't tested yet. This can give us a proxy for what the most promising regions to explore might be.
+					Instead of just picking front-wing lengths to test blindly, one of the central ideas of Bayesian optimization is to use a <strong>model</strong> for the data to inform that decision. A model would allow us to make predictions for the vehicle's cornering speed for wing lengths we haven't tested yet. The predictions can be a good proxy for what the most promising regions to explore might be.
 				</p>
 
 				<p>
-					By using a model, we could formulate an automated strategy: pick the front-wing that is predicted to give the highest expected cornering speed by the model.
+					By using a model, we could formulate an automated strategy. One such strategy might be: pick the front-wing that is predicted to give the highest expected cornering speed by the model.
 				</p>
 
 				<!-- Plot: Choose points using only the mean of model predictions -->
@@ -175,7 +175,7 @@
 					<div id="explore-exploit-show-true"></div>
 					<div class="mt7 mb4">
 						<p>
-							While doing so, we are ignoring other unexplored parts of the search-space where an even better design could be located. By applying this strategy repeatedly, we would only ever explore the one local optimum we've found so far. We'd never find the better optimum in the unexplored region.
+							While doing so, we are completely ignoring other unexplored parts of the search-space where an even better design could be located. By applying this strategy repeatedly, we would only ever explore the region around the one local optimum we've found so far. We'd never discover the better optimum in the unexplored region.
 						</p>
 						<!-- TODO: Highlight the word better optimum, and show a line on the chart -->
 					</div>
@@ -184,20 +184,20 @@
 				<!-- TODO: This should pop into view separately, even though nothing happens on the plot -->
 				<div class="mt6 mb4">
 					<p>
-						There is clearly a trade-off between selecting inputs close to the 'best' points observed so far (exploiting) and traversing the design-space in search of more prospective regions (exploring). This trade-off plays a central role in Bayesian Optimization.
+						There is clearly a trade-off between selecting inputs close to the best points observed so far (exploiting) and traversing the design-space in search of more prospective regions (exploring). This trade-off plays a central role in Bayesian Optimization.
 					</p>
 				</div>
 
 				<div class="mt6 mb4">
 			    	<!-- <h3>The need for a <i>probabilistic</i> model</h3> -->
 					<p>
-						As presented, there is a key missing component to our model that would allow us to explore effectively, however. Intuitively, we want to explore in areas where we believe there is a <strong>high probability</strong> that the design could be good. This can happen both in places where the model's mean prediction is high, or where the model's mean prediction is low, but the uncertainty in that prediction is high. Even though the <i>expected</i> value at a given point might be low, if we are uncertain enough, the probability of that point being by far the best one we've seen so far might actually be relatively large.
+						As presented, there is a key missing component to our model that would allow us decide where to explore. Intuitively, we want to explore areas where we believe there is a <strong>high probability</strong> that the design could improve significantly upon the best one found so far. This can happen both in places where the model's mean prediction is high, or where the model's mean prediction is lower, but the uncertainty in that prediction is high. Even though the <i>expected</i> value at a given point might be low, if we are uncertain enough, there could be a significant probability that that point might turn out to be the best one we've seen so far.
 					</p>
 				</div>
 		    	<div id="explore-exploit-text3">
 		    		<div id="explore-exploit-show-variance"></div>
 					<p>
-						To identify these high-risk high-reward regions, we need to be able to evaluate a notion of uncertainty in the model's predictions. We need a model that can give us a full predictive distribution over the possible values for the objective. A model for Bayesian Optimization ought to maintain a statistical picture of the function’s overall form given our observations of it.
+						To identify these high-risk high-reward regions we need to be able to evaluate a notion of uncertainty in each of model's predictions; we need a model that can give us a full predictive distribution over the possible values for the objective. A model for Bayesian Optimization ought to maintain a statistical picture of the function’s overall form given our observations of it.
 					</p>
 					<!-- TODO: I don't stand by the above statement (2nd to last sentence). -->
 					<p>
@@ -205,7 +205,7 @@
 					</p>
 					<!-- The below sentence doesn't necessarily fit in there. It would go together with the whole paragraph on probabilistic models.-->
 					<p>
-						Gaussian Processes are one widely popular class of model for Bayesian Optimization of functions over <i>continuous</i> domains, like the one in this example. The formula for obtain the predictive distribution by marginalising out every possible hypothesis for the true function is analytical, and hence Gaussian Processes are great for obtaining reliable uncertainty estimates.
+						Gaussian Processes are one widely popular class of model for Bayesian Optimization of functions over <i>continuous</i> domains, like the one in this example. Weighing all the possible hypotheses to form a predictive distribution in Gaussian Processes can be done analytically, and hence Gaussian Processes are great for obtaining reliable uncertainty estimates.
 					</p>
 					<!-- TODO: is the 2nd sentence above really necessary-->
 					<p>
