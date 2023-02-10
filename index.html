@@ -16,7 +16,7 @@
 
 <body>
 	<!-- Is the padding necessary here? Could have some nice block colors otherwise-->
-<article class="pa3 pa3-ns">
+<article class="pa2 pa3-ns debug">
 	<!-- Header taken from: -->
 	<!-- https://tachyons.io/components/articles/left-title-top-border/index.html  -->
 	<!-- TODO: CSS magic to make it stack above text if device-width < threshold -->
@@ -54,7 +54,7 @@
 
 		<!-- <div class="fl w-100 w-50-ns pv0 center"> -->
 		<div class="cf">
-			<div class="mw5 mw7-ns center mv4 pa3 ph5-ns">
+			<div class="mw7 mw7-ns center mv4 pa1 ph5-ns">
 
 
 				<h2>A Problem</h2>
@@ -111,7 +111,7 @@
 		<!-- MEAN ONLY CHOICE OF POINTS -->
 
 		<div class="cf">
-			<div class="mw5 mw7-ns center mv4 pa2 ph5-ns">
+			<div class="mw7 mw7-ns center mv4 pa2 ph5-ns">
 		    <!-- <div class="fl w-100 w-50-ns ph2 pv0"> -->
 				<h2>Using a model</h2>
 
@@ -147,7 +147,7 @@
 
 		<!-- EXPLAIN ISSUE WITH MEAN ALONE -->
 
-		<section class="mw5 mw7-ns ph5-ns center ph2">
+		<section class="mw7 mw7-ns ph5-ns center ph2">
 			<div class="mb4">
 				<h2>Explore vs exploit - the need for exploration</h2>
 				<p>
@@ -219,14 +219,14 @@
 
 		<!-- MEAN and VARIANCE CHOICE OF POINTS -->
 		<div class="cf">
-			<div class="mw5 mw7-ns center mv4 pa3 ph5-ns">
+			<div class="mw7 mw7-ns center mv4 pa3 ph5-ns">
 		    	<h2>Exploring uncertainty</h2>
 				<div id="chart-choose-points-with-variance"></div>
 			</div>
 		</div>
 		<div class="cf">
 		<!-- Discussion of a decision rule -->
-			<div class="mw5 mw7-ns center mv4 pa3 ph5-ns">
+			<div class="mw7 mw7-ns center mv4 pa3 ph5-ns">
 				<h2>Decision Rule</h2>
 				<p>
 					So far, we discussed the tension between exploration and exploitation and the motivation for using a probabilistic model as a key component in Bayesian Optimization in order to help balance the two. Since Bayesian Optimization is an <i>automatic</i> approach to designing experiments, however, we're still clearly missing one component: a decision rule for selecting the next point.
@@ -282,14 +282,16 @@
 
 					To arrive at a general acquisition function, it helps to first consider the specific case when we're almost at the end of the design period; we only have time to test one last prototype before we must pick a design to be manufactured for the race. So far, we have tried front-wing lengths \((x_1, \dots, x_{N-1})\) and observed corresponding speeds \((y_1, \dots, y_{N-1})\). Given these, we can define the <i>extra</i> utility we would get from evaluating the last point at \(x_N\), and (hypothetically) observing a cornering speed \(y_N\):
 				</p>
-				\[\begin{align}
-				\lambda_N &=\begin{cases}
+				<div class="scrollable-equation">
+					\[\begin{align}
+					\lambda_N &=\begin{cases}
 					\class{light-purple}{y_N - \max\left(y_1, \dots, y_{N-1}\right)} & \class{dark-pink}{\text{if } y_N > \max\left(y_1, \dots, y_{N-1}\right)} \\[.5em]
 					\class{black}{0} & \class{blue}{\text{if } y_N \leq \max\left(y_1, \dots, y_{N-1}\right)}
-				\end{cases} \\
-				&=\max(\class{light-purple}{y_N - \max\left(y_1, \dots, y_{N-1}\right)}, \class{black}{0})
-				\end{align}
-				\]
+					\end{cases} \\
+					&=\max(\class{light-purple}{y_N - \max\left(y_1, \dots, y_{N-1}\right)}, \class{black}{0})
+					\end{align}
+					\]
+				</div>
 				<p>
 					Let's break this down. <span class="dark-pink">If the output \(y_N\) is <strong>better</strong> than the best design seen in the previous \(N - 1\) steps, \(x_N\) will be returned as the optimal design.</span> The extra gain in utility of the final design will be \(\class{light-purple}{ y_N - \max (y_1, \dots, y_{N-1})}\). </span> <span class="blue">If the output \(y_N\) is not better than that of previous designs, the extra utility will be \(\class{black}{0}\), as one of the previous \(N-1\) designs will be returned.</span>
 				</p>
@@ -297,7 +299,9 @@
 				<p>
 					We want to pick \(x_N\) as to maximise this increase in utility. Of course, <i>a-priori</i>, we don't know what the cornering speed \(y_N\) corresponding to a given design length \(x_N\) is going to be. Instead, we can maximise the <strong>expected improvement</strong> in the utility: 
 				</p>
-				\[\mathbb{E}_{y_N|x_N, \mathcal{D}_N} [\lambda_N] = \mathbb{E}_{y_N|x_N, \mathcal{D}_N} [\max(y_N - \max\left(y_1, \dots, y_{N-1}\right), 0)]\]
+				<div class="scrollable-equation">
+					\[\mathbb{E}_{y_N|x_N, \mathcal{D}_N} [\lambda_N] = \mathbb{E}_{y_N|x_N, \mathcal{D}_N} [\max(y_N - \max\left(y_1, \dots, y_{N-1}\right), 0)]\]
+				</div>
 				<p>
 					That is, we want to maximise the extra utility from observing \((x_N, y_N)\) averaged over the probability density of obtaining a particular output \(y_N\) in response to input \(x_N\). The formula for the expected improvement above then becomes our <i>optimal</i> acquisition function in the \(N\)-th step:
 					\[\alpha_N(x_N)=\mathbb{E}_{y_N|x_N, \mathcal{D}_N} [\lambda_N]\]
@@ -318,7 +322,7 @@
 				<div class="collapsible-content footnote-content ph3 center gold bl bw2">
 					If the predictive distribution is a Gaussian – <span class="gray">\(p(y_N|x_N, \mathcal{D}_N)=\mathcal{N}(y_N; \mu, \sigma)\)</span> – then the 1-step expected improvement is:
 
-					<div class="gray scrollable-mathjax">
+					<div class="gray scrollable-equation scrollable-mathjax">
 					\[\max(\mu - y_{max}, 0)+\sigma \varphi\left(\frac{\mu - y_{max}}{\sigma}\right)-\left|\mu - y_{max}\right| \Phi\left(\frac{\mu - y_{max}}{\sigma}\right)\]
 					</div>
 					where \(\varphi(\cdot)\) is the standard normal probability density function and \(\Phi(\cdot)\) is the respective cumulative distribution function. 
@@ -330,7 +334,9 @@
 				<p>
 					What's then the optimal point to pick when there are \(2\) steps left? In a similar way, we can think about the expected extra utility in the steps <i>following</i> hypothetically picking a particular input \(x_{N-1}\) and observing some output \(y_{N-1}\). The contributions to this extra utility will come from two places. Firstly, from the immediate improvement from the output observed at step \(N-1\):
 				</p>
-				\[\lambda_{N-1}\overset{\small \operatorname{def}}{=}\max(y_{N - 1} - \max (y_1, \dots, y_{N-2}), 0)\]
+				<div class="scrollable-equation">
+					\[\lambda_{N-1}\overset{\small \operatorname{def}}{=}\max(y_{N - 1} - \max (y_1, \dots, y_{N-2}), 0)\]
+				</div>
 				<p>
 					And, secondly, from the (1-step) <strong>expected</strong> improvement at step \(N\) (expected, since the outcome \(y_N\) is unknown):
 
@@ -339,18 +345,22 @@
 				<p>
 					We'll assume that after the current \((N-1)\)-th step, we will <span class="red">pick the last input \(x_N\) optimally</span> (why wouldn't we?) by maximising this expected improvement in the last step. Then, the total expected improvement from step \(N-1\) onwards (after observing a particular pair \((x_{N-1}, y_{N-1})\)) becomes:
 				</p>
+				<div class="scrollable-equation">
 				\[
 					\underbrace{\lambda_{N-1}}_{\text{improvement in step }N-1} + \underbrace{\class{red}{\max_{x_N'}} \overbrace{\mathbb{E}_{y_N|\class{red}{x_N'}, \mathcal{D}_N} \left[\lambda_N\right]}^{\text{(1-step) expected improvement in step }N}}_{\text{optimal expected improvement in step }N} \\
 				\]
+				</div>
 				<p>
 					Of course, at the point of picking \(x_{N-1}\), we again do not know the value of \(y_{N-1}\). To obtain the best possible outcome in expectation, we average out all the possibilities to arrive at the optimal acquistion function at step \(N-1\):
 				</p>
+				<div class="scrollable-equation">
 					\[
-				\begin{align}
+					\begin{align}
 					\alpha_{N-1}(x_{N-1})=&\mathbb{E}_{y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}}\left[\lambda_{N-1} + {\max_{x_N'}}\ \mathbb{E}_{y_N|{x_N'}, \mathcal{D}_N} \left[\lambda_N\right] \right]\\
 					=& \class{green}{\mathbb{E}_{y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}} \left[ \lambda_{N-1}\right]} + \class{blue}{\mathbb{E}_{y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}}\left[\max_{x_N'} \mathbb{E}_{y_N|{x_N'}, \mathcal{D}_N} \left[\lambda_N \right]\right]}
-				\end{align}
+					\end{align}
 					\]
+				</div>
 				<a class="collapsible-button light-blue link dim bl bw2 ph3" href="#0">Math Legend</a>
 				<div class="collapsible-content light-blue bl bw2 ph3">
 					<p class="gray f6">Notation is ready to forget on a first read, so here are some helpers:</p>
@@ -372,16 +382,18 @@
 				<p>
 					The second term — the <span class="blue">expectation of the expected improvement in the next step</span> — warrants a closer look to get some intuition for it.
 				</p>
-				\[
-				\begin{align}
-				&\class{blue}{\mathbb{E}_{y_{N-1} \mid x_{N-1}, \mathcal{D}_{N-1}}\Big[\max_{x_{N}^{\prime}} \mathbb{E}_{y_{N} \mid x_{N}^{\prime}, \mathcal{D}_{N}}\left[\lambda_{N}\right]\Big]}=\\
-				=&
-				\underbrace{\int_{y_{N-1}\in \mathbb{R}}}_{1.}
-				\underbrace{\left(\max_{x_{N}^{\prime}} \mathbb{E}_{y_{N} \mid x_{N}^{\prime}, \mathcal{D}_{N}}\left[\lambda_{N}\right]\right)}_{2.}
-				\underbrace{p\left(y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}\right)
-				dy_{N-1}}_{3.}
-				\end{align}
-				\]
+				<div class="scrollable-equation">
+					\[
+					\begin{align}
+					&\class{blue}{\mathbb{E}_{y_{N-1} \mid x_{N-1}, \mathcal{D}_{N-1}}\Big[\max_{x_{N}^{\prime}} \mathbb{E}_{y_{N} \mid x_{N}^{\prime}, \mathcal{D}_{N}}\left[\lambda_{N}\right]\Big]}=\\
+					=&
+					\underbrace{\int_{y_{N-1}\in \mathbb{R}}}_{1.}
+					\underbrace{\left(\max_{x_{N}^{\prime}} \mathbb{E}_{y_{N} \mid x_{N}^{\prime}, \mathcal{D}_{N}}\left[\lambda_{N}\right]\right)}_{2.}
+					\underbrace{p\left(y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}\right)
+					dy_{N-1}}_{3.}
+					\end{align}
+					\]
+				</div>
 				<p>
 					This term says:
 					<ul class="list pl3">
@@ -428,7 +440,9 @@
 				<p>
 					This acquisition is, however, already strikingly harder to compute numerically compared to the \(1-step\) expected improvement. No analytical solution is known even when the model's predictions are of a simple form (such as a Gaussian). To see clearly why, let's look at what we need to compute. We saw that the <span class="green">first term</span> is just the \(1\)-step expected improvement, which is quite simple to compute; there ia a closed-form solution when \(y_{N-1}|x_{N-1}, \mathcal{D}_{N-1}\) is Gaussian-distributed. Hence, let's look closer at the <span color="blue">second</span> term and how to compute it, since that's the troublesome one:
 				</p>
-				\[\underbrace{\class{blue}{\mathbb{E}_{y_{N-1} \mid x_{N-1}, \mathcal{D}_{N-1}}\Big[}\underbrace{\class{blue}{\max_{x_{N}^{\prime}}} \overbrace{\class{blue}{\mathbb{E}_{y_{N} \mid x_{N}^{\prime}, \mathcal{D}_{N}}\left[\lambda_{N}\right]}}^{\text{I}}}_{\text{II}}\class{blue}{\Big]}}_{\text{III}}\]
+				<div class="scrollable-equation">
+					\[\underbrace{\class{blue}{\mathbb{E}_{y_{N-1} \mid x_{N-1}, \mathcal{D}_{N-1}}\Big[}\underbrace{\class{blue}{\max_{x_{N}^{\prime}}} \overbrace{\class{blue}{\mathbb{E}_{y_{N} \mid x_{N}^{\prime}, \mathcal{D}_{N}}\left[\lambda_{N}\right]}}^{\text{I}}}_{\text{II}}\class{blue}{\Big]}}_{\text{III}}\]
+				</div>
 
 				Here are the steps necessary to compute this quantity for a particular value of \(x_{N-1}\):
 				<ul class="list pl1">
@@ -481,7 +495,7 @@
 
 		<!-- MEAN and VARIANCE CHOICE OF POINTS -->
 		<div class="cf mt6">
-			<div class="mw5 mw7-ns center mv4 pa3 ph5-ns">
+			<div class="mw7 mw7-ns center mv4 pa3 ph5-ns">
 		    	<h2>Later blog sections</h2>
 			</div>
 			<p><strong>TODO: Delete?</strong> I think none of these are necessarily still relevant</p>
