@@ -1,3 +1,6 @@
+:root {
+  --background-color: #ffffff;
+}
 html {
   font-size: 16px;
   /* line-height below 1.6 causes mathjax equations to clip for whatever reason :( */
@@ -24,7 +27,7 @@ h2 {
   font-size: 19px;
 }
 
-.stcky-container {
+.sticky-container {
   position: relative;
 }
 
@@ -40,7 +43,10 @@ h2 {
 .sticky {
   position: -webkit-sticky;
   position: sticky;
-  top: 25%;  /* A heuristic that makes it roughly centered. Needs fixing (Bruno) */
+  /* top: 25%;  A heuristic that makes it roughly centered. Needs fixing (Bruno) */
+  /* top: calc(height); */
+  bottom: 0;
+  align-self: flex-end;
 }
 
 .footnote-button::before {
@@ -63,4 +69,13 @@ h2 {
 
 .scrollable-equation{
   overflow-x: auto;
+}
+
+.topGradient{
+	height: 4em;
+	width: 100%;
+	background:linear-gradient(rgba(255, 255, 255, 0), var(--background-color));
+	/* position: fixed; */
+	/* top:0; */
+	z-index: 100;
 }

@@ -147,33 +147,27 @@
 
 		<!-- EXPLAIN ISSUE WITH MEAN ALONE -->
 
-		<div class="cf">
-		    <div class="fl w-100 w-50-ns ph2 pv2">
-		    	<h2>Explore vs exploit - the need for exploration</h2>
-		    </div>
-		</div>
- 
-		<div class="cf sticky-container" id="test-id"> <!-- ph2-ns -->
-		    <div class="fl w-100 w-50-ns ph2 pv0">
-				<div class="mb4">
-					<p>
-						Starting with the setup on the right, let's see what would happen if we strictly followed the <i>"pick the point with the best expected cornering speed predicted by the model"</i> strategy.
-					</p>
-				</div>
-	<!-- 				<button id="button-explore-exploit-1">Pick naive point</button>
-	 -->
+		<section class="mw5 mw7-ns ph5-ns center ph2">
+			<div class="mb4">
+				<h2>Explore vs exploit - the need for exploration</h2>
+				<p>
+					Starting with the setup below, let's see what would happen if we strictly followed the <i>"pick the point with the best expected cornering speed predicted by the model"</i> strategy.
+				</p>
+			</div>
+	
+			<div class="cf sticky-container" id="test-id">
 
-		    	<div id="explore-exploit-text1" >
+				<div id="explore-exploit-text1" >
 					<div id="explore-exploit-naive-point"></div> <!-- Use a div as the event trigger because it has 0 height. If the div had a non-zero height, the bounding box would cause assymetry in the scrolling down vs scrolling up IntersectionObserver calls. -->
-					<div class="mt7 mb4">
+					<div class="mt7">
 						<p>
-							In this case, by picking the best point predicted by the model, the chosen point ends up being really close to the previously tried designs that turned out fairly well.
+							In this case, by picking the <span style="color: red;">best point predicted by the model</span>, the chosen point ends up being really close to the previously tried designs that turned out fairly well.
 						</p>
 					</div>
 				</div>
-		    	<div id="explore-exploit-text2" >
+				<div id="explore-exploit-text2" >
 					<div id="explore-exploit-show-true"></div>
-					<div class="mt7 mb4">
+					<div class="mt7">
 						<p>
 							While doing so, we are completely ignoring other unexplored parts of the search-space where an even better design could be located. By applying this strategy repeatedly, we would only ever explore the region around the one local optimum we've found so far. We'd never discover the better optimum in the unexplored region.
 						</p>
@@ -182,20 +176,20 @@
 				</div>
 
 				<!-- TODO: This should pop into view separately, even though nothing happens on the plot -->
-				<div class="mt6 mb4">
+				<div class="mt7">
 					<p>
 						There is clearly a trade-off between selecting inputs close to the best points observed so far (exploiting) and traversing the design-space in search of more prospective regions (exploring). This trade-off plays a central role in Bayesian Optimization.
 					</p>
 				</div>
 
-				<div class="mt6 mb4">
-			    	<!-- <h3>The need for a <i>probabilistic</i> model</h3> -->
+				<div class="mt7">
+					<!-- <h3>The need for a <i>probabilistic</i> model</h3> -->
 					<p>
 						As presented, there is a key missing component to our model that would allow us decide where to explore. Intuitively, we want to explore areas where we believe there is a <strong>high probability</strong> that the design could improve significantly upon the best one found so far. This can happen both in places where the model's mean prediction is high, or where the model's mean prediction is lower, but the uncertainty in that prediction is high. Even though the <i>expected</i> value at a given point might be low, if we are uncertain enough, there could be a significant probability that that point might turn out to be the best one we've seen so far.
 					</p>
 				</div>
-		    	<div id="explore-exploit-text3">
-		    		<div id="explore-exploit-show-variance"></div>
+				<div id="explore-exploit-text3">
+					<div id="explore-exploit-show-variance"></div>
 					<p>
 						To identify these high-risk high-reward regions we need to be able to evaluate a notion of uncertainty in each of model's predictions; we need a model that can give us a full predictive distribution over the possible values for the objective. A model for Bayesian Optimization ought to maintain a statistical picture of the function’s overall form given our observations of it.
 					</p>
@@ -208,20 +202,23 @@
 						Gaussian Processes are one widely popular class of model for Bayesian Optimization of functions over <i>continuous</i> domains, like the one in this example. Weighing all the possible hypotheses to form a predictive distribution in Gaussian Processes can be done analytically, and hence Gaussian Processes are great for obtaining reliable uncertainty estimates.
 					</p>
 					<!-- TODO: is the 2nd sentence above really necessary-->
-					<p>
-						To see what difference having the uncertainty estimates makes, give the optimization with a Gaussian Process model a go:
-					</p>
-
 				</div>
-		    </div> <!-- No vertical padding -->
-		    <div class="fl w-100 w-50-ns ph2 pv2 sticky">
-		    	<div id="chart-explore-exploit"></div>
+				<div class="sticky pv0 mv0">
+					<div class="topGradient"></div>
+					<div class="ph2 pt0 pb2 mv0 bg-white">
+						<div id="chart-explore-exploit"></div>
+					</div>
+				</div> <!-- No vertical padding -->
+				<p>
+					To see what difference having the uncertainty estimates makes, give the optimization with a Gaussian Process model a go:
+				</p>
+
 			</div>
-		</div>
+		</section>
 
 
 		<!-- MEAN and VARIANCE CHOICE OF POINTS -->
-		<div class="cf mt6">
+		<div class="cf">
 			<div class="mw5 mw7-ns center mv4 pa3 ph5-ns">
 		    	<h2>Exploring uncertainty</h2>
 				<div id="chart-choose-points-with-variance"></div>
