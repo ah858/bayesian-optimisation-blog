@@ -77,18 +77,18 @@ const yLabel = (g, height) => g
   .text("Cornering speed (km/h)");  
 
 
-const yGrid = (g, height, width) => {
+const yGrid = (g, height, width, classname = "horizontalGrid") => {
 
   // Redefine xscale for correct height / width specified for plot
   let yscale = yscaleFunction(height);
 
   return g
-  .selectAll(".horizontalGrid")
+  .selectAll(`.${classname}`)
   .data(yscale.ticks(NUM_Y_TICKS))
   .enter()
   .append("line")
   .attr("stroke", "lightgray")  // colour the line
-  .attr("class", "horizontalGrid")
+  .attr("class", classname)
   .attr("x1", margin.left)
   .attr("x2", width - margin.right)
   .attr("y1", d => yscale(d))
@@ -104,19 +104,43 @@ const yGrid = (g, height, width) => {
 // const sigma = 0.35//0.25
 // const ell = 4//6.75 //1.5 
 // const delta = 0.005
-// Kernel Variance Parameter
+// Kernel Standard Deviation Parameter
 const sigma = 0.36
 // Lengthscale Parameter
 const ell = 7.0 //1.5 
 // Noise variance (or standard deviation, not sure)
 const delta = 0.00001  // Does 0 noise break anything??
 
-const squared_exponential_kernel = (sigma, ell) => {
+
+/**
+ * 
+ * @param {Number} constant 
+ * @returns 
+ */
+function constant_mean_function_constructor (constant) {
+  return (x) => constant;
+}
+const zero_mean_function = constant_mean_function_constructor(0)
+
+/**
+ * A squared exponential kernel function constructor
+ * @param {number} sigma 
+ * @param {number} ell 
+ * @returns {Function} A kernel function that takes a pair of points and returns a float
+ */
+function squared_exponential_kernel_constructor (sigma, ell) {
   const sigmasq = Math.pow(sigma, 2);
   const ellsq = 2 * Math.pow(ell, 2);
   return (x1, x2) => sigmasq * Math.exp(-Math.pow(x1 - x2, 2) / ellsq)
 }
 
+/**
+ * Apply a kernel to two vectors of to compute the cross-covariance matrix
+ * @param {Array<number>} x1s 
+ * @param {Array<number>} x2s 
+ * @param {Function} kernel 
+ * @returns {Array<Array<number>>} a covariance matrix
+ */
 const apply_kernel = (x1s, x2s, kernel) => {
   const covariance = [];
   for(let i = 0; i < x1s.length; i++) {
@@ -214,7 +238,8 @@ const conditional_dist_to_plottable_confidence_intervals = (xtilde, mean, varian
  * @param {Array} xtilde - The x-grid along which the summary statistics for each x point will be returned.
  * @param {Function} kernel - The kernel to use for the GP.
  * 
- * @returns {Array} An array of objects, each representing a point on the x-grid with attributes:
+ * @returns {Array<{x: number, mean: number, lower: number, lower2: number, upper: number, upper2: number}>}
+ *                   An array of objects, each representing a point on the x-grid with attributes:
  *                   {x: x, mean: mean, lower: lower, upper: upper, lower2: lower2, upper2: upper2},
  *                   where each attribute has a float value.
  */
@@ -223,7 +248,7 @@ const conditional_dist_with_confidence_intervals = (x, y, xtilde, kernel) => {
   return conditional_dist_to_plottable_confidence_intervals(xtilde, dist.mean, dist.variance);
 }
 
-const kernel = squared_exponential_kernel(sigma, ell);
+const kernel = squared_exponential_kernel_constructor(sigma, ell);
 
 // ============================
 // Gaussian sampling
@@ -285,7 +310,8 @@ function gaussian_confidence_intervals(mean, variance, N) {
  * @param {Array} ygrid - The y-coordinates of the grid points.
  * @param {Function} kernel - The kernel to use for the GP.
  * 
- * @returns {Array} An array of objects, each representing a point on the grid with attributes:
+ * @returns {Array<{x: number, y: number, density: number}>} 
+ *                   An array of objects, each representing a point on the grid with attributes:
  *                   {x: x, y: y, density: density}, where (x, y) represent the location,
  *                   and "density" represents the value of p(y | x) from the GP.
  */
