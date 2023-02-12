@@ -8,16 +8,22 @@ const NUMBER_OF_GUESSES = 6;
 
 const NUM_Y_TICKS = 5;
 
-let xtilde = [...Array(x_axis_resolution).keys()].map((i) => 5 + (i / (x_axis_resolution-1) * 45))
+// The limits _within_ the plot (not in coordinate space)
+const xmin = 5;
+const xmax = 50;
+const ymin = -1;
+const ymax = 1;
+// The evenly spaced grid of points along the x-axis to use for plotting
+let xtilde = [...Array(x_axis_resolution).keys()].map((i) => xmin + (i / (x_axis_resolution-1) * (xmax - xmin)))
 
 const margin = ({top:20, right:30, bottom: 50, left: 55})
 
 const xscaleFunction = width => d3.scaleLinear()
-	.domain([5,50])
+	.domain([xmin, xmax])
 	.range([margin.left, width - margin.right])
 
 const yscaleFunction = height => d3.scaleLinear()
-  .domain([-1, 1])
+  .domain([ymin, ymax])
   .range([height - margin.bottom, margin.top]);
 
 const xscale = xscaleFunction(width);
@@ -151,6 +157,16 @@ const apply_kernel = (x1s, x2s, kernel) => {
 // }
 
 // NEW BRUNO CODE FROM REFACTOR
+
+/**
+ * Get the conditional distribution from a GP for each point in xtilde, given initial observations
+ * (x, y)
+ * @param {*} x x-coordinates of initial obs.
+ * @param {*} y y-coordinates of initial obs.
+ * @param {*} xtilde grid of points along which to return the conditional distribution
+ * @param {*} kernel the kernel to use for the GP
+ * @returns Two arrays of points {mean: mean, variance: variance}
+ */
 function conditional_distribution (x, y, xtilde, kernel) {
   // Returns the mean and variance of the GP at points xtilde conditioned on observations (x, y)
   if(x.length == 0) {
@@ -189,7 +205,19 @@ const conditional_dist_to_plottable_confidence_intervals = (xtilde, mean, varian
     upper2: d + 1.28 * sd[i]
   }));
 }
-
+/**
+ * Computes the mean and lower and upper confidence intervals of the predictive distribution from a Gaussian Process (GP)
+ * given the x and y coordinates of an initial set of points, a grid along the x-axis and a specified kernel.
+ * 
+ * @param {Array} x - The x-coordinates of the initial points.
+ * @param {Array} y - The y-coordinates of the initial points.
+ * @param {Array} xtilde - The x-grid along which the summary statistics for each x point will be returned.
+ * @param {Function} kernel - The kernel to use for the GP.
+ * 
+ * @returns {Array} An array of objects, each representing a point on the x-grid with attributes:
+ *                   {x: x, mean: mean, lower: lower, upper: upper, lower2: lower2, upper2: upper2},
+ *                   where each attribute has a float value.
+ */
 const conditional_dist_with_confidence_intervals = (x, y, xtilde, kernel) => {
   const dist = conditional_distribution(x, y, xtilde, kernel);
   return conditional_dist_to_plottable_confidence_intervals(xtilde, dist.mean, dist.variance);
@@ -248,6 +276,34 @@ function gaussian_confidence_intervals(mean, variance, N) {
   return samples;
 }
 
+/**
+ * Computes a heatmap for the conditional density p(y | x) on a grid of points (xgrid, ygrid).
+ * 
+ * @param {Array} x - The x-coordinates of the initial points.
+ * @param {Array} y - The y-coordinates of the initial points.
+ * @param {Array} xgrid - The x-coordinates of the grid points.
+ * @param {Array} ygrid - The y-coordinates of the grid points.
+ * @param {Function} kernel - The kernel to use for the GP.
+ * 
+ * @returns {Array} An array of objects, each representing a point on the grid with attributes:
+ *                   {x: x, y: y, density: density}, where (x, y) represent the location,
+ *                   and "density" represents the value of p(y | x) from the GP.
+ */
+function conditional_distribution_density_heatmap (x, y, xgrid, ygrid, kernel) {
+  const dist = conditional_distribution(x, y, xgrid, kernel);
+  let densities = [];
+  for (let i = 0; i < xgrid.length; i++) {
+    for (let j = 0; j < ygrid.length; j++) {
+      densities.push({
+        x: xgrid[i],
+        y: ygrid[j],
+        density: normal_pdf(ygrid[j], dist.mean[i], math.sqrt(dist.variance[i]))
+      });
+    }
+  }
+  return densities;
+}
+
 // ============================
 // Expected improvement
 // ============================
@@ -262,7 +318,6 @@ function normal_cdf (x) {
 	return math.add(0.5,math.dotMultiply(0.5, math.erf(x)));
 }
 
-// TODO: Check if x argument is redundant here
 function expected_improvement(mean_pred, std_pred, max_pred_hereto) {
 // function expected_improvement(x, mean_pred, std_pred, max_pred_hereto) {
   // Based on eq. 44 in https://www.cs.ox.ac.uk/people/nando.defreitas/publications/BayesOptLoop.pdf
@@ -277,5 +332,6 @@ function expected_improvement(mean_pred, std_pred, max_pred_hereto) {
 // ============================
 
 function scale_invert_points(points, xscale, yscale) {
+  // Map from pixel coordinates to "plot" coordinates
 	return points.map((d) => ({x: xscale.invert(d.x), y: yscale.invert(d.y)}));
 }
