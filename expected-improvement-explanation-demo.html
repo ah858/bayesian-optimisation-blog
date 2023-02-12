@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css"/>
+	<script src="https://d3js.org/d3.v6.js"></script>
+	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/math/5.4.0/math.js"></script> -->
+	<script src="https://unpkg.com/mathjs@8.0.1/lib/browser/math.js"></script>
+    <link href="style.css" rel="stylesheet" type="text/css">
+</head>
+<body class="">
+    <div class="sticky-container mw7 center">
+        <p id="trans1" class="mb9" style="margin-bottom: 400px;">1</p>
+        <p id="trans2" class="mb9">2</p>
+        <p id="trans3" class="mb9" style="margin-bottom: 200px;">3</p>
+        <p id="trans4">4</p>
+        <div class="sticky pv0 mv0" id="chart-explore-exploit-container">  <!-- Add id to div so that we can measure whenever an element emerges from behind it.-->
+            <div class="topGradient"></div>
+            <div class="ph2 pt0 pb2 mv0 bg-white">
+                <div id="chart-ei-explanation"></div>
+            </div>
+        </div> <!-- No vertical padding -->
+    </div>
+<script src="./js-refactored/shared-chart-parameters.js"></script>
+<script src="./js-refactored/chart-expected-improvement-explanation.js"></script>
+</body>
+</html>
