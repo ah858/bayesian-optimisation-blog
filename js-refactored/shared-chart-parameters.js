@@ -31,13 +31,17 @@ let xtilde = [...Array(x_axis_resolution).keys()].map((i) => xmin + (i / (x_axis
 
 const margin = ({top:20, right:30, bottom: 50, left: 55})
 
-const xscaleFunction = width => d3.scaleLinear()
+function xscaleFunction (width, margin_ = margin) {
+  return d3.scaleLinear()
 	.domain([xmin, xmax])
-	.range([margin.left, width - margin.right])
+	.range([margin_.left, width - margin_.right]);
+}
 
-const yscaleFunction = height => d3.scaleLinear()
+function yscaleFunction (height, margin_ = margin) {
+  return d3.scaleLinear()
   .domain([ymin, ymax])
-  .range([height - margin.bottom, margin.top]);
+  .range([height - margin_.bottom, margin_.top]);
+}
 
 const xscale = xscaleFunction(width);
 const yscale = yscaleFunction(height);
@@ -370,7 +374,7 @@ function scale_invert_points(points, xscale, yscale) {
  * @param {number} range_max 
  * @returns {Array<number>}
  */
-function squeeze_to_range (points, range_min, range_max) {
+function squeeze_to_range(points, range_min, range_max) {
   let sample_max = d3.max(points);
   let sample_min = d3.min(points);
   let target_min = Math.max(sample_min, range_min);
@@ -379,7 +383,30 @@ function squeeze_to_range (points, range_min, range_max) {
     target_min,
     math.multiply(
       ((target_max - target_min) / (sample_max - sample_min)) ,
-      math.add(sample, -sample_min)
+      math.add(points, -sample_min)
     )
   )
+}
+
+/**
+ * Fit values in array 'points' so that the maximum and minimum are coincident with [range_min, range_max]
+ * @param {Array<number>} points 
+ * @param {number} range_min 
+ * @param {number} range_max 
+ * @returns {Array<number>}
+ */
+function fit_to_range(points, range_min, range_max) {
+  let sample_max = d3.max(points);
+  let sample_min = d3.min(points);
+  return math.add(
+    range_min,
+    math.multiply(
+      ((range_max - range_min) / (sample_max - sample_min)) ,
+      math.add(points, -sample_min)
+    )
+  )
+}
+
+function get_length_of(arr) {
+  return d3.max(arr) - d3.min(arr);
 }
