@@ -362,3 +362,24 @@ function scale_invert_points(points, xscale, yscale) {
   // Map from pixel coordinates to "plot" coordinates
 	return points.map((d) => ({x: xscale.invert(d.x), y: yscale.invert(d.y)}));
 }
+
+/**
+ * Possibly squeeze values in array 'points' to ensure they are within the range [range_min, range_max]
+ * @param {Array<number>} points 
+ * @param {number} range_min 
+ * @param {number} range_max 
+ * @returns {Array<number>}
+ */
+function squeeze_to_range (points, range_min, range_max) {
+  let sample_max = d3.max(points);
+  let sample_min = d3.min(points);
+  let target_min = Math.max(sample_min, range_min);
+  let target_max = Math.min(sample_max, range_max);
+  return math.add(
+    target_min,
+    math.multiply(
+      ((target_max - target_min) / (sample_max - sample_min)) ,
+      math.add(sample, -sample_min)
+    )
+  )
+}
