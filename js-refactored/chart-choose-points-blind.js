@@ -31,7 +31,8 @@ function drawChoosePointsBlind() {
   // let points_random1 = drawRandomPoints();
 
   // Generate the underlying curve (dist_underlying):
-  let underlying_curve_y = sample_from_gp_prior(xtilde, kernel);
+  let underlying_curve_y = sample_from_gp_prior(xtilde, kernel, mean_function);
+  underlying_curve_y = squeeze_to_range(underlying_curve_y, ymin, ymax);
   let underlying_curve = xtilde.map((d, i) => ({x: xtilde[i], y: underlying_curve_y[i]}));
 
   // let dist_underlying = conditional_distribution(points_random1.map((d) => d.x),
