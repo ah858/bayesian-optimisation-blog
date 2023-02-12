@@ -74,91 +74,21 @@ function drawChoosePointsBlind() {
   // Set up labels below x axis
   // ============================
   
-  const weekSlider = svg.append("g")
-                      .attr("class", "weekSlider")
   // Week slider has to exist on the space ranging from
   // in x direction [0, width]
   // in y direction [top_plot_height, svg_height]
   const week_slider_plot_height = (svg_height - top_plot_height);
   const week_slider_plot_start = top_plot_height;
-  const week_slider_plot_margin = {top: 0.2 * week_slider_plot_height, bottom: 0.2 * week_slider_plot_height}
-  let week_slider_xscale = d3.scaleLinear()
-	.domain([0, 1])
-	.range([margin.left, width - margin.right]);
-  let week_slider_yscale = d3.scaleLinear()
-	.domain([0, 1])
-	.range([week_slider_plot_start + week_slider_plot_margin.top, svg_height - week_slider_plot_margin.bottom]);
-  
-  // --- Add the decorative lines at the top and bottom of "week" slider
-  weekSlider.append("rect")
-    .attr("x", margin.left)
-    .attr("y", week_slider_yscale(0.))
-    .attr("height", 1)
-    .attr("width", get_length_of(week_slider_xscale.range()))
-  
-  weekSlider.append("rect")
-    .attr("x", margin.left)
-    .attr("y", week_slider_yscale(1.))
-    .attr("height", 1)
-    .attr("width", get_length_of(week_slider_xscale.range()))
-                      
-  
-  // 'Week' text label
-  let week_text = weekSlider.append("text")
-    .attr("class", "x label")
-    .attr("text-anchor", "start")
-    .attr("x", margin.left)
-    .attr("y", week_slider_yscale(0.5))
-    .attr("dy", "0.3em")
-    .text("Week:");
-
-  // Get the width of the week text to subtract from remaining x-space available
-  let week_text_bbox = week_text.node().getBBox()
-    
-  const weeks_list = [];
-
-  
-  for (let i=1; i <= NUMBER_OF_GUESSES; i++) {
-    weeks_list.push(i);
+  const week_slider_plot_margin = {
+    top: 0.2 * week_slider_plot_height,
+    bottom: 0.2 * week_slider_plot_height,
+    left: margin.left,
+    right: margin.right,
   }
-
-  let week_text_offset = week_slider_xscale.invert(week_text_bbox.x + week_text_bbox.width)
-  let width_per_week = (1 - week_text_offset) / NUMBER_OF_GUESSES;
-
-  function week_index_to_position (i) {
-    return week_slider_xscale(week_text_offset + (i + 0.5) * width_per_week)
-  }
-
-  const circleLabelBackground = weekSlider.append("circle")
-      .attr("class", ".circleLabelBackground")
-      .attr("r", 0.8 * get_length_of(week_slider_yscale.range()) / 2)
-      .attr("fill", "lightgray")
-      .attr("cy", week_slider_yscale(0.5))
-      .attr("cx", week_index_to_position(0));
-
-  
-  weekSlider.append("g")
-    .selectAll(".circleLabels")
-    .data(weeks_list)
-    .enter()
-    .append("circle")
-    .attr("r", "20")
-    // .attr("stroke", "lightgrey")
-    // .attr("stroke-width", 1.5)
-    .attr("fill", "transparent")
-    .attr("cy", week_slider_yscale(0.5))
-    .attr("cx", (d,i) => week_index_to_position(i))
-  
-  weekSlider.selectAll(".circleTextLabels")
-    .data(weeks_list)
-    .enter()
-    .append("text")
-    .attr("text-anchor", "middle")
-    .attr("dy", "0.3em")
-    .attr("y", week_slider_yscale(0.5))
-    .attr("x", (d,i) => week_index_to_position(i))
-    .text(d => d);
-  
+  /**
+   * @type WeekSlider
+   */
+  let weekSlider = new WeekSlider(0, top_plot_height, width, week_slider_plot_height, week_slider_plot_margin, NUMBER_OF_GUESSES, svg);
   // ============================
   // Set up shapes for model
   // ============================
@@ -281,25 +211,13 @@ function drawChoosePointsBlind() {
     let index = d3.format(".0f")(((x_val-5)/45) * x_axis_resolution);
     let y_val = underlying_curve[index].y;
 
-    // updateWeekCircle();
     
     return {x: x_val, y: y_val}
   }
   
   function updateWeekCircle() {
-    // Update 'weeks' circle label at bottom of the plot
-    // +2 is added to the points_chosen.length because the new click hasn't yet been added to points_chosen and the circle also needs to be one position ahead of the current guess
-
-    let circleLabelPosition = week_index_to_position(points_chosen.length);
-  
     if ((points_chosen.length) < NUMBER_OF_GUESSES) { // Required to stop the circle at the final week position
-      circleLabelBackground
-        .transition()
-        .duration(400)
-        .attr("cx", circleLabelPosition)
-       // .attrTween('r', () => {
-       //   return function(t) { return 20 - t*(1-t)*30; };
-       // });
+      weekSlider.update_current_week(points_chosen.length)
     }
   }
 
