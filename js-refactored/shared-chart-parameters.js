@@ -11,8 +11,21 @@ const NUM_Y_TICKS = 5;
 // The limits _within_ the plot (not in coordinate space)
 const xmin = 5;
 const xmax = 50;
-const ymin = -1;
-const ymax = 1;
+const ymin = 120;
+const ymax = 20 * (NUM_Y_TICKS) + ymin;
+
+// == Settings for the Gaussian Process
+
+// Kernel Standard Deviation Parameter
+const sigma = 0.46 * ((ymax - ymin) / 2);
+// Lengthscale Parameter
+const ell = 7.0 //1.5 
+// Noise variance (or standard deviation, not sure)
+const delta = 0.00001  // Does 0 noise break anything??
+const kernel = squared_exponential_kernel_constructor(sigma, ell);
+const mean_function = constant_mean_function_constructor((ymax - ymin) / 2 + ymin)
+
+
 // The evenly spaced grid of points along the x-axis to use for plotting
 let xtilde = [...Array(x_axis_resolution).keys()].map((i) => xmin + (i / (x_axis_resolution-1) * (xmax - xmin)))
 
@@ -40,11 +53,6 @@ const xAxis = (g, height, width) => {
     .call(d3.axisBottom(xscale));
 }
 
-// Scale values between [-1,1] to [120,160] to emulate F1 cornering speeds
-const scaleYVals = (n) => {
-  return 20*(n+1)+120;
-};
-
 const yAxis = (g, height) => {
 
   // Redefine xscale for correct height / width specified for plot
@@ -55,8 +63,7 @@ const yAxis = (g, height) => {
   .attr("pointer-events", "none")
   .attr('stroke-width', 0)
   .call(d3.axisLeft(yscale)
-          .ticks(NUM_Y_TICKS)
-          .tickFormat( d => scaleYVals(d) ));
+          .ticks(NUM_Y_TICKS));
 }
     
 const xLabel = (g, height, width) => g
@@ -101,15 +108,6 @@ const yGrid = (g, height, width, classname = "horizontalGrid") => {
 // Drawing Gaussian Process
 // ============================
 
-// const sigma = 0.35//0.25
-// const ell = 4//6.75 //1.5 
-// const delta = 0.005
-// Kernel Standard Deviation Parameter
-const sigma = 0.36
-// Lengthscale Parameter
-const ell = 7.0 //1.5 
-// Noise variance (or standard deviation, not sure)
-const delta = 0.00001  // Does 0 noise break anything??
 
 
 /**
@@ -191,11 +189,11 @@ const apply_kernel = (x1s, x2s, kernel) => {
  * @param {*} kernel the kernel to use for the GP
  * @returns Two arrays of points {mean: mean, variance: variance}
  */
-function conditional_distribution (x, y, xtilde, kernel) {
+function conditional_distribution (x, y, xtilde, kernel, mean_func = zero_mean_function) {
   // Returns the mean and variance of the GP at points xtilde conditioned on observations (x, y)
   if(x.length == 0) {
     const prior_variance = apply_kernel([0], [0], kernel)._data[0][0];
-    const mean = xtilde.map((d) => 0);
+    const mean = xtilde.map((d) => mean_func(d));
     const variance = xtilde.map((d) => prior_variance);
     return {mean: mean, variance: variance};
   }
@@ -204,8 +202,10 @@ function conditional_distribution (x, y, xtilde, kernel) {
   const Omega = apply_kernel(xtilde, xtilde, kernel);
   const K = apply_kernel(x, xtilde, kernel);
   
-  const mean = math.multiply(math.multiply(math.transpose(K), Sigmainv), y)
-    ._data;
+  const mean = math.add(
+    xtilde.map(mean_func),
+    math.multiply(math.multiply(math.transpose(K), Sigmainv), y)._data
+  );
   
   const variance = math.diag(math.subtract(Omega, math.multiply(math.multiply(math.transpose(K), Sigmainv), K)))
     ._data;
@@ -248,8 +248,6 @@ const conditional_dist_with_confidence_intervals = (x, y, xtilde, kernel) => {
   return conditional_dist_to_plottable_confidence_intervals(xtilde, dist.mean, dist.variance);
 }
 
-const kernel = squared_exponential_kernel_constructor(sigma, ell);
-
 // ============================
 // Gaussian sampling
 // ============================
@@ -281,11 +279,14 @@ function sample_random_normal_array(size) {
   return samples;
 }
 
-const sample_from_gp_prior = (xtilde, kernel) => {
+function sample_from_gp_prior (xtilde, kernel, mean_func = zero_mean_function) {
   const cov_matrix = apply_kernel(xtilde, xtilde, kernel);
   const cov_matrix_with_jitter = math.add(cov_matrix, math.multiply(math.identity(xtilde.length), 0.000000001))._data
   const L = cholesky(cov_matrix_with_jitter);
-  const y = math.multiply(L, sample_random_normal_array(xtilde.length));
+  const y = math.add(
+    math.multiply(L, sample_random_normal_array(xtilde.length)),
+    xtilde.map(mean_func)
+  );
   return y;
 }
 
