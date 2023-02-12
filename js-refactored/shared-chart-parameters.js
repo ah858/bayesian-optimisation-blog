@@ -17,7 +17,7 @@ const ymax = 20 * (NUM_Y_TICKS) + ymin;
 // == Settings for the Gaussian Process
 
 // Kernel Standard Deviation Parameter
-const sigma = 0.46 * ((ymax - ymin) / 2);
+const sigma = 0.4 * ((ymax - ymin) / 2);
 // Lengthscale Parameter
 const ell = 7.0 //1.5 
 // Noise variance (or standard deviation, not sure)

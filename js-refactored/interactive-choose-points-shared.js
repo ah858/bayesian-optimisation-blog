@@ -22,9 +22,6 @@ function make_choose_points_plot(svg, width, top_plot_height, week_slider_height
   // - https://stackoverflow.com/questions/22183727/how-do-you-convert-screen-coordinates-to-document-space-in-a-scaled-svg
   // - https://stackoverflow.com/questions/29261304/how-to-get-the-click-coordinates-relative-to-svg-element-holding-the-onclick-lis
 
-  // The total svg plot height
-  const total_height = 1.2 * top_plot_height;
-
   const xscale = d3.scaleLinear()
     .domain([xmin, xmax])
     .range([margin.left, width - margin.right])
@@ -191,7 +188,7 @@ function make_choose_points_plot(svg, width, top_plot_height, week_slider_height
   function getPoints(event, underlying_curve) {
     let x_val = xscale.invert(event.offsetX) 
     
-    let index = d3.format(".0f")(((x_val-5)/45) * x_axis_resolution);
+    let index = d3.format(".0f")(((x_val - d3.min(xscale.domain()))/(get_length_of(xscale.domain()))) * x_axis_resolution);
     let y_val = underlying_curve[index].y;
 
     
@@ -221,7 +218,8 @@ function make_choose_points_plot(svg, width, top_plot_height, week_slider_height
 
     // Update conditional dist
     if (draw_model_mean || draw_model_uncertainty) {
-        let dist = conditional_dist_with_confidence_intervals(points_chosen.map((d) => d.x),
+        let dist = conditional_dist_with_confidence_intervals(
+                                            points_chosen.map((d) => d.x),
                                             points_chosen.map((d) => d.y),
                                             xtilde,
                                             kernel,
