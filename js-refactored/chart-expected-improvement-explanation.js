@@ -1,9 +1,9 @@
 function drawChartExploreExploit() {
   const initial_points_chosen = [
-    {"x":26.5998,"y":-0.2},
-    {"x":32.9,"y":-0.5},
-    {"x":42.0,"y":0.25},
-    {"x":46.85,"y":0.17}
+    {"x":26.5998,"y": ymin + 0.4 * (ymax - ymin)},
+    {"x":32.9,"y": ymin + 0.25* (ymax - ymin)},
+    {"x":42.0,"y": ymin + 0.62 * (ymax - ymin)},
+    {"x":46.85,"y":ymin + 0.55 * (ymax - ymin)}
   ];
   const plot_points = initial_points_chosen.slice(0);
 
@@ -36,7 +36,6 @@ function drawChartExploreExploit() {
   svg.append("g")
     .call(yLabel, height);
   
-
   // ============================
   // Set up shapes for model
   // ============================
@@ -108,17 +107,22 @@ function drawChartExploreExploit() {
   let xgrid = [...Array(heatmap_x_resolution).keys()].map((i) => xmin + (xmax - xmin) * i / (heatmap_x_resolution));
     // .map(yscaleFunction);
   const heatmap_data = conditional_distribution_density_heatmap(
-                      initial_points_chosen.map((d) => d.x),
-                      initial_points_chosen.map((d) => d.y),
-                      xgrid,
-                      ygrid,
-                      kernel
+    initial_points_chosen.map((d) => d.x),
+    initial_points_chosen.map((d) => d.y),
+    xgrid,
+    ygrid,
+    kernel,
+    mean_function,
   )
   // Build color scale
-  var myColor = d3.scaleSequential()
+  const heatmapScale = d3.scaleLog().domain(d3.extent(heatmap_data.map(d => d.density+ 1e-3)))
+  const heatmapColor = d3.scaleSequential(
+    (d) => d3.interpolateBlues(heatmapScale(d))
+  )
   // .interpolator(d3.interpolate("#05C0", "#005ACD"))
-  .interpolator(d3.interpolate("#FFFFFF", "#005ACD"))
-  .domain([0,d3.max(heatmap_data.map(d => d.density))]);
+  // .interpolator(d3.interpolate("#FFFFFF", "#005ACD"))
+  // .interpolator(d3.interpolateInferno)
+  // .domain([0,d3.max(heatmap_data.map(d => d.density))]);
 
   // Sizes of "heatmap" rectangles
   let rectangle_width = (width - margin.left - margin.right) / heatmap_x_resolution;
@@ -138,28 +142,19 @@ function drawChartExploreExploit() {
   // ============================
   // Event Listeners for buttons
   // ============================
-
-  // d3.select("#button-explore-exploit-1")
-  //   .on("click", (event) => drawNewPoint());
-
-  // d3.select("#button-explore-exploit-2")
-  //   .on("click", (event) => showVariance());
-
-  // d3.select("#button-explore-exploit-3")
-  //   .on("click", (event) => showUnderlying());
   
   function update() {
     
-  svg.selectAll()
-    .data(heatmap_data, function(d) {return d.x+':'+d.y;})
-    .enter()
-    .append("rect")
-      .attr("x", d => xscale(d.x))
-      .attr("y", d => yscale(d.y))
-      .attr("width", rectangle_width)
-      .attr("height", rectangle_height)
-      .style("fill", d => myColor(d.density))
-      .style("opacity", 1.0)
+    svg.selectAll()
+      .data(heatmap_data, function(d) {return d.x+':'+d.y;})
+      .enter()
+      .append("rect")
+        .attr("x", d => xscale(d.x))
+        .attr("y", d => yscale(d.y))
+        .attr("width", rectangle_width)
+        .attr("height", rectangle_height)
+        .style("fill", d => heatmapColor(d.density + 1e-3))
+        .style("opacity", 1.0)
   
     // Draw new circles
     circles.selectAll("circle")
@@ -177,7 +172,8 @@ function drawChartExploreExploit() {
     const dist = conditional_dist_with_confidence_intervals(initial_points_chosen.map((d) => d.x),
                                           initial_points_chosen.map((d) => d.y),
                                           xtilde,
-                                          kernel);
+                                          kernel,
+                                          mean_function);
     
     modelMean.selectAll('.mean')
       .data([dist])

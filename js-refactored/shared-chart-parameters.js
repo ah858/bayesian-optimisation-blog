@@ -321,8 +321,8 @@ function gaussian_confidence_intervals(mean, variance, N) {
  *                   {x: x, y: y, density: density}, where (x, y) represent the location,
  *                   and "density" represents the value of p(y | x) from the GP.
  */
-function conditional_distribution_density_heatmap (x, y, xgrid, ygrid, kernel) {
-  const dist = conditional_distribution(x, y, xgrid, kernel);
+function conditional_distribution_density_heatmap (x, y, xgrid, ygrid, kernel, mean_func = zero_mean_function) {
+  const dist = conditional_distribution(x, y, xgrid, kernel, mean_func);
   let densities = [];
   for (let i = 0; i < xgrid.length; i++) {
     for (let j = 0; j < ygrid.length; j++) {
