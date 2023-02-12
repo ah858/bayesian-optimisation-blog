@@ -205,13 +205,14 @@ function conditional_distribution (x, y, xtilde, kernel, mean_func = zero_mean_f
   const Sigmainv = math.inv(Sigma);
   const Omega = apply_kernel(xtilde, xtilde, kernel);
   const K = apply_kernel(x, xtilde, kernel);
+  const preConditioner = math.multiply(math.transpose(K), Sigmainv);
   
   const mean = math.add(
     xtilde.map(mean_func),
-    math.multiply(math.multiply(math.transpose(K), Sigmainv), y)._data
-  );
+    math.multiply(preConditioner, math.subtract(y, x.map(mean_func)))
+  )._data;
   
-  const variance = math.diag(math.subtract(Omega, math.multiply(math.multiply(math.transpose(K), Sigmainv), K)))
+  const variance = math.diag(math.subtract(Omega, math.multiply(preConditioner, K)))
     ._data;
   
   return {
@@ -247,8 +248,8 @@ const conditional_dist_to_plottable_confidence_intervals = (xtilde, mean, varian
  *                   {x: x, mean: mean, lower: lower, upper: upper, lower2: lower2, upper2: upper2},
  *                   where each attribute has a float value.
  */
-const conditional_dist_with_confidence_intervals = (x, y, xtilde, kernel) => {
-  const dist = conditional_distribution(x, y, xtilde, kernel);
+const conditional_dist_with_confidence_intervals = (x, y, xtilde, kernel, mean_func = zero_mean_function) => {
+  const dist = conditional_distribution(x, y, xtilde, kernel, mean_func);
   return conditional_dist_to_plottable_confidence_intervals(xtilde, dist.mean, dist.variance);
 }
 
