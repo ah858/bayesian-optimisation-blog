@@ -1,4 +1,6 @@
 function drawChoosePointsBlind() {
+  // This plot consists of 1) a top_plot and 2) a week_slider. Hence, names or doc-strings
+  // for yscales and widths/heights will often be referenced with respect to one or the other
   
   // ================================================
   // TODO: Make this code responsive
@@ -8,18 +10,23 @@ function drawChoosePointsBlind() {
   // Look at these SO answers
   // - https://stackoverflow.com/questions/22183727/how-do-you-convert-screen-coordinates-to-document-space-in-a-scaled-svg
   // - https://stackoverflow.com/questions/29261304/how-to-get-the-click-coordinates-relative-to-svg-element-holding-the-onclick-lis
-  const width = document.getElementById("chart-choose-points-blind").offsetWidth
-  const height  = document.getElementById("chart-choose-points-blind").offsetWidth / 2
+  // The svg plot width
+  const width = document.getElementById("chart-choose-points-blind").offsetWidth;
+  // The height of the top part of the plot (including the bottom margin)
+  const top_plot_height = document.getElementById("chart-choose-points-blind").offsetWidth / 2;
+  // Height for both the top plot and the week slider together
+  const svg_height = 1.2 * top_plot_height;
 
   const xscale = d3.scaleLinear()
-    .domain([5,50])
+    .domain([xmin, xmax])
     .range([margin.left, width - margin.right])
 
+  // yscale for the top plot
   const yscale = d3.scaleLinear()
-    .domain([-1, 1])
-    .range([height - margin.bottom, margin.top])
+    .domain([ymin, ymax])
+    .range([top_plot_height - margin.bottom, margin.top])
 
-  const svg = d3.select("#chart-choose-points-blind").append("svg").attr("width", width).attr("height", 1.2*height);
+  const svg = d3.select("#chart-choose-points-blind").append("svg").attr("width", width).attr("height", svg_height);
   // const svg = d3.select("#chart-choose-points-blind").append("svg").attr("viewBox", [0, 0, width, height]);
   // ================================================
 
@@ -48,19 +55,19 @@ function drawChoosePointsBlind() {
 
   // Background y grid
   svg.append("g")
-    .call(yGrid, height, width);
+    .call(yGrid, top_plot_height, width);
 
   svg.append("g")
-    .call(xAxis, height, width);
+    .call(xAxis, top_plot_height, width);
   
   svg.append("g")
-    .call(yAxis, height);
+    .call(yAxis, top_plot_height);
 
   svg.append("g")
-    .call(xLabel, height, width);
+    .call(xLabel, top_plot_height, width);
 
   svg.append("g")
-    .call(yLabel, height);
+    .call(yLabel, top_plot_height);
 
 
   // ============================
@@ -69,45 +76,66 @@ function drawChoosePointsBlind() {
   
   const weekSlider = svg.append("g")
                       .attr("class", "weekSlider")
+  // Week slider has to exist on the space ranging from
+  // in x direction [0, width]
+  // in y direction [top_plot_height, svg_height]
+  const week_slider_plot_height = (svg_height - top_plot_height);
+  const week_slider_plot_start = top_plot_height;
+  const week_slider_plot_margin = {top: 0.2 * week_slider_plot_height, bottom: 0.2 * week_slider_plot_height}
+  let week_slider_xscale = d3.scaleLinear()
+	.domain([0, 1])
+	.range([margin.left, width - margin.right]);
+  let week_slider_yscale = d3.scaleLinear()
+	.domain([0, 1])
+	.range([week_slider_plot_start + week_slider_plot_margin.top, svg_height - week_slider_plot_margin.bottom]);
+  
+  // --- Add the decorative lines at the top and bottom of "week" slider
+  weekSlider.append("rect")
+    .attr("x", margin.left)
+    .attr("y", week_slider_yscale(0.))
+    .attr("height", 1)
+    .attr("width", get_length_of(week_slider_xscale.range()))
   
   weekSlider.append("rect")
-    .attr("x", 1.1 * margin.left)
-    .attr("y", 1.1*height + height*0.045)
+    .attr("x", margin.left)
+    .attr("y", week_slider_yscale(1.))
     .attr("height", 1)
-    .attr("width", width - margin.left - margin.right)
-    // .attr("fill", "lightblue");
-  
-  weekSlider.append("rect")
-    .attr("x", 1.1 * margin.left)
-    .attr("y", 1.1*height - height*0.045 - 1)
-    .attr("height", 1)
-    .attr("width", width - margin.left - margin.right)
-    // .attr("fill", "lightblue");
+    .attr("width", get_length_of(week_slider_xscale.range()))
                       
-  const circleLabelBackground = weekSlider.append("circle")
-      .attr("class", ".circleLabelBackground")
-      .attr("r", height*0.04)
-    // .attr("stroke", "lightgrey")
-    // .attr("stroke-width", 1.5)
-      .attr("fill", "lightgray")
-      .attr("cy", 1.1*height)
-      .attr("cx", margin.left + (width - margin.left - margin.right) / (NUMBER_OF_GUESSES + 1));
   
   // 'Week' text label
-  // svg.append("g")
-  weekSlider.append("text")
+  let week_text = weekSlider.append("text")
     .attr("class", "x label")
     .attr("text-anchor", "start")
-    .attr("x", 1.1 * margin.left)
-    .attr("y", 1.1*height)
+    .attr("x", margin.left)
+    .attr("y", week_slider_yscale(0.5))
     .attr("dy", "0.3em")
     .text("Week:");
+
+  // Get the width of the week text to subtract from remaining x-space available
+  let week_text_bbox = week_text.node().getBBox()
     
   const weeks_list = [];
+
   
   for (let i=1; i <= NUMBER_OF_GUESSES; i++) {
     weeks_list.push(i);
   }
+
+  let week_text_offset = week_slider_xscale.invert(week_text_bbox.x + week_text_bbox.width)
+  let width_per_week = (1 - week_text_offset) / NUMBER_OF_GUESSES;
+
+  function week_index_to_position (i) {
+    return week_slider_xscale(week_text_offset + (i + 0.5) * width_per_week)
+  }
+
+  const circleLabelBackground = weekSlider.append("circle")
+      .attr("class", ".circleLabelBackground")
+      .attr("r", 0.8 * get_length_of(week_slider_yscale.range()) / 2)
+      .attr("fill", "lightgray")
+      .attr("cy", week_slider_yscale(0.5))
+      .attr("cx", week_index_to_position(0));
+
   
   weekSlider.append("g")
     .selectAll(".circleLabels")
@@ -118,11 +146,8 @@ function drawChoosePointsBlind() {
     // .attr("stroke", "lightgrey")
     // .attr("stroke-width", 1.5)
     .attr("fill", "transparent")
-    .attr("cy", 1.1*height)
-    .attr("cx", (d,i) => {
-            return margin.left + d * (width - margin.left - margin.right) / (NUMBER_OF_GUESSES + 1);
-            }
-         );
+    .attr("cy", week_slider_yscale(0.5))
+    .attr("cx", (d,i) => week_index_to_position(i))
   
   weekSlider.selectAll(".circleTextLabels")
     .data(weeks_list)
@@ -130,11 +155,8 @@ function drawChoosePointsBlind() {
     .append("text")
     .attr("text-anchor", "middle")
     .attr("dy", "0.3em")
-    .attr("y", 1.1*height)
-    .attr("x", (d,i) => {
-            return margin.left + d * (width - margin.left - margin.right) / (NUMBER_OF_GUESSES + 1);
-            }
-         )
+    .attr("y", week_slider_yscale(0.5))
+    .attr("x", (d,i) => week_index_to_position(i))
     .text(d => d);
   
   // ============================
@@ -223,7 +245,7 @@ function drawChoosePointsBlind() {
   const backgroundRect = svg.append("rect")
     .attr("transform", `translate(${margin.left},0)`)
     .attr("width", width - (margin.left + margin.right))
-    .attr("height", height)
+    .attr("height", top_plot_height)
     // Transparent "white", a fill is required to capture click events
     .attr("fill", "#fff0")
     .call(makeBackroundRectClickable, underlying_curve);
@@ -268,7 +290,7 @@ function drawChoosePointsBlind() {
     // Update 'weeks' circle label at bottom of the plot
     // +2 is added to the points_chosen.length because the new click hasn't yet been added to points_chosen and the circle also needs to be one position ahead of the current guess
 
-    let circleLabelPosition = margin.left + (points_chosen.length+1) * (width - margin.left - margin.right) / (NUMBER_OF_GUESSES + 1);
+    let circleLabelPosition = week_index_to_position(points_chosen.length);
   
     if ((points_chosen.length) < NUMBER_OF_GUESSES) { // Required to stop the circle at the final week position
       circleLabelBackground
@@ -366,6 +388,7 @@ function drawChoosePointsBlind() {
 
   // Generate the underlying curve (dist_underlying):
   let underlying_curve_y = sample_from_gp_prior(xtilde, kernel, mean_function);
+  underlying_curve_y = squeeze_to_range(underlying_curve_y, ymin, ymax);
   let underlying_curve = xtilde.map((d, i) => ({x: xtilde[i], y: underlying_curve_y[i]}));
 
   // User selected points
