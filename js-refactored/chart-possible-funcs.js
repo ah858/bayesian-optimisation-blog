@@ -11,14 +11,40 @@ function drawChartPossibleFuncs() {
   const svg = d3.select("#chart-possible-funcs").append("svg").attr("viewBox", [0, 0, width, height]);
   
   let num_gp_samples = 4;
-  let max_sample_height = 0.85; // Constant to rescale sample-curve height to (roughly)
+  let max_sample_height = d3.max(yscale.domain()) - d3.min(yscale.domain()); // Constant to rescale sample-curve height to (roughly)
   let transition_dur = 2000; // Transition duration
   
   let gp_samples = [];
+  let desired_sample_max = ymax - (ymax - ymin) * 0.05;
+  let desired_sample_min = ymin + (ymax - ymin) * 0.05;
   for (let i = 0; i < num_gp_samples; i++) {
-      let sample = sample_from_gp_prior(xtilde, kernel);
-      // To make the samples aesthetic, rescale limits to have a given max
-      sample = math.multiply(sample, max_sample_height / math.max(math.abs(sample)));
+      let sample = sample_from_gp_prior(xtilde, kernel, mean_function);
+      // To make the samples aesthetic, rescale limits to have a given max range
+      if (d3.max(sample) > ymax) {
+        // Scale down the maximum of sample while preserving minimum
+        let sample_max = d3.max(sample);
+        let sample_min = d3.min(sample);
+        sample = math.add(
+          sample_min,
+          math.multiply(
+            ((ymax - sample_min) / (sample_max - sample_min)) ,
+            math.add(sample, -sample_min)
+          )
+        )
+      }
+      if (d3.min(sample) < ymin) {
+        // Scale down the maximum of sample while preserving minimum
+        let sample_max = d3.max(sample);
+        let sample_min = d3.min(sample);
+        sample = math.add(
+          ymin,
+          math.multiply(
+            ((sample_max - ymin) / (sample_max - sample_min)) ,
+            math.add(sample, -sample_min)
+          )
+        )
+      }
+
       gp_samples.push(sample);
   }
 
