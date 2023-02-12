@@ -158,31 +158,31 @@
 			<div class="cf sticky-container" id="test-id">
 
 				<div id="explore-exploit-text1" >
-					<div id="explore-exploit-naive-point"></div> <!-- Use a div as the event trigger because it has 0 height. If the div had a non-zero height, the bounding box would cause assymetry in the scrolling down vs scrolling up IntersectionObserver calls. -->
 					<div class="mt7">
 						<p>
-							In this case, by picking the <span style="color: red;">best point predicted by the model</span>, the chosen point ends up being really close to the previously tried designs that turned out fairly well.
+							<div id="explore-exploit-naive-point"></div> <!-- Use a div as the event trigger because it has 0 height. If the div had a non-zero height, the bounding box would cause assymetry in the scrolling down vs scrolling up IntersectionObserver calls. -->
+							In this case, by picking the <span id="naive-point-phrase" style="">best point predicted by the model</span>, the chosen point ends up being really close to the previously tried designs that turned out fairly well.
 						</p>
 					</div>
 				</div>
 				<div id="explore-exploit-text2" >
-					<div id="explore-exploit-show-true"></div>
-					<div class="mt7">
+					<div class="">
 						<p>
-							While doing so, we are completely ignoring other unexplored parts of the search-space where an even better design could be located. By applying this strategy repeatedly, we would only ever explore the region around the one local optimum we've found so far. We'd never discover the better optimum in the unexplored region.
+							While doing so, we are completely ignoring other <span id="unexplored-parts-phrase">unexplored parts</span> of the search-space where an even better design could be located. By applying this strategy repeatedly, we would only ever explore the region around the one local optimum we've found so far. We'd never discover the better optimum in the unexplored region.
+							<div id="explore-exploit-show-true"></div>
 						</p>
 						<!-- TODO: Highlight the word better optimum, and show a line on the chart -->
 					</div>
 				</div>
 
 				<!-- TODO: This should pop into view separately, even though nothing happens on the plot -->
-				<div class="mt7">
+				<div class="">
 					<p>
 						There is clearly a trade-off between selecting inputs close to the best points observed so far (exploiting) and traversing the design-space in search of more prospective regions (exploring). This trade-off plays a central role in Bayesian Optimization.
 					</p>
 				</div>
 
-				<div class="mt7">
+				<div class="">
 					<!-- <h3>The need for a <i>probabilistic</i> model</h3> -->
 					<p>
 						As presented, there is a key missing component to our model that would allow us decide where to explore. Intuitively, we want to explore areas where we believe there is a <strong>high probability</strong> that the design could improve significantly upon the best one found so far. This can happen both in places where the model's mean prediction is high, or where the model's mean prediction is lower, but the uncertainty in that prediction is high. Even though the <i>expected</i> value at a given point might be low, if we are uncertain enough, there could be a significant probability that that point might turn out to be the best one we've seen so far.
@@ -203,7 +203,7 @@
 					</p>
 					<!-- TODO: is the 2nd sentence above really necessary-->
 				</div>
-				<div class="sticky pv0 mv0">
+				<div class="sticky pv0 mv0" id="chart-explore-exploit-container">  <!-- Add id to div so that we can measure whenever an element emerges from behind it.-->
 					<div class="topGradient"></div>
 					<div class="ph2 pt0 pb2 mv0 bg-white">
 						<div id="chart-explore-exploit"></div>
