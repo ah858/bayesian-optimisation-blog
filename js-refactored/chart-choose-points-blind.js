@@ -365,7 +365,7 @@ function drawChoosePointsBlind() {
   //                                                   kernel);
 
   // Generate the underlying curve (dist_underlying):
-  let underlying_curve_y = sample_from_gp_prior(xtilde, kernel);
+  let underlying_curve_y = sample_from_gp_prior(xtilde, kernel, mean_function);
   let underlying_curve = xtilde.map((d, i) => ({x: xtilde[i], y: underlying_curve_y[i]}));
 
   // User selected points
