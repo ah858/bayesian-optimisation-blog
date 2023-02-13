@@ -1,11 +1,16 @@
-function drawChartExploreExploit() {
-  const initial_points_chosen = [
+function drawExpectedImprovementExplanationChart() {
+  const points_chosen = [
     {"x":26.5998,"y": ymin + 0.4 * (ymax - ymin)},
     {"x":32.9,"y": ymin + 0.25* (ymax - ymin)},
     {"x":42.0,"y": ymin + 0.62 * (ymax - ymin)},
     {"x":46.85,"y":ymin + 0.55 * (ymax - ymin)}
+    // {"x": 29,"y": ymin + 0.4 * (ymax - ymin)},
+    // {"x":24.1,"y": ymin + 0.25* (ymax - ymin)},
+    // {"x":12.9,"y": ymin + 0.62 * (ymax - ymin)},
+    // {"x":9.1,"y":ymin + 0.55 * (ymax - ymin)}
   ];
-  const plot_points = initial_points_chosen.slice(0);
+  const plot_points = points_chosen.slice(0);
+  const slice_xloc = 22; // Location at which to slice through the plot to illustrate expected improvement
 
   
   // ============================
@@ -21,10 +26,10 @@ function drawChartExploreExploit() {
   const svg = d3.select("#chart-ei-explanation").append("svg").attr("viewBox", [0, 0, width, height]);
 
   // Background y grid
-  svg.append("g")
+  const ygrid_gp = svg.append("g")
    .call(yGrid, height, width);
 
-  svg.append("g")
+  const xaxis_gp = svg.append("g")
     .call(xAxis, height, width);
   
   svg.append("g")
@@ -97,6 +102,16 @@ function drawChartExploreExploit() {
     .attr("fill", "white")
     .attr("stroke", "black")
     .attr("class", "datapointCircle");
+  // ============================
+  // Compute the distribution for line GP plot
+  // ============================
+
+  // Compute the distribution for the line plot with confidence intervals
+  const dist = conditional_dist_with_confidence_intervals(points_chosen.map((d) => d.x),
+                                        points_chosen.map((d) => d.y),
+                                        xtilde,
+                                        kernel,
+                                        mean_function);
   
   // ============================
   // Make the plot into a heatmap
@@ -107,8 +122,8 @@ function drawChartExploreExploit() {
   let xgrid = [...Array(heatmap_x_resolution).keys()].map((i) => xmin + (xmax - xmin) * i / (heatmap_x_resolution));
     // .map(yscaleFunction);
   const heatmap_data = conditional_distribution_density_heatmap(
-    initial_points_chosen.map((d) => d.x),
-    initial_points_chosen.map((d) => d.y),
+    points_chosen.map((d) => d.x),
+    points_chosen.map((d) => d.y),
     xgrid,
     ygrid,
     kernel,
@@ -117,24 +132,37 @@ function drawChartExploreExploit() {
   // Build color scale
   const heatmapScale = d3.scaleLog().domain(d3.extent(heatmap_data.map(d => d.density+ 1e-3)))
   const heatmapColor = d3.scaleSequential(
-    (d) => d3.interpolateBlues(heatmapScale(d))
+    // (d) => d3.interpolator(d3.interpolate("#fff0", "#005ACD")interpolateBlues(heatmapScale(d))
+    (d) => d3.interpolate("#FFFFFF", "#005ACD")(heatmapScale(d))
   )
-  // .interpolator(d3.interpolate("#05C0", "#005ACD"))
-  // .interpolator(d3.interpolate("#FFFFFF", "#005ACD"))
-  // .interpolator(d3.interpolateInferno)
-  // .domain([0,d3.max(heatmap_data.map(d => d.density))]);
 
   // Sizes of "heatmap" rectangles
   let rectangle_width = (width - margin.left - margin.right) / heatmap_x_resolution;
-  // let rectangle_height = (height - margin.top - margin.bottom) / heatmap_y_resolution;
+  let rectangle_height = (height - margin.top - margin.bottom) / heatmap_y_resolution;
   // Use Math.ceil because of weird interpolation issues
   // let rectangle_width = Math.ceil((width - margin.left - margin.right) / heatmap_x_resolution);
-  let rectangle_height = Math.ceil((height - margin.top - margin.bottom) / heatmap_y_resolution);
+  // let rectangle_height = Math.ceil((height - margin.top - margin.bottom) / heatmap_y_resolution);
 
 
   // ============================
-  // Add a second plot
+  // Add a second axis for density plot
   // ============================
+  // const slice_xloc_closest_on_grid = xgrid.reduce(function(prev, curr) {
+  //   return (Math.abs(curr - slice_xloc) < Math.abs(prev - goal) ? curr : prev);
+  // });
+  // TODO: possibly recompute density here at a higher resolution
+  // const density_at_slice = heatmap_data.filter((d) => d.x == slice_xloc_closest_on_grid);
+  // const slice_plot_x_start = xscale(slice_xloc_closest_on_grid) + rectangle_width
+  // const slice_density_width = Math.ceil((width - margin.right - slice_xloc) / 3);
+  // const slice_density_scale = d3.scaleLinear()
+  //   .domain([0, d3.max(density_at_slice)])
+  //   .range([slice_plot_x_start, slice_plot_x_start + slice_density_width])
+  // const slice_density_axis = svg.append("g")
+  //   .attr("transform", `translate(0, ${margin.top})`)
+  //   .attr("pointer-events", "none")
+  //   .call(d3.axisTop(slice_density_scale));
+
+
 
   // Initial drawing  
   update();
@@ -149,12 +177,13 @@ function drawChartExploreExploit() {
       .data(heatmap_data, function(d) {return d.x+':'+d.y;})
       .enter()
       .append("rect")
+        .attr("class", "heatmapRect")
         .attr("x", d => xscale(d.x))
         .attr("y", d => yscale(d.y))
         .attr("width", rectangle_width)
         .attr("height", rectangle_height)
         .style("fill", d => heatmapColor(d.density + 1e-3))
-        .style("opacity", 1.0)
+        .style("display", "none")
   
     // Draw new circles
     circles.selectAll("circle")
@@ -162,18 +191,12 @@ function drawChartExploreExploit() {
       .join(
         // Special handling for new elements only
         enter => enter.append("circle")
-          .attr("r", 7)
+          .attr("r", datapointCircleRadius)
       )
       // Applies to merged selection of new and old elements
       .attr("cx", d => xscale(d.x))
       .attr("cy", d => yscale(d.y));
     
-    // Update conditional dist
-    const dist = conditional_dist_with_confidence_intervals(initial_points_chosen.map((d) => d.x),
-                                          initial_points_chosen.map((d) => d.y),
-                                          xtilde,
-                                          kernel,
-                                          mean_function);
     
     modelMean.selectAll('.mean')
       .data([dist])
@@ -185,21 +208,16 @@ function drawChartExploreExploit() {
       .data([dist])
       .join('path')
       .attr('class', 'envelope')
-      // .transition()
-      // .duration(VARIANCE_TRANSITION_DURATION)
-      // .attr("opacity", 1)
       .attr('d', d => area(d));
     
     envelope2.selectAll('.envelope2')
       .data([dist])
       .join('path')
       .attr('class', 'envelope2')
-      // .transition()
-      // .duration(VARIANCE_TRANSITION_DURATION)
-      // .attr("opacity", 1)
       .attr('d', d => area2(d));
 
     svg.selectAll(".datapointCircle").raise();
+    xaxis_gp.raise();
     
 
     // Notify observable that the points have changed
@@ -227,7 +245,7 @@ function drawChartExploreExploit() {
   //     // Applies to merged selection of new and old elements
   //     .attr("cx", d => xscale(d.x))
   //     .attr("cy", d => yscale(d.y))
-  //     .transition().duration(250).attr("r", 7)
+  //     .transition().duration(250).attr("r", datapo)
   //     // .attrTween('r', () => {
   //     //   return function(t) { return 7*t - t*(1-t)*15; };
   //     // });
@@ -322,8 +340,96 @@ function drawChartExploreExploit() {
   //     .attr("opacity", 0);
 
   // }
+  // Changing elements on plot:
+  const plotStateBase = function () {
+    ygrid_gp.transition().duration(400).style("opacity", 1.0);
+
+    modelMean.select('.mean').style("display", "block")
+      // .style("opacity", 1.)
+
+    envelope.select('.envelope').style("display", "block")
+      // .style("opacity", 1.)
+
+    envelope2.select('.envelope2').style("display", "block")
+      // .style("opacity", 1.)
+
+    svg.selectAll(".heatmapRect")
+    .transition()
+    .duration(400)
+    .style("opacity", 0.)
+    .on("end", function() {d3.select(this).style("display", "none")})
+
+
+
+  }
+  const plotStateHeatMap = function () {
+    ygrid_gp.transition().duration(400).style("opacity", 0.0);
+    // Hide mean line and y axis lines
+    svg.selectAll(".heatmapRect")
+      .style("display", "block")
+      .transition()
+      .duration(400)
+      .style("opacity", 1.)
+      .on("end", function() {
+        modelMean.select('.mean').style("display", "none")
+        envelope.select('.envelope').style("display", "none")
+        envelope2.select('.envelope2').style("display", "none")
+      })
+
+    circles.selectAll("circle")
+      // .filter((d, i, nodes) => nodes[i].getStyle("display") == "none")
+      .style("display", "block")
+      .transition()
+      .duration(400)
+      .attr("r", datapointCircleRadius)
+
+    xaxis_gp.selectAll(".tick")
+    .style("display", "block")
+      .transition()
+      .duration(400)
+      .style("opacity", 1)
+
+  }
+  const plotStateHeatMapAndDensity = function () {
+    svg.selectAll(".heatmapRect")
+    .filter( (d, i, nodes) =>  d.x > slice_xloc)
+    .transition()
+    .duration(400)
+    .style("opacity", 0.)
+    .on("end", function() {d3.select(this).style("display", "none")})
+    circles.selectAll("circle")
+    .filter( (d, i, nodes) =>  d.x > slice_xloc)
+    .transition()
+    .duration(400)
+    .attr("r", 0.)
+    .on("end", function() {d3.select(this).style("display", "none")})
+
+    xaxis_gp.selectAll(".tick")
+      .filter(function() {
+        var transform = d3.select(this).attr("transform");
+        var translate = transform.match(/translate\(([^,]+),[^)]+\)/);
+        var x = parseFloat(translate[1]);
+        return x > xscale(slice_xloc);
+      })
+      .transition()
+      .duration(500)
+      .style("opacity", 0)
+      .on("end", function() {
+        d3.select(this).style("display", "none");
+      })
+  };
+
+  // Interactive buttons -> progress through the elements of the plot
+  button1 = document.getElementById("button1");
+  button1.onclick = plotStateBase;
+
+  button2 = document.getElementById("button2");
+  button2.onclick = plotStateHeatMap;
+
+  button3 = document.getElementById("button3");
+  button3.onclick = plotStateHeatMapAndDensity;
   
   
 }
 
-drawChartExploreExploit() 
+drawExpectedImprovementExplanationChart() 

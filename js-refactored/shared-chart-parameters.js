@@ -24,6 +24,8 @@ const ell = 7.0 //1.5
 const delta = 0.00001  // Does 0 noise break anything??
 const kernel = squared_exponential_kernel_constructor(sigma, ell);
 const mean_function = constant_mean_function_constructor((ymax - ymin) / 2 + ymin)
+// Other plotting cosmetic parameters:
+const datapointCircleRadius = 7;
 
 
 // The evenly spaced grid of points along the x-axis to use for plotting
@@ -54,6 +56,7 @@ const xAxis = (g, height, width) => {
   return g
     .attr("transform", `translate(0, ${height - margin.bottom})`)
     .attr("pointer-events", "none")
+    .attr("class", "xAxisBottom")
     .call(d3.axisBottom(xscale));
 }
 
@@ -72,6 +75,7 @@ const yAxis = (g, height) => {
     
 const xLabel = (g, height, width) => g
   .append("text")
+  .attr("class", "xLabel")
   .attr("y", height - margin.bottom / 2)
   .attr("x", (width + margin.left - margin.right) / 2)
   .attr("dy", "1em")
