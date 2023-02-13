@@ -1,13 +1,14 @@
 function drawExpectedImprovementExplanationChart() {
   const points_chosen = [
-    {"x":26.5998,"y": ymin + 0.4 * (ymax - ymin)},
-    {"x":32.9,"y": ymin + 0.25* (ymax - ymin)},
-    {"x":42.0,"y": ymin + 0.62 * (ymax - ymin)},
-    {"x":46.85,"y":ymin + 0.55 * (ymax - ymin)}
-    // {"x": 29,"y": ymin + 0.4 * (ymax - ymin)},
-    // {"x":24.1,"y": ymin + 0.25* (ymax - ymin)},
-    // {"x":12.9,"y": ymin + 0.62 * (ymax - ymin)},
-    // {"x":9.1,"y":ymin + 0.55 * (ymax - ymin)}
+    // {"x":26.5998,"y": ymin + 0.4 * (ymax - ymin)},
+    // {"x":32.9,"y": ymin + 0.25* (ymax - ymin)},
+    // {"x":42.0,"y": ymin + 0.62 * (ymax - ymin)},
+    // {"x":46.85,"y":ymin + 0.55 * (ymax - ymin)}
+    {"x":6.1,"y": ymin + 0.57* (ymax - ymin)},
+    {"x":12.7,"y":ymin + 0.58 * (ymax - ymin)},
+    {"x":14.9,"y": ymin + 0.55 * (ymax - ymin)},
+    // {"x":39.1,"y": ymin + 0.25* (ymax - ymin)},
+    {"x": 44,"y": ymin + 0.4 * (ymax - ymin)},
   ];
   const plot_points = points_chosen.slice(0);
   const slice_xloc = 22; // Location at which to slice through the plot to illustrate expected improvement
@@ -118,8 +119,10 @@ function drawExpectedImprovementExplanationChart() {
   // ============================
   let heatmap_y_resolution = 40;
   let heatmap_x_resolution = 60;
-  let ygrid = [...Array(heatmap_y_resolution).keys()].map((i) => ymin + (ymax - ymin) * (i + 1) / (heatmap_y_resolution));
-  let xgrid = [...Array(heatmap_x_resolution).keys()].map((i) => xmin + (xmax - xmin) * i / (heatmap_x_resolution));
+  let rectangle_width = (width - margin.left - margin.right) / heatmap_x_resolution;
+  let rectangle_height = (height - margin.top - margin.bottom) / heatmap_y_resolution;
+  let ygrid = [...Array(heatmap_y_resolution).keys()].map((i) => ymin + (ymax - ymin) * (i + 0.5) / (heatmap_y_resolution));
+  let xgrid = [...Array(heatmap_x_resolution).keys()].map((i) => xmin + (xmax - xmin) * (i + 0.5) / (heatmap_x_resolution));
     // .map(yscaleFunction);
   const heatmap_data = conditional_distribution_density_heatmap(
     points_chosen.map((d) => d.x),
@@ -137,8 +140,6 @@ function drawExpectedImprovementExplanationChart() {
   )
 
   // Sizes of "heatmap" rectangles
-  let rectangle_width = (width - margin.left - margin.right) / heatmap_x_resolution;
-  let rectangle_height = (height - margin.top - margin.bottom) / heatmap_y_resolution;
   // Use Math.ceil because of weird interpolation issues
   // let rectangle_width = Math.ceil((width - margin.left - margin.right) / heatmap_x_resolution);
   // let rectangle_height = Math.ceil((height - margin.top - margin.bottom) / heatmap_y_resolution);
@@ -147,20 +148,49 @@ function drawExpectedImprovementExplanationChart() {
   // ============================
   // Add a second axis for density plot
   // ============================
-  // const slice_xloc_closest_on_grid = xgrid.reduce(function(prev, curr) {
-  //   return (Math.abs(curr - slice_xloc) < Math.abs(prev - goal) ? curr : prev);
-  // });
+
+  const slice_xloc_closest_on_grid = xgrid.reduce(function(prev, curr) {
+    return (Math.abs(curr - slice_xloc) < Math.abs(prev - slice_xloc) && slice_xloc > curr ? curr : prev);
+  });
   // TODO: possibly recompute density here at a higher resolution
-  // const density_at_slice = heatmap_data.filter((d) => d.x == slice_xloc_closest_on_grid);
-  // const slice_plot_x_start = xscale(slice_xloc_closest_on_grid) + rectangle_width
-  // const slice_density_width = Math.ceil((width - margin.right - slice_xloc) / 3);
-  // const slice_density_scale = d3.scaleLinear()
-  //   .domain([0, d3.max(density_at_slice)])
-  //   .range([slice_plot_x_start, slice_plot_x_start + slice_density_width])
-  // const slice_density_axis = svg.append("g")
-  //   .attr("transform", `translate(0, ${margin.top})`)
-  //   .attr("pointer-events", "none")
-  //   .call(d3.axisTop(slice_density_scale));
+  const density_at_slice = heatmap_data
+    // Only keep the densities at desired slice 
+    .filter((d) => d.x == slice_xloc_closest_on_grid)
+    // Remap y -> y, density -> x
+    .map((d) => ({x: d.density, y: d.y}));
+  const slice_plot_x_start = xscale(slice_xloc_closest_on_grid) + 0.5 * rectangle_width
+  const slice_density_width = Math.ceil((width - margin.right - xscale(slice_xloc)) / 3);
+  const slice_density_scale = d3.scaleLinear()
+    .domain([0, d3.max(density_at_slice.map((d) => d.x))])
+    .range([slice_plot_x_start, slice_plot_x_start + slice_density_width])
+  const slice_density_axis = svg.append("g")
+    .attr("transform", `translate(0, ${margin.top})`)
+    .attr("pointer-events", "none")
+    .call(d3.axisTop(slice_density_scale).ticks(2))
+    .style("display", "none")
+    .style("opacity", 0.0)
+  
+  const densityLine = d3.line()
+    .curve(d3.curveBasis)
+    .x(d => slice_density_scale(d.x))
+    .y(d => yscale(d.y))
+    // slice_density_axis.selectAll("text")
+    //   .style("text-anchor", "start")
+    //   .attr("dx", "-.35em")
+    //   .attr("transform", "rotate(-45)")
+
+  const sliceDensityLine = svg.append("g")
+    .attr("stroke", "#005ACD")
+    .attr("fill", "transparent")
+    .style("display", "none")
+    .style("opacity", 0.0);
+    // sliceDe
+
+  sliceDensityLine.selectAll('.density')
+    .data([density_at_slice])
+    .join('path')
+    .attr('class', 'density')
+    .attr('d', d => densityLine(d));
 
 
 
@@ -178,12 +208,13 @@ function drawExpectedImprovementExplanationChart() {
       .enter()
       .append("rect")
         .attr("class", "heatmapRect")
-        .attr("x", d => xscale(d.x))
-        .attr("y", d => yscale(d.y))
+        .attr("x", d => xscale(d.x) - 0.5 * rectangle_width) // Subtract a half to center rectangle
+        .attr("y", d => yscale(d.y) - 0.5 * rectangle_height)
         .attr("width", rectangle_width)
         .attr("height", rectangle_height)
         .style("fill", d => heatmapColor(d.density + 1e-3))
         .style("display", "none")
+        .style("opacity", 0.0)
   
     // Draw new circles
     circles.selectAll("circle")
@@ -217,6 +248,8 @@ function drawExpectedImprovementExplanationChart() {
       .attr('d', d => area2(d));
 
     svg.selectAll(".datapointCircle").raise();
+    sliceDensityLine.raise();
+    slice_density_axis.raise();
     xaxis_gp.raise();
     
 
@@ -384,10 +417,14 @@ function drawExpectedImprovementExplanationChart() {
       .attr("r", datapointCircleRadius)
 
     xaxis_gp.selectAll(".tick")
-    .style("display", "block")
+      .style("display", "block")
       .transition()
       .duration(400)
       .style("opacity", 1)
+    sliceDensityLine.transition().duration(400).style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("display", "none")})
+    slice_density_axis.transition().duration(400).style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("display", "none")})
 
   }
   const plotStateHeatMapAndDensity = function () {
@@ -416,6 +453,15 @@ function drawExpectedImprovementExplanationChart() {
       .style("opacity", 0)
       .on("end", function() {
         d3.select(this).style("display", "none");
+        // Also now show the density
+        sliceDensityLine.style("display", "block")
+          .transition()
+          .duration(400)
+          .style("opacity", 1.0)
+        slice_density_axis.style("display", "block")
+          .transition()
+          .duration(400)
+          .style("opacity", 1.0)
       })
   };
 
