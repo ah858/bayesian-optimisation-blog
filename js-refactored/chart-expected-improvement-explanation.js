@@ -4,12 +4,13 @@ function drawExpectedImprovementExplanationChart() {
     // {"x":32.9,"y": ymin + 0.25* (ymax - ymin)},
     // {"x":42.0,"y": ymin + 0.62 * (ymax - ymin)},
     // {"x":46.85,"y":ymin + 0.55 * (ymax - ymin)}
-    {"x":6.1,"y": ymin + 0.57* (ymax - ymin)},
-    {"x":12.7,"y":ymin + 0.58 * (ymax - ymin)},
+    // {"x":6.1,"y": ymin + 0.57* (ymax - ymin)},
+    {"x":8.7,"y":ymin + 0.58 * (ymax - ymin)},
     {"x":14.9,"y": ymin + 0.55 * (ymax - ymin)},
-    // {"x":39.1,"y": ymin + 0.25* (ymax - ymin)},
+    {"x":41.1,"y": ymin + 0.5* (ymax - ymin)},
     {"x": 44,"y": ymin + 0.4 * (ymax - ymin)},
   ];
+  const best_point_so_far = points_chosen.reduce((prev, curr) => (curr[1] > prev[1] ? curr : prev));
   const plot_points = points_chosen.slice(0);
   const slice_xloc = 22; // Location at which to slice through the plot to illustrate expected improvement
 
@@ -160,38 +161,76 @@ function drawExpectedImprovementExplanationChart() {
     .map((d) => ({x: d.density, y: d.y}));
   const slice_plot_x_start = xscale(slice_xloc_closest_on_grid) + 0.5 * rectangle_width
   const slice_density_width = Math.ceil((width - margin.right - xscale(slice_xloc)) / 3);
-  const slice_density_scale = d3.scaleLinear()
-    .domain([0, d3.max(density_at_slice.map((d) => d.x))])
-    .range([slice_plot_x_start, slice_plot_x_start + slice_density_width])
-  const slice_density_axis = svg.append("g")
-    .attr("transform", `translate(0, ${margin.top})`)
-    .attr("pointer-events", "none")
-    .call(d3.axisTop(slice_density_scale).ticks(2))
-    .style("display", "none")
-    .style("opacity", 0.0)
-  
-  const densityLine = d3.line()
-    .curve(d3.curveBasis)
-    .x(d => slice_density_scale(d.x))
-    .y(d => yscale(d.y))
+
+  function vertical_subplot(plot_x_start, plot_width, line_data, color, makeAxisOnTop = true) {
+    const subplotScale = d3.scaleLinear()
+      .domain([0, d3.max(line_data.map((d) => d.x))])
+      .range([plot_x_start, plot_x_start + plot_width])
+
+    const subplotAxis = svg.append("g")
+      .attr("transform", `translate(0, ${( (makeAxisOnTop) ? margin.top : height - margin.bottom)})`)
+      .attr("pointer-events", "none")
+      .call(((makeAxisOnTop) ? d3.axisTop : d3.axisBottom)(subplotScale).ticks(2))
+      .style("display", "none")
+      .style("opacity", 0.0)
+    
+      subplotAxis.selectAll("line").style("stroke", color);
+      subplotAxis.selectAll("text").style("fill", color);
+      subplotAxis.selectAll("path").style("stroke", color);
+    
+    const lineFunc = d3.line()
+      .curve(d3.curveBasis)
+      .x(d => subplotScale(d.x))
+      .y(d => yscale(d.y))
+      // slice_density_axis.selectAll("text")
+      //   .style("text-anchor", "start")
+      //   .attr("dx", "-.35em")
+      //   .attr("transform", "rotate(-45)")
+
+    const lineOnPlot = svg.append("g")
+      .attr("stroke", color)
+      .attr("fill", "transparent")
+      .style("display", "none")
+      .style("opacity", 0.0);
+      // sliceDe
+
+    lineOnPlot.selectAll('.line')
+      .data([line_data])
+      .join('path')
+      .attr('class', 'line')
+      .attr('d', d => lineFunc(d));
+    return [subplotAxis, lineOnPlot]
+
+  }
+  const [slice_density_axis, sliceDensityLine] = vertical_subplot(slice_plot_x_start, slice_density_width, density_at_slice, "#005ACD");
+  // Plot improvement over maximum
+  const improvement_at_slice = ygrid.map((y) => ({y: y, x: Math.max(y - best_point_so_far.y,  0)}))
+
+  const [slice_improvement_axis, sliceImprovementLine] = vertical_subplot(slice_plot_x_start, slice_density_width, improvement_at_slice, "red", false);
+  sliceImprovementLine.attr("stroke", "red");
+
+  // const line = d3.line()
+  //   .curve(d3.curveBasis)
+  //   .x(d => subplotScale(d.x))
+  //   .y(d => yscale(d.y))
     // slice_density_axis.selectAll("text")
     //   .style("text-anchor", "start")
     //   .attr("dx", "-.35em")
     //   .attr("transform", "rotate(-45)")
 
-  const sliceDensityLine = svg.append("g")
-    .attr("stroke", "#005ACD")
-    .attr("fill", "transparent")
-    .style("display", "none")
-    .style("opacity", 0.0);
-    // sliceDe
-
-  sliceDensityLine.selectAll('.density')
-    .data([density_at_slice])
-    .join('path')
-    .attr('class', 'density')
-    .attr('d', d => densityLine(d));
-
+  const bestPointSoFarLine = svg.append("line")
+    // .attr("class", "line")
+    .attr("stroke", "red")
+    .attr("stroke-dasharray", (3, 5))
+    .attr("stroke-width", 2)
+    .attr("y1", yscale(best_point_so_far.y))
+	  .attr("y2", yscale(best_point_so_far.y))
+	  .attr("x1", xscale(best_point_so_far.x))
+	  .attr("x2", xscale(best_point_so_far.x));
+    // .style("display", "none")
+    // .style("opacity", 0.0)
+    // .attr('class', 'line')
+    // .attr('d', d3.line().x(d => xscale(d.x)).y(d => yscale(d.y)));
 
 
   // Initial drawing  
@@ -247,10 +286,15 @@ function drawExpectedImprovementExplanationChart() {
       .attr('class', 'envelope2')
       .attr('d', d => area2(d));
 
+    bestPointSoFarLine.raise();
     svg.selectAll(".datapointCircle").raise();
+
+    xaxis_gp.raise();
+
     sliceDensityLine.raise();
     slice_density_axis.raise();
-    xaxis_gp.raise();
+    sliceImprovementLine.raise();
+    slice_improvement_axis.raise();
     
 
     // Notify observable that the points have changed
@@ -440,6 +484,21 @@ function drawExpectedImprovementExplanationChart() {
     .duration(400)
     .attr("r", 0.)
     .on("end", function() {d3.select(this).style("display", "none")})
+    // Hide the best point so far line
+    bestPointSoFarLine.transition().duration(400)
+      .attr("x1", xscale(best_point_so_far.x))
+      .attr("x2", xscale(best_point_so_far.x))
+    // And hide the improvement line
+    sliceImprovementLine.style("display", "block")
+      .transition()
+      .duration(400)
+      .style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("display", "none")})
+    slice_improvement_axis
+      .transition()
+      .duration(400)
+      .style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("display", "none")})
 
     xaxis_gp.selectAll(".tick")
       .filter(function() {
@@ -465,6 +524,22 @@ function drawExpectedImprovementExplanationChart() {
       })
   };
 
+  const plotStateHeatMapAndDensityAndImprovement = function () {
+        sliceImprovementLine.style("display", "block")
+          .transition()
+          .delay(400)
+          .duration(400)
+          .style("opacity", 1.0)
+        slice_improvement_axis.style("display", "block")
+          .transition()
+          .duration(400)
+          .style("opacity", 1.0)
+        bestPointSoFarLine.transition().duration(400)
+          .attr("x1", xscale.range()[0])
+          .attr("x2", xscale.range()[1])
+
+  }
+
   // Interactive buttons -> progress through the elements of the plot
   button1 = document.getElementById("button1");
   button1.onclick = plotStateBase;
@@ -475,6 +550,8 @@ function drawExpectedImprovementExplanationChart() {
   button3 = document.getElementById("button3");
   button3.onclick = plotStateHeatMapAndDensity;
   
+  button4 = document.getElementById("button4");
+  button4.onclick = plotStateHeatMapAndDensityAndImprovement;
   
 }
 
