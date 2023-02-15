@@ -1,3 +1,5 @@
+// todo: Fix the abomination that is combining camel_case and snakeCase => the side-effect of a Python programmer
+// trying javascript
 function drawExpectedImprovementExplanationChart() {
   const points_chosen = [
     // {"x":26.5998,"y": ymin + 0.4 * (ymax - ymin)},
@@ -5,11 +7,12 @@ function drawExpectedImprovementExplanationChart() {
     // {"x":42.0,"y": ymin + 0.62 * (ymax - ymin)},
     // {"x":46.85,"y":ymin + 0.55 * (ymax - ymin)}
     // {"x":6.1,"y": ymin + 0.57* (ymax - ymin)},
-    {"x":8.7,"y":ymin + 0.58 * (ymax - ymin)},
+    {"x":8.7,"y":ymin + 0.59 * (ymax - ymin)},
     {"x":14.9,"y": ymin + 0.55 * (ymax - ymin)},
     {"x":41.1,"y": ymin + 0.5* (ymax - ymin)},
     {"x": 44,"y": ymin + 0.4 * (ymax - ymin)},
   ];
+  const densityColor = "#005ACD";
   const best_point_so_far = points_chosen.reduce((prev, curr) => (curr[1] > prev[1] ? curr : prev));
   const plot_points = points_chosen.slice(0);
   const slice_xloc = 22; // Location at which to slice through the plot to illustrate expected improvement
@@ -26,6 +29,21 @@ function drawExpectedImprovementExplanationChart() {
   // ============================
 
   const svg = d3.select("#chart-ei-explanation").append("svg").attr("viewBox", [0, 0, width, height]);
+
+  // Add a crosshatch pattern for later plotting use
+  const crosshatch = svg
+    .append('defs')
+    .append('pattern')
+      .attr('id', 'crosshatch')
+      .attr('patternUnits', 'userSpaceOnUse')
+      .attr('width', 8)
+      .attr('height', 8)
+    .append('image')
+      .attr('xlink:href', 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc4JyBoZWlnaHQ9JzgnPgogIDxyZWN0IHdpZHRoPSc4JyBoZWlnaHQ9JzgnIGZpbGw9JyNmZmYnLz4KICA8cGF0aCBkPSdNMCAwTDggOFpNOCAwTDAgOFonIHN0cm9rZS13aWR0aD0nMC41JyBzdHJva2U9JyNhYWEnLz4KPC9zdmc+Cg==')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', 8)
+      .attr('height', 8);
 
   // Background y grid
   const ygrid_gp = svg.append("g")
@@ -135,9 +153,9 @@ function drawExpectedImprovementExplanationChart() {
   )
   // Build color scale
   const heatmapScale = d3.scaleLog().domain(d3.extent(heatmap_data.map(d => d.density+ 1e-3)))
-  const heatmapColor = d3.scaleSequential(
+  const heatmapColorScale = d3.scaleSequential(
     // (d) => d3.interpolator(d3.interpolate("#fff0", "#005ACD")interpolateBlues(heatmapScale(d))
-    (d) => d3.interpolate("#FFFFFF", "#005ACD")(heatmapScale(d))
+    (d) => d3.interpolate("#FFFFFF", densityColor)(heatmapScale(d))
   )
 
   // Sizes of "heatmap" rectangles
@@ -160,9 +178,9 @@ function drawExpectedImprovementExplanationChart() {
     // Remap y -> y, density -> x
     .map((d) => ({x: d.density, y: d.y}));
   const slice_plot_x_start = xscale(slice_xloc_closest_on_grid) + 0.5 * rectangle_width
-  const slice_density_width = Math.ceil((width - margin.right - xscale(slice_xloc)) / 3);
+  const slice_density_plot_width = Math.ceil((width - margin.right - xscale(slice_xloc)) / 3);
 
-  function vertical_subplot(plot_x_start, plot_width, line_data, color, makeAxisOnTop = true) {
+  function vertical_subplot_scale_and_axis(plot_x_start, plot_width, line_data, color, makeAxisOnTop) {
     const subplotScale = d3.scaleLinear()
       .domain([0, d3.max(line_data.map((d) => d.x))])
       .range([plot_x_start, plot_x_start + plot_width])
@@ -178,14 +196,14 @@ function drawExpectedImprovementExplanationChart() {
       subplotAxis.selectAll("text").style("fill", color);
       subplotAxis.selectAll("path").style("stroke", color);
     
+    return  [subplotScale, subplotAxis]
+  }
+  function vertical_subplot(plot_x_start, plot_width, line_data, color, makeAxisOnTop = true) {
+    const [subplotScale, subplotAxis] = vertical_subplot_scale_and_axis(plot_x_start, plot_width, line_data, color, makeAxisOnTop);
     const lineFunc = d3.line()
       .curve(d3.curveBasis)
       .x(d => subplotScale(d.x))
       .y(d => yscale(d.y))
-      // slice_density_axis.selectAll("text")
-      //   .style("text-anchor", "start")
-      //   .attr("dx", "-.35em")
-      //   .attr("transform", "rotate(-45)")
 
     const lineOnPlot = svg.append("g")
       .attr("stroke", color)
@@ -199,24 +217,50 @@ function drawExpectedImprovementExplanationChart() {
       .join('path')
       .attr('class', 'line')
       .attr('d', d => lineFunc(d));
-    return [subplotAxis, lineOnPlot]
+    return [subplotAxis, subplotScale, lineOnPlot]
 
   }
-  const [slice_density_axis, sliceDensityLine] = vertical_subplot(slice_plot_x_start, slice_density_width, density_at_slice, "#005ACD");
+
+  const [slice_density_axis, slice_density_scale, sliceDensityLine] = vertical_subplot(slice_plot_x_start, slice_density_plot_width, density_at_slice, densityColor);
   // Plot improvement over maximum
   const improvement_at_slice = ygrid.map((y) => ({y: y, x: Math.max(y - best_point_so_far.y,  0)}))
 
-  const [slice_improvement_axis, sliceImprovementLine] = vertical_subplot(slice_plot_x_start, slice_density_width, improvement_at_slice, "red", false);
+  const [slice_improvement_axis, slice_improvement_scale, sliceImprovementLine] = vertical_subplot(slice_plot_x_start, slice_density_plot_width, improvement_at_slice, "red", false);
   sliceImprovementLine.attr("stroke", "red");
 
-  // const line = d3.line()
-  //   .curve(d3.curveBasis)
-  //   .x(d => subplotScale(d.x))
-  //   .y(d => yscale(d.y))
-    // slice_density_axis.selectAll("text")
-    //   .style("text-anchor", "start")
-    //   .attr("dx", "-.35em")
-    //   .attr("transform", "rotate(-45)")
+
+  // ===========
+  // Make an area of improvement x p(y|x)   (the area under curve is expected improvement)
+  // ===========
+  const weighted_improvement_plot_x_start = slice_plot_x_start + slice_density_plot_width * 1.08
+  const weighted_improvement_plot_width = slice_density_plot_width;
+
+  improvement_times_density = improvement_at_slice.map((d, i) => ({x: d.x * density_at_slice[i].x, y: d.y}))
+
+
+  const [weightedImprovementScale, weightedImprovementAxis] =vertical_subplot_scale_and_axis(weighted_improvement_plot_x_start, weighted_improvement_plot_width, improvement_times_density, colors[3], true); 
+  const weightedImprovementCurve = svg.append("g")
+      .attr("stroke", colors[3])
+      .attr("fill", "url(#crosshatch)")
+      // .attr("fill", "transparent")
+      .attr("opacity", 0.0)
+      .style("display", "none")
+  // const flat_line = improvement_times_density.map((d) => ({x: 0, y: d.y})) // Create a flat line to initialise the plot with
+  const weightedImprovementLineFunc = d3.area()
+    .curve(d3.curveBasis)
+    .x0(d => weightedImprovementScale(0.))
+    .x1(d => weightedImprovementScale(d.x))
+    // .x(d => weightedImprovementScale(d.x))
+    .y(d => yscale(d.y));
+
+
+  weightedImprovementCurve.selectAll(".line")
+      .data([improvement_times_density])
+      .join('path')
+      .attr('class', 'line')
+      .attr('d', d => weightedImprovementLineFunc(d))
+      // .attr("fill", "");
+
 
   const bestPointSoFarLine = svg.append("line")
     // .attr("class", "line")
@@ -232,6 +276,35 @@ function drawExpectedImprovementExplanationChart() {
     // .attr('class', 'line')
     // .attr('d', d3.line().x(d => xscale(d.x)).y(d => yscale(d.y)));
 
+    // ============================
+    // Make a legend for everything
+    // ============================
+    // create a list of keys
+    let lineLabels = ["p(speed|x)", "Best speed so far", "Improvement"]
+
+    // Usually you have a color scale in your chart already
+
+    // Add one dot in the legend for each name.
+    // svg.selectAll(".legendline")
+    //   .data(keys)
+    //   .enter()
+    //   .append("line")
+    //     .attr("cx", 100)
+    //     .attr("cy", function(d,i){ return 100 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
+    //     .attr("r", 7)
+    //     .style("fill", function(d){ return color(d)})
+
+    // // Add one dot in the legend for each name.
+    // svg.selectAll("mylabels")
+    //   .data(keys)
+    //   .enter()
+    //   .append("text")
+    //     .attr("x", 120)
+    //     .attr("y", function(d,i){ return 100 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
+    //     .style("fill", function(d){ return color(d)})
+    //     .text(function(d){ return d})
+    //     .attr("text-anchor", "left")
+    //     .style("alignment-baseline", "middle")
 
   // Initial drawing  
   update();
@@ -251,7 +324,7 @@ function drawExpectedImprovementExplanationChart() {
         .attr("y", d => yscale(d.y) - 0.5 * rectangle_height)
         .attr("width", rectangle_width)
         .attr("height", rectangle_height)
-        .style("fill", d => heatmapColor(d.density + 1e-3))
+        .style("fill", d => heatmapColorScale(d.density + 1e-3))
         .style("display", "none")
         .style("opacity", 0.0)
   
@@ -540,6 +613,18 @@ function drawExpectedImprovementExplanationChart() {
 
   }
 
+  const plotStateWeightedImprovement = function () {
+        weightedImprovementCurve.style("display", "block")
+          .transition()
+          .duration(400)
+          .style("opacity", 1.0)
+        weightedImprovementAxis.style("display", "block")
+          .transition()
+          .duration(400)
+          .style("opacity", 1.0)
+
+  }
+
   // Interactive buttons -> progress through the elements of the plot
   button1 = document.getElementById("button1");
   button1.onclick = plotStateBase;
@@ -552,6 +637,9 @@ function drawExpectedImprovementExplanationChart() {
   
   button4 = document.getElementById("button4");
   button4.onclick = plotStateHeatMapAndDensityAndImprovement;
+
+  button5 = document.getElementById("button5");
+  button5.onclick = plotStateWeightedImprovement;
   
 }
 
