@@ -610,6 +610,16 @@ function drawExpectedImprovementExplanationChart() {
         bestPointSoFarLine.transition().duration(400)
           .attr("x1", xscale.range()[0])
           .attr("x2", xscale.range()[1])
+          // Hide the improvement times p(y|x)
+        weightedImprovementCurve.transition()
+          .duration(400)
+          .style("opacity", 0.0)
+          .on("end", function () {d3.select(this).style("display", "none");});
+        weightedImprovementAxis
+          .transition()
+          .duration(400)
+          .style("opacity", 0.0)
+          .on("end", function () {d3.select(this).style("display", "none")});
 
   }
 
