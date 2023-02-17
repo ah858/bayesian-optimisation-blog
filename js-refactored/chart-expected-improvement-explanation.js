@@ -271,17 +271,79 @@ function drawExpectedImprovementExplanationChart() {
 	  .attr("y2", yscale(best_point_so_far.y))
 	  .attr("x1", xscale(best_point_so_far.x))
 	  .attr("x2", xscale(best_point_so_far.x));
-    // .style("display", "none")
-    // .style("opacity", 0.0)
-    // .attr('class', 'line')
-    // .attr('d', d3.line().x(d => xscale(d.x)).y(d => yscale(d.y)));
 
     // ============================
     // Make a legend for everything
     // ============================
     // create a list of keys
-    let lineLabels = ["p(speed|x)", "Best speed so far", "Improvement"]
+    let lineLabels = [
+      {text: "Predicted speed density", color: densityColor, fill: densityColor, stroke: "none", id: "speed-density-label"},
+      {text: "Improvement", color: "red", fill: "red", stroke: "none", id: "improvement-label"},
+      {text: "Expected\nImprovement", color: colors[3], fill: "url(#crosshatch)", id: "expected-improvement-label"},
+    ]
 
+    const legendBoxXStart = (weighted_improvement_plot_x_start + weighted_improvement_plot_width * 0.5);
+    const legendBoxYStart = (height / 2);
+    const legendWidth = (width) - legendBoxXStart;
+    const legendCircleRadius = 7;
+    let legendFontSize = 16;
+    let legendSpacing = 18;
+    const legendTextGroup = svg.append("g")
+
+    const legendCircle =  legendTextGroup
+      .selectAll(".legendCircle")
+      .data(lineLabels)
+      .enter()
+      .append("circle")
+        .attr("class", "legendCircle")
+        .attr("id", d => d.id)
+        .attr("cx", legendBoxXStart)
+        .attr("cy", function(d,i){ return  legendBoxYStart + i*legendSpacing})
+        .attr("r", legendCircleRadius)
+        .style("fill", function (d) {return d.fill})
+        .style("stroke", function (d) {return d.color})
+        .style("opacity", 0.0)
+        .style("visibility", "hidden")
+
+    const legendText =  legendTextGroup.append("g")
+      .selectAll(".label")
+      .data(lineLabels)
+      .enter()
+      .append("text")
+        .attr("class", "label")
+        .attr("id", d => d.id)
+        .attr("x", legendBoxXStart + legendCircleRadius * 3)
+        .attr("y", function(d,i){ return  legendBoxYStart + i*legendSpacing}) // 100 is where the first dot appears. 25 is the distance between dots
+        .style("fill", function (d) {return d.color})
+        .text(function (d)  {return d.text})
+        .attr("text-anchor", "right")
+        .style("font-size", legendFontSize)
+        .style("alignment-baseline", "middle")
+        .style("opacity", 0.0)
+        .style("visibility", "hidden")
+
+    const legendItems = legendCircle.merge(legendText);
+
+
+    // Ensure the labels fit on the plot:
+    let bbox;
+    // while outside the svg bounding box
+    while ((bbox = legendTextGroup.node().getBBox()).x + bbox.width > width) {
+      legendFontSize -= 1;
+      legendText.style("font-size", legendFontSize);
+    }
+    // svg.selectAll(".labels")
+    //   .data(lineLabels)
+    //   .enter()
+    //   .append("text")
+    //     .attr("class", "labels")
+    //     .attr("x", legendBoxXStart)
+    //     .attr("y", function(d,i){ return  margin.top + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
+    //     .style("fill", (d, i) => {return colors[i]})
+    //     .text(function(d){ return d})
+    //     .attr("text-anchor", "right")
+    //     .style("font-size", "0.5em")
+    //     .style("alignment-baseline", "hanging")
     // Usually you have a color scale in your chart already
 
     // Add one dot in the legend for each name.
@@ -426,6 +488,12 @@ function drawExpectedImprovementExplanationChart() {
       .on("end", function () {d3.select(this).style("display", "none")})
     slice_density_axis.transition().duration(400).style("opacity", 0.0)
       .on("end", function () {d3.select(this).style("display", "none")})
+    // Hide speed density label
+    legendTextGroup.selectAll("#speed-density-label")
+      .transition()
+      .duration(400)
+      .style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("visibility", "hidden")})
 
   }
   const plotStateHeatMapAndDensity = function () {
@@ -478,10 +546,23 @@ function drawExpectedImprovementExplanationChart() {
           .transition()
           .duration(400)
           .style("opacity", 1.0)
+        // Show density label
+        legendTextGroup.selectAll("#speed-density-label")
+          .style("visibility", "visible")
+          .transition()
+          .duration(400)
+          .style("opacity", 1.0)
       })
+    // Hide improvement label
+    legendTextGroup.selectAll("#improvement-label")
+      .transition()
+      .duration(400)
+      .style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("visibility", "hidden")})
   };
 
   const plotStateHeatMapAndDensityAndImprovement = function () {
+    // PLOT STATE 4
         sliceImprovementLine.style("display", "block")
           .transition()
           .delay(400)
@@ -505,9 +586,22 @@ function drawExpectedImprovementExplanationChart() {
           .style("opacity", 0.0)
           .on("end", function () {d3.select(this).style("display", "none")});
 
+    // Show improvement label
+    legendTextGroup.selectAll("#improvement-label")
+      .style("visibility", "visible")
+      .transition()
+      .duration(400)
+      .style("opacity", 1.0)
+    // Hide expected improvement label
+    legendTextGroup.selectAll("#expected-improvement-label")
+      .transition()
+      .duration(400)
+      .style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("visibility", "hidden")})
   }
 
   const plotStateWeightedImprovement = function () {
+    // PLOT STATE 5
         weightedImprovementCurve.style("display", "block")
           .transition()
           .duration(400)
@@ -516,6 +610,12 @@ function drawExpectedImprovementExplanationChart() {
           .transition()
           .duration(400)
           .style("opacity", 1.0)
+    // Show expected improvement label
+    legendTextGroup.selectAll("#expected-improvement-label")
+      .style("visibility", "visible")
+      .transition()
+      .duration(400)
+      .style("opacity", 1.0)
 
   }
 
