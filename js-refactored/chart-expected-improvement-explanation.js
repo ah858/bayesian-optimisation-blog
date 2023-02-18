@@ -7,17 +7,17 @@ function drawExpectedImprovementExplanationChart() {
     // {"x":42.0,"y": ymin + 0.62 * (ymax - ymin)},
     // {"x":46.85,"y":ymin + 0.55 * (ymax - ymin)}
     // {"x":6.1,"y": ymin + 0.57* (ymax - ymin)},
-    {"x":8.7,"y":ymin + 0.59 * (ymax - ymin)},
-    {"x":14.9,"y": ymin + 0.55 * (ymax - ymin)},
-    {"x":41.1,"y": ymin + 0.5* (ymax - ymin)},
-    {"x": 44,"y": ymin + 0.4 * (ymax - ymin)},
+    { "x": 8.7, "y": ymin + 0.59 * (ymax - ymin) },
+    { "x": 14.9, "y": ymin + 0.55 * (ymax - ymin) },
+    { "x": 41.1, "y": ymin + 0.5 * (ymax - ymin) },
+    { "x": 44, "y": ymin + 0.4 * (ymax - ymin) },
   ];
   const densityColor = "#005ACD";
   const best_point_so_far = points_chosen.reduce((prev, curr) => (curr[1] > prev[1] ? curr : prev));
   const plot_points = points_chosen.slice(0);
   const slice_xloc = 22; // Location at which to slice through the plot to illustrate expected improvement
 
-  
+
   // ============================
   // Event listeners for scroll positions
   // ============================
@@ -34,24 +34,24 @@ function drawExpectedImprovementExplanationChart() {
   const crosshatch = svg
     .append('defs')
     .append('pattern')
-      .attr('id', 'crosshatch')
-      .attr('patternUnits', 'userSpaceOnUse')
-      .attr('width', 8)
-      .attr('height', 8)
+    .attr('id', 'crosshatch')
+    .attr('patternUnits', 'userSpaceOnUse')
+    .attr('width', 8)
+    .attr('height', 8)
     .append('image')
-      .attr('xlink:href', 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc4JyBoZWlnaHQ9JzgnPgogIDxyZWN0IHdpZHRoPSc4JyBoZWlnaHQ9JzgnIGZpbGw9JyNmZmYnLz4KICA8cGF0aCBkPSdNMCAwTDggOFpNOCAwTDAgOFonIHN0cm9rZS13aWR0aD0nMC41JyBzdHJva2U9JyNhYWEnLz4KPC9zdmc+Cg==')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('width', 8)
-      .attr('height', 8);
+    .attr('xlink:href', 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc4JyBoZWlnaHQ9JzgnPgogIDxyZWN0IHdpZHRoPSc4JyBoZWlnaHQ9JzgnIGZpbGw9JyNmZmYnLz4KICA8cGF0aCBkPSdNMCAwTDggOFpNOCAwTDAgOFonIHN0cm9rZS13aWR0aD0nMC41JyBzdHJva2U9JyNhYWEnLz4KPC9zdmc+Cg==')
+    .attr('x', 0)
+    .attr('y', 0)
+    .attr('width', 8)
+    .attr('height', 8);
 
   // Background y grid
   const ygrid_gp = svg.append("g")
-   .call(yGrid, height, width);
+    .call(yGrid, height, width);
 
   const xaxis_gp = svg.append("g")
     .call(xAxis, height, width);
-  
+
   svg.append("g")
     .call(yAxis, height);
 
@@ -60,33 +60,33 @@ function drawExpectedImprovementExplanationChart() {
 
   svg.append("g")
     .call(yLabel, height);
-  
+
   // ============================
   // Set up shapes for model
   // ============================
-  
+
   // Set up model mean and std deviations
   const modelLine = d3.line()
     .curve(d3.curveBasis)
     .x(d => xscale(d.x))
     .y(d => yscale(d.mean))
-  
+
   const area = d3.area()
     .curve(d3.curveBasis)
     .x(d => xscale(d.x))
     .y0(d => yscale(d.lower))
     .y1(d => yscale(d.upper));
-  
+
   const area2 = d3.area()
     .curve(d3.curveBasis)
     .x(d => xscale(d.x))
     .y0(d => yscale(d.lower2))
     .y1(d => yscale(d.upper2));
-  
+
   // ============================
   // Add model elements to svg
   // ============================
-  
+
   // Model parameters
   const modelMean = svg.append("g")
     .attr("stroke", "black")
@@ -95,28 +95,28 @@ function drawExpectedImprovementExplanationChart() {
   const envelope = svg.append("g")
     .attr("stroke", "transparent")
     .attr("fill", "rgba(0,0,100,0.05)");
-  
+
   const envelope2 = svg.append("g")
     .attr("stroke", "transparent")
     .attr("fill", "rgba(0,0,100,0.1)");
-  
+
   const underlyingMean = svg.append("g")
     .attr("stroke", "red")
     .attr("stroke-dasharray", (3, 5))
     .attr("stroke-width", 2)
     .attr("fill", "transparent");
-  
+
   // ============================
   // Add other elements to svg
   // ============================
- 
+
   // Use rect in the background to capture click events and handle point creation
   const backgroundRect = svg.append("rect")
     .attr("width", width)
     .attr("height", height)
     // Transparent "white", a fill is required to capture click events
     .attr("fill", "#fff0");
-  
+
   // Restrict circles to a common group to set attributes collectively and avoid selecting unwanted elements
   const circles = svg.append("g")
     .attr("fill", "white")
@@ -128,11 +128,11 @@ function drawExpectedImprovementExplanationChart() {
 
   // Compute the distribution for the line plot with confidence intervals
   const dist = conditional_dist_with_confidence_intervals(points_chosen.map((d) => d.x),
-                                        points_chosen.map((d) => d.y),
-                                        xtilde,
-                                        kernel,
-                                        mean_function);
-  
+    points_chosen.map((d) => d.y),
+    xtilde,
+    kernel,
+    mean_function);
+
   // ============================
   // Make the plot into a heatmap
   // ============================
@@ -142,7 +142,7 @@ function drawExpectedImprovementExplanationChart() {
   let rectangle_height = (height - margin.top - margin.bottom) / heatmap_y_resolution;
   let ygrid = [...Array(heatmap_y_resolution).keys()].map((i) => ymin + (ymax - ymin) * (i + 0.5) / (heatmap_y_resolution));
   let xgrid = [...Array(heatmap_x_resolution).keys()].map((i) => xmin + (xmax - xmin) * (i + 0.5) / (heatmap_x_resolution));
-    // .map(yscaleFunction);
+  // .map(yscaleFunction);
   const heatmap_data = conditional_distribution_density_heatmap(
     points_chosen.map((d) => d.x),
     points_chosen.map((d) => d.y),
@@ -152,23 +152,18 @@ function drawExpectedImprovementExplanationChart() {
     mean_function,
   )
   // Build color scale
-  const heatmapScale = d3.scaleLog().domain(d3.extent(heatmap_data.map(d => d.density+ 1e-3)))
+  const heatmapScale = d3.scaleLog().domain(d3.extent(heatmap_data.map(d => d.density + 1e-3)))
   const heatmapColorScale = d3.scaleSequential(
     // (d) => d3.interpolator(d3.interpolate("#fff0", "#005ACD")interpolateBlues(heatmapScale(d))
     (d) => d3.interpolate("#FFFFFF", densityColor)(heatmapScale(d))
   )
-
-  // Sizes of "heatmap" rectangles
-  // Use Math.ceil because of weird interpolation issues
-  // let rectangle_width = Math.ceil((width - margin.left - margin.right) / heatmap_x_resolution);
-  // let rectangle_height = Math.ceil((height - margin.top - margin.bottom) / heatmap_y_resolution);
 
 
   // ============================
   // Add a second axis for density plot
   // ============================
 
-  const slice_xloc_closest_on_grid = xgrid.reduce(function(prev, curr) {
+  const slice_xloc_closest_on_grid = xgrid.reduce(function (prev, curr) {
     return (Math.abs(curr - slice_xloc) < Math.abs(prev - slice_xloc) && slice_xloc > curr ? curr : prev);
   });
   // TODO: possibly recompute density here at a higher resolution
@@ -176,7 +171,7 @@ function drawExpectedImprovementExplanationChart() {
     // Only keep the densities at desired slice 
     .filter((d) => d.x == slice_xloc_closest_on_grid)
     // Remap y -> y, density -> x
-    .map((d) => ({x: d.density, y: d.y}));
+    .map((d) => ({ x: d.density, y: d.y }));
   const slice_plot_x_start = xscale(slice_xloc_closest_on_grid) + 0.5 * rectangle_width
   const slice_density_plot_width = Math.ceil((width - margin.right - xscale(slice_xloc)) / 3);
 
@@ -186,17 +181,17 @@ function drawExpectedImprovementExplanationChart() {
       .range([plot_x_start, plot_x_start + plot_width])
 
     const subplotAxis = svg.append("g")
-      .attr("transform", `translate(0, ${( (makeAxisOnTop) ? margin.top : height - margin.bottom)})`)
+      .attr("transform", `translate(0, ${((makeAxisOnTop) ? margin.top : height - margin.bottom)})`)
       .attr("pointer-events", "none")
       .call(((makeAxisOnTop) ? d3.axisTop : d3.axisBottom)(subplotScale).ticks(2))
       .style("display", "none")
       .style("opacity", 0.0)
-    
-      subplotAxis.selectAll("line").style("stroke", color);
-      subplotAxis.selectAll("text").style("fill", color);
-      subplotAxis.selectAll("path").style("stroke", color);
-    
-    return  [subplotScale, subplotAxis]
+
+    subplotAxis.selectAll("line").style("stroke", color);
+    subplotAxis.selectAll("text").style("fill", color);
+    subplotAxis.selectAll("path").style("stroke", color);
+
+    return [subplotScale, subplotAxis]
   }
   function vertical_subplot(plot_x_start, plot_width, line_data, color, makeAxisOnTop = true) {
     const [subplotScale, subplotAxis] = vertical_subplot_scale_and_axis(plot_x_start, plot_width, line_data, color, makeAxisOnTop);
@@ -210,7 +205,7 @@ function drawExpectedImprovementExplanationChart() {
       .attr("fill", "transparent")
       .style("display", "none")
       .style("opacity", 0.0);
-      // sliceDe
+    // sliceDe
 
     lineOnPlot.selectAll('.line')
       .data([line_data])
@@ -223,7 +218,7 @@ function drawExpectedImprovementExplanationChart() {
 
   const [slice_density_axis, slice_density_scale, sliceDensityLine] = vertical_subplot(slice_plot_x_start, slice_density_plot_width, density_at_slice, densityColor);
   // Plot improvement over maximum
-  const improvement_at_slice = ygrid.map((y) => ({y: y, x: Math.max(y - best_point_so_far.y,  0)}))
+  const improvement_at_slice = ygrid.map((y) => ({ y: y, x: Math.max(y - best_point_so_far.y, 0) }))
 
   const [slice_improvement_axis, slice_improvement_scale, sliceImprovementLine] = vertical_subplot(slice_plot_x_start, slice_density_plot_width, improvement_at_slice, "red", false);
   sliceImprovementLine.attr("stroke", "red");
@@ -235,16 +230,16 @@ function drawExpectedImprovementExplanationChart() {
   const weighted_improvement_plot_x_start = slice_plot_x_start + slice_density_plot_width * 1.08
   const weighted_improvement_plot_width = slice_density_plot_width;
 
-  improvement_times_density = improvement_at_slice.map((d, i) => ({x: d.x * density_at_slice[i].x, y: d.y}))
+  improvement_times_density = improvement_at_slice.map((d, i) => ({ x: d.x * density_at_slice[i].x, y: d.y }))
 
 
-  const [weightedImprovementScale, weightedImprovementAxis] =vertical_subplot_scale_and_axis(weighted_improvement_plot_x_start, weighted_improvement_plot_width, improvement_times_density, colors[3], true); 
+  const [weightedImprovementScale, weightedImprovementAxis] = vertical_subplot_scale_and_axis(weighted_improvement_plot_x_start, weighted_improvement_plot_width, improvement_times_density, colors[3], true);
   const weightedImprovementCurve = svg.append("g")
-      .attr("stroke", colors[3])
-      .attr("fill", "url(#crosshatch)")
-      // .attr("fill", "transparent")
-      .attr("opacity", 0.0)
-      .style("display", "none")
+    .attr("stroke", colors[3])
+    .attr("fill", "url(#crosshatch)")
+    // .attr("fill", "transparent")
+    .attr("opacity", 0.0)
+    .style("display", "none")
   // const flat_line = improvement_times_density.map((d) => ({x: 0, y: d.y})) // Create a flat line to initialise the plot with
   const weightedImprovementLineFunc = d3.area()
     .curve(d3.curveBasis)
@@ -255,11 +250,11 @@ function drawExpectedImprovementExplanationChart() {
 
 
   weightedImprovementCurve.selectAll(".line")
-      .data([improvement_times_density])
-      .join('path')
-      .attr('class', 'line')
-      .attr('d', d => weightedImprovementLineFunc(d))
-      // .attr("fill", "");
+    .data([improvement_times_density])
+    .join('path')
+    .attr('class', 'line')
+    .attr('d', d => weightedImprovementLineFunc(d))
+  // .attr("fill", "");
 
 
   const bestPointSoFarLine = svg.append("line")
@@ -268,105 +263,70 @@ function drawExpectedImprovementExplanationChart() {
     .attr("stroke-dasharray", (3, 5))
     .attr("stroke-width", 2)
     .attr("y1", yscale(best_point_so_far.y))
-	  .attr("y2", yscale(best_point_so_far.y))
-	  .attr("x1", xscale(best_point_so_far.x))
-	  .attr("x2", xscale(best_point_so_far.x));
+    .attr("y2", yscale(best_point_so_far.y))
+    .attr("x1", xscale(best_point_so_far.x))
+    .attr("x2", xscale(best_point_so_far.x));
 
-    // ============================
-    // Make a legend for everything
-    // ============================
-    // create a list of keys
-    let lineLabels = [
-      {text: "Predicted speed density", color: densityColor, fill: densityColor, stroke: "none", id: "speed-density-label"},
-      {text: "Improvement", color: "red", fill: "red", stroke: "none", id: "improvement-label"},
-      {text: "Expected\nImprovement", color: colors[3], fill: "url(#crosshatch)", id: "expected-improvement-label"},
-    ]
+  // ============================
+  // Make a legend for everything
+  // ============================
+  // create a list of keys
+  let lineLabels = [
+    { text: "Predicted speed density", color: densityColor, fill: densityColor, stroke: "none", id: "speed-density-label" },
+    { text: "Improvement", color: "red", fill: "red", stroke: "none", id: "improvement-label" },
+    { text: "Expected\nImprovement", color: colors[3], fill: "url(#crosshatch)", id: "expected-improvement-label" },
+  ]
 
-    const legendBoxXStart = (weighted_improvement_plot_x_start + weighted_improvement_plot_width * 0.5);
-    const legendBoxYStart = (height / 2);
-    const legendWidth = (width) - legendBoxXStart;
-    const legendCircleRadius = 7;
-    let legendFontSize = 16;
-    let legendSpacing = 18;
-    const legendTextGroup = svg.append("g")
+  const legendBoxXStart = (weighted_improvement_plot_x_start + weighted_improvement_plot_width * 0.5);
+  const legendBoxYStart = (height / 2);
+  const legendWidth = (width) - legendBoxXStart;
+  const legendCircleRadius = 7;
+  let legendFontSize = 16;
+  let legendSpacing = 18;
+  const legendTextGroup = svg.append("g")
 
-    const legendCircle =  legendTextGroup
-      .selectAll(".legendCircle")
-      .data(lineLabels)
-      .enter()
-      .append("circle")
-        .attr("class", "legendCircle")
-        .attr("id", d => d.id)
-        .attr("cx", legendBoxXStart)
-        .attr("cy", function(d,i){ return  legendBoxYStart + i*legendSpacing})
-        .attr("r", legendCircleRadius)
-        .style("fill", function (d) {return d.fill})
-        .style("stroke", function (d) {return d.color})
-        .style("opacity", 0.0)
-        .style("visibility", "hidden")
+  const legendCircle = legendTextGroup
+    .selectAll(".legendCircle")
+    .data(lineLabels)
+    .enter()
+    .append("circle")
+    .attr("class", "legendCircle")
+    .attr("id", d => d.id)
+    .attr("cx", legendBoxXStart)
+    .attr("cy", function (d, i) { return legendBoxYStart + i * legendSpacing })
+    .attr("r", legendCircleRadius)
+    .style("fill", function (d) { return d.fill })
+    .style("stroke", function (d) { return d.color })
+    .style("opacity", 0.0)
+    .style("visibility", "hidden")
 
-    const legendText =  legendTextGroup.append("g")
-      .selectAll(".label")
-      .data(lineLabels)
-      .enter()
-      .append("text")
-        .attr("class", "label")
-        .attr("id", d => d.id)
-        .attr("x", legendBoxXStart + legendCircleRadius * 3)
-        .attr("y", function(d,i){ return  legendBoxYStart + i*legendSpacing}) // 100 is where the first dot appears. 25 is the distance between dots
-        .style("fill", function (d) {return d.color})
-        .text(function (d)  {return d.text})
-        .attr("text-anchor", "right")
-        .style("font-size", legendFontSize)
-        .style("alignment-baseline", "middle")
-        .style("opacity", 0.0)
-        .style("visibility", "hidden")
+  const legendText = legendTextGroup.append("g")
+    .selectAll(".label")
+    .data(lineLabels)
+    .enter()
+    .append("text")
+    .attr("class", "label")
+    .attr("id", d => d.id)
+    .attr("x", legendBoxXStart + legendCircleRadius * 3)
+    .attr("y", function (d, i) { return legendBoxYStart + i * legendSpacing }) // 100 is where the first dot appears. 25 is the distance between dots
+    .style("fill", function (d) { return d.color })
+    .text(function (d) { return d.text })
+    .attr("text-anchor", "right")
+    .style("font-size", legendFontSize)
+    .style("alignment-baseline", "middle")
+    .style("opacity", 0.0)
+    .style("visibility", "hidden")
 
-    const legendItems = legendCircle.merge(legendText);
+  const legendItems = legendCircle.merge(legendText);
 
 
-    // Ensure the labels fit on the plot:
-    let bbox;
-    // while outside the svg bounding box
-    while ((bbox = legendTextGroup.node().getBBox()).x + bbox.width > width) {
-      legendFontSize -= 1;
-      legendText.style("font-size", legendFontSize);
-    }
-    // svg.selectAll(".labels")
-    //   .data(lineLabels)
-    //   .enter()
-    //   .append("text")
-    //     .attr("class", "labels")
-    //     .attr("x", legendBoxXStart)
-    //     .attr("y", function(d,i){ return  margin.top + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
-    //     .style("fill", (d, i) => {return colors[i]})
-    //     .text(function(d){ return d})
-    //     .attr("text-anchor", "right")
-    //     .style("font-size", "0.5em")
-    //     .style("alignment-baseline", "hanging")
-    // Usually you have a color scale in your chart already
-
-    // Add one dot in the legend for each name.
-    // svg.selectAll(".legendline")
-    //   .data(keys)
-    //   .enter()
-    //   .append("line")
-    //     .attr("cx", 100)
-    //     .attr("cy", function(d,i){ return 100 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
-    //     .attr("r", 7)
-    //     .style("fill", function(d){ return color(d)})
-
-    // // Add one dot in the legend for each name.
-    // svg.selectAll("mylabels")
-    //   .data(keys)
-    //   .enter()
-    //   .append("text")
-    //     .attr("x", 120)
-    //     .attr("y", function(d,i){ return 100 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
-    //     .style("fill", function(d){ return color(d)})
-    //     .text(function(d){ return d})
-    //     .attr("text-anchor", "left")
-    //     .style("alignment-baseline", "middle")
+  // Ensure the labels fit on the plot:
+  let bbox;
+  // while outside the svg bounding box
+  while ((bbox = legendTextGroup.node().getBBox()).x + bbox.width > width) {
+    legendFontSize -= 1;
+    legendText.style("font-size", legendFontSize);
+  }
 
   // Initial drawing  
   update();
@@ -374,22 +334,22 @@ function drawExpectedImprovementExplanationChart() {
   // ============================
   // Event Listeners for buttons
   // ============================
-  
+
   function update() {
-    
+
     svg.selectAll()
-      .data(heatmap_data, function(d) {return d.x+':'+d.y;})
+      .data(heatmap_data, function (d) { return d.x + ':' + d.y; })
       .enter()
       .append("rect")
-        .attr("class", "heatmapRect")
-        .attr("x", d => xscale(d.x) - 0.5 * rectangle_width) // Subtract a half to center rectangle
-        .attr("y", d => yscale(d.y) - 0.5 * rectangle_height)
-        .attr("width", rectangle_width)
-        .attr("height", rectangle_height)
-        .style("fill", d => heatmapColorScale(d.density + 1e-3))
-        .style("display", "none")
-        .style("opacity", 0.0)
-  
+      .attr("class", "heatmapRect")
+      .attr("x", d => xscale(d.x) - 0.5 * rectangle_width) // Subtract a half to center rectangle
+      .attr("y", d => yscale(d.y) - 0.5 * rectangle_height)
+      .attr("width", rectangle_width)
+      .attr("height", rectangle_height)
+      .style("fill", d => heatmapColorScale(d.density + 1e-3))
+      .style("display", "none")
+      .style("opacity", 0.0)
+
     // Draw new circles
     circles.selectAll("circle")
       .data(plot_points)
@@ -401,8 +361,8 @@ function drawExpectedImprovementExplanationChart() {
       // Applies to merged selection of new and old elements
       .attr("cx", d => xscale(d.x))
       .attr("cy", d => yscale(d.y));
-    
-    
+
+
     modelMean.selectAll('.mean')
       .data([dist])
       .join('path')
@@ -414,7 +374,7 @@ function drawExpectedImprovementExplanationChart() {
       .join('path')
       .attr('class', 'envelope')
       .attr('d', d => area(d));
-    
+
     envelope2.selectAll('.envelope2')
       .data([dist])
       .join('path')
@@ -430,30 +390,30 @@ function drawExpectedImprovementExplanationChart() {
     slice_density_axis.raise();
     sliceImprovementLine.raise();
     slice_improvement_axis.raise();
-    
+
 
     // Notify observable that the points have changed
     svg.dispatch("input");
   }
-  
+
   // Changing elements on plot:
   const plotStateBase = function () {
     ygrid_gp.transition().duration(400).style("opacity", 1.0);
 
     modelMean.select('.mean').style("display", "block")
-      // .style("opacity", 1.)
+    // .style("opacity", 1.)
 
     envelope.select('.envelope').style("display", "block")
-      // .style("opacity", 1.)
+    // .style("opacity", 1.)
 
     envelope2.select('.envelope2').style("display", "block")
-      // .style("opacity", 1.)
+    // .style("opacity", 1.)
 
     svg.selectAll(".heatmapRect")
-    .transition()
-    .duration(400)
-    .style("opacity", 0.)
-    .on("end", function() {d3.select(this).style("display", "none")})
+      .transition()
+      .duration(400)
+      .style("opacity", 0.)
+      .on("end", function () { d3.select(this).style("display", "none") })
 
 
 
@@ -466,7 +426,7 @@ function drawExpectedImprovementExplanationChart() {
       .transition()
       .duration(400)
       .style("opacity", 1.)
-      .on("end", function() {
+      .on("end", function () {
         modelMean.select('.mean').style("display", "none")
         envelope.select('.envelope').style("display", "none")
         envelope2.select('.envelope2').style("display", "none")
@@ -485,30 +445,30 @@ function drawExpectedImprovementExplanationChart() {
       .duration(400)
       .style("opacity", 1)
     sliceDensityLine.transition().duration(400).style("opacity", 0.0)
-      .on("end", function () {d3.select(this).style("display", "none")})
+      .on("end", function () { d3.select(this).style("display", "none") })
     slice_density_axis.transition().duration(400).style("opacity", 0.0)
-      .on("end", function () {d3.select(this).style("display", "none")})
+      .on("end", function () { d3.select(this).style("display", "none") })
     // Hide speed density label
     legendTextGroup.selectAll("#speed-density-label")
       .transition()
       .duration(400)
       .style("opacity", 0.0)
-      .on("end", function () {d3.select(this).style("visibility", "hidden")})
+      .on("end", function () { d3.select(this).style("visibility", "hidden") })
 
   }
   const plotStateHeatMapAndDensity = function () {
     svg.selectAll(".heatmapRect")
-    .filter( (d, i, nodes) =>  d.x > slice_xloc)
-    .transition()
-    .duration(400)
-    .style("opacity", 0.)
-    .on("end", function() {d3.select(this).style("display", "none")})
+      .filter((d, i, nodes) => d.x > slice_xloc)
+      .transition()
+      .duration(400)
+      .style("opacity", 0.)
+      .on("end", function () { d3.select(this).style("display", "none") })
     circles.selectAll("circle")
-    .filter( (d, i, nodes) =>  d.x > slice_xloc)
-    .transition()
-    .duration(400)
-    .attr("r", 0.)
-    .on("end", function() {d3.select(this).style("display", "none")})
+      .filter((d, i, nodes) => d.x > slice_xloc)
+      .transition()
+      .duration(400)
+      .attr("r", 0.)
+      .on("end", function () { d3.select(this).style("display", "none") })
     // Hide the best point so far line
     bestPointSoFarLine.transition().duration(400)
       .attr("x1", xscale(best_point_so_far.x))
@@ -518,15 +478,15 @@ function drawExpectedImprovementExplanationChart() {
       .transition()
       .duration(400)
       .style("opacity", 0.0)
-      .on("end", function () {d3.select(this).style("display", "none")})
+      .on("end", function () { d3.select(this).style("display", "none") })
     slice_improvement_axis
       .transition()
       .duration(400)
       .style("opacity", 0.0)
-      .on("end", function () {d3.select(this).style("display", "none")})
+      .on("end", function () { d3.select(this).style("display", "none") })
 
     xaxis_gp.selectAll(".tick")
-      .filter(function() {
+      .filter(function () {
         var transform = d3.select(this).attr("transform");
         var translate = transform.match(/translate\(([^,]+),[^)]+\)/);
         var x = parseFloat(translate[1]);
@@ -535,7 +495,7 @@ function drawExpectedImprovementExplanationChart() {
       .transition()
       .duration(500)
       .style("opacity", 0)
-      .on("end", function() {
+      .on("end", function () {
         d3.select(this).style("display", "none");
         // Also now show the density
         sliceDensityLine.style("display", "block")
@@ -558,33 +518,33 @@ function drawExpectedImprovementExplanationChart() {
       .transition()
       .duration(400)
       .style("opacity", 0.0)
-      .on("end", function () {d3.select(this).style("visibility", "hidden")})
+      .on("end", function () { d3.select(this).style("visibility", "hidden") })
   };
 
   const plotStateHeatMapAndDensityAndImprovement = function () {
     // PLOT STATE 4
-        sliceImprovementLine.style("display", "block")
-          .transition()
-          .delay(400)
-          .duration(400)
-          .style("opacity", 1.0)
-        slice_improvement_axis.style("display", "block")
-          .transition()
-          .duration(400)
-          .style("opacity", 1.0)
-        bestPointSoFarLine.transition().duration(400)
-          .attr("x1", xscale.range()[0])
-          .attr("x2", xscale.range()[1])
-          // Hide the improvement times p(y|x)
-        weightedImprovementCurve.transition()
-          .duration(400)
-          .style("opacity", 0.0)
-          .on("end", function () {d3.select(this).style("display", "none");});
-        weightedImprovementAxis
-          .transition()
-          .duration(400)
-          .style("opacity", 0.0)
-          .on("end", function () {d3.select(this).style("display", "none")});
+    sliceImprovementLine.style("display", "block")
+      .transition()
+      .delay(400)
+      .duration(400)
+      .style("opacity", 1.0)
+    slice_improvement_axis.style("display", "block")
+      .transition()
+      .duration(400)
+      .style("opacity", 1.0)
+    bestPointSoFarLine.transition().duration(400)
+      .attr("x1", xscale.range()[0])
+      .attr("x2", xscale.range()[1])
+    // Hide the improvement times p(y|x)
+    weightedImprovementCurve.transition()
+      .duration(400)
+      .style("opacity", 0.0)
+      .on("end", function () { d3.select(this).style("display", "none"); });
+    weightedImprovementAxis
+      .transition()
+      .duration(400)
+      .style("opacity", 0.0)
+      .on("end", function () { d3.select(this).style("display", "none") });
 
     // Show improvement label
     legendTextGroup.selectAll("#improvement-label")
@@ -597,19 +557,19 @@ function drawExpectedImprovementExplanationChart() {
       .transition()
       .duration(400)
       .style("opacity", 0.0)
-      .on("end", function () {d3.select(this).style("visibility", "hidden")})
+      .on("end", function () { d3.select(this).style("visibility", "hidden") })
   }
 
   const plotStateWeightedImprovement = function () {
     // PLOT STATE 5
-        weightedImprovementCurve.style("display", "block")
-          .transition()
-          .duration(400)
-          .style("opacity", 1.0)
-        weightedImprovementAxis.style("display", "block")
-          .transition()
-          .duration(400)
-          .style("opacity", 1.0)
+    weightedImprovementCurve.style("display", "block")
+      .transition()
+      .duration(400)
+      .style("opacity", 1.0)
+    weightedImprovementAxis.style("display", "block")
+      .transition()
+      .duration(400)
+      .style("opacity", 1.0)
     // Show expected improvement label
     legendTextGroup.selectAll("#expected-improvement-label")
       .style("visibility", "visible")
@@ -628,13 +588,13 @@ function drawExpectedImprovementExplanationChart() {
 
   button3 = document.getElementById("button3");
   button3.onclick = plotStateHeatMapAndDensity;
-  
+
   button4 = document.getElementById("button4");
   button4.onclick = plotStateHeatMapAndDensityAndImprovement;
 
   button5 = document.getElementById("button5");
   button5.onclick = plotStateWeightedImprovement;
-  
+
 }
 
 drawExpectedImprovementExplanationChart() 
