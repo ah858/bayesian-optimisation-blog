@@ -129,10 +129,10 @@ function drawExpectedImprovementExplanationChart() {
 
   // Compute the distribution for the line plot with confidence intervals
   const dist = conditional_dist_with_confidence_intervals(points_chosen.map((d) => d.x),
-    points_chosen.map((d) => d.y),
-    xtilde,
-    kernel,
-    mean_function);
+                                        points_chosen.map((d) => d.y),
+                                        xtilde,
+                                        kernel,
+                                        mean_function);
 
   // ============================
   // Make the plot into a heatmap
@@ -169,7 +169,7 @@ function drawExpectedImprovementExplanationChart() {
   });
   // TODO: possibly recompute density here at a higher resolution
   const density_at_slice = heatmap_data
-    // Only keep the densities at desired slice 
+    // Only keep the densities at desired slice
     .filter((d) => d.x == slice_xloc_closest_on_grid)
     // Remap y -> y, density -> x
     .map((d) => ({ x: d.density, y: d.y }));
@@ -192,7 +192,7 @@ function drawExpectedImprovementExplanationChart() {
     subplotAxis.selectAll("text").style("fill", color);
     subplotAxis.selectAll("path").style("stroke", color);
 
-    return [subplotScale, subplotAxis]
+    return  [subplotScale, subplotAxis]
   }
   function vertical_subplot(plot_x_start, plot_width, line_data, color, makeAxisOnTop = true) {
     const [subplotScale, subplotAxis] = vertical_subplot_scale_and_axis(plot_x_start, plot_width, line_data, color, makeAxisOnTop);
@@ -236,11 +236,17 @@ function drawExpectedImprovementExplanationChart() {
 
   const [weightedImprovementScale, weightedImprovementAxis] = vertical_subplot_scale_and_axis(weighted_improvement_plot_x_start, weighted_improvement_plot_width, improvement_times_density, colors[3], true);
   const weightedImprovementCurve = svg.append("g")
-    .attr("stroke", colors[3])
-    .attr("fill", "url(#crosshatch)")
-    // .attr("fill", "transparent")
-    .attr("opacity", 0.0)
-    .style("display", "none")
+      .attr("stroke", colors[3])
+      // .attr("fill", "url(#crosshatch)")
+      .attr("fill", "transparent")
+      .attr("opacity", 0.0)
+      .style("display", "none")
+  const weightedImprovementCurveArea = svg.append("g")
+      .attr("stroke", colors[3])
+      .attr("fill", "url(#crosshatch)")
+      // .attr("fill", "transparent")
+      .attr("opacity", 0.0)
+      .style("display", "none")
   // const flat_line = improvement_times_density.map((d) => ({x: 0, y: d.y})) // Create a flat line to initialise the plot with
   const weightedImprovementLineFunc = d3.area()
     .curve(d3.curveBasis)
@@ -257,6 +263,11 @@ function drawExpectedImprovementExplanationChart() {
     .attr('d', d => weightedImprovementLineFunc(d))
   // .attr("fill", "");
 
+  weightedImprovementCurveArea.selectAll(".line")
+      .data([improvement_times_density])
+      .join('path')
+      .attr('class', 'line')
+      .attr('d', d => weightedImprovementLineFunc(d))
 
   const bestPointSoFarLine = svg.append("line")
     // .attr("class", "line")
@@ -273,9 +284,10 @@ function drawExpectedImprovementExplanationChart() {
   // ============================
   // create a list of keys
   let lineLabels = [
-    { text: "Predicted speed density", color: densityColor, fill: densityColor, stroke: "none", id: "speed-density-label" },
-    { text: "Improvement", color: "red", fill: "red", stroke: "none", id: "improvement-label" },
-    { text: "Expected\nImprovement", color: colors[3], fill: "url(#crosshatch)", id: "expected-improvement-label" },
+    {text: "Predicted speed density", color: densityColor, fill: densityColor, stroke: "none", id: "speed-density-label"},
+    {text: "Improvement", color: "red", fill: "red", stroke: "none", id: "improvement-label"},
+    {text: "Density * Improvement", color: colors[3], fill: colors[3], id: "density-times-improvement-label"},
+    {text: "Expected\nImprovement", color: colors[7], fill: "url(#crosshatch)", id: "expected-improvement-label"},
   ]
 
   const legendBoxXStart = (weighted_improvement_plot_x_start + weighted_improvement_plot_width * 0.5);
@@ -329,7 +341,7 @@ function drawExpectedImprovementExplanationChart() {
     legendText.style("font-size", legendFontSize);
   }
 
-  // Initial drawing  
+  // Initial drawing
   update();
 
   // ============================
@@ -342,14 +354,14 @@ function drawExpectedImprovementExplanationChart() {
       .data(heatmap_data, function (d) { return d.x + ':' + d.y; })
       .enter()
       .append("rect")
-      .attr("class", "heatmapRect")
-      .attr("x", d => xscale(d.x) - 0.5 * rectangle_width) // Subtract a half to center rectangle
-      .attr("y", d => yscale(d.y) - 0.5 * rectangle_height)
-      .attr("width", rectangle_width)
-      .attr("height", rectangle_height)
-      .style("fill", d => heatmapColorScale(d.density + 1e-3))
-      .style("display", "none")
-      .style("opacity", 0.0)
+        .attr("class", "heatmapRect")
+        .attr("x", d => xscale(d.x) - 0.5 * rectangle_width) // Subtract a half to center rectangle
+        .attr("y", d => yscale(d.y) - 0.5 * rectangle_height)
+        .attr("width", rectangle_width)
+        .attr("height", rectangle_height)
+        .style("fill", d => heatmapColorScale(d.density + 1e-3))
+        .style("display", "none")
+        .style("opacity", 0.0)
 
     // Draw new circles
     circles.selectAll("circle")
@@ -399,6 +411,13 @@ function drawExpectedImprovementExplanationChart() {
 
   // Changing elements on plot:
   const plotStateBase = function () {
+    // Hide future states if they are showing from previously running animation
+    hideStateWeightedImprovementArea() // hide state 6
+    hideStateWeightedImprovement() // hide state 5
+    hideStateHeatMapAndDensityAndImprovement() // hide state 4
+    hideStateHeatMapAndDensity() // hide state 3
+
+    // PLOT STATE 1
     ygrid_gp.transition().duration(400).style("opacity", 1.0);
 
     modelMean.select('.mean').style("display", "block")
@@ -420,6 +439,12 @@ function drawExpectedImprovementExplanationChart() {
 
   }
   const plotStateHeatMap = function () {
+    // Hide future states if they are showing from previously running animation
+    hideStateWeightedImprovement() // hide state 5
+    hideStateHeatMapAndDensityAndImprovement() // hide state 4
+    hideStateHeatMapAndDensity() // hide state 3
+
+    // PLOT STATE 2
     ygrid_gp.transition().duration(400).style("opacity", 0.0);
     // Hide mean line and y axis lines
     svg.selectAll(".heatmapRect")
@@ -445,19 +470,16 @@ function drawExpectedImprovementExplanationChart() {
       .transition()
       .duration(400)
       .style("opacity", 1)
-    sliceDensityLine.transition().duration(400).style("opacity", 0.0)
-      .on("end", function () { d3.select(this).style("display", "none") })
-    slice_density_axis.transition().duration(400).style("opacity", 0.0)
-      .on("end", function () { d3.select(this).style("display", "none") })
-    // Hide speed density label
-    legendTextGroup.selectAll("#speed-density-label")
-      .transition()
-      .duration(400)
-      .style("opacity", 0.0)
-      .on("end", function () { d3.select(this).style("visibility", "hidden") })
 
   }
+
   const plotStateHeatMapAndDensity = function () {
+    // Hide future states if they are showing from previously running animation
+    hideStateWeightedImprovementArea() // hide state 6
+    hideStateWeightedImprovement() // hide state 5
+    hideStateHeatMapAndDensityAndImprovement() // hide state 4
+
+    // PLOT STATE 3
     svg.selectAll(".heatmapRect")
       .filter((d, i, nodes) => d.x > slice_xloc)
       .transition()
@@ -465,26 +487,11 @@ function drawExpectedImprovementExplanationChart() {
       .style("opacity", 0.)
       .on("end", function () { d3.select(this).style("display", "none") })
     circles.selectAll("circle")
-      .filter((d, i, nodes) => d.x > slice_xloc)
-      .transition()
-      .duration(400)
-      .attr("r", 0.)
-      .on("end", function () { d3.select(this).style("display", "none") })
-    // Hide the best point so far line
-    bestPointSoFarLine.transition().duration(400)
-      .attr("x1", xscale(best_point_so_far.x))
-      .attr("x2", xscale(best_point_so_far.x))
-    // And hide the improvement line
-    sliceImprovementLine.style("display", "block")
-      .transition()
-      .duration(400)
-      .style("opacity", 0.0)
-      .on("end", function () { d3.select(this).style("display", "none") })
-    slice_improvement_axis
-      .transition()
-      .duration(400)
-      .style("opacity", 0.0)
-      .on("end", function () { d3.select(this).style("display", "none") })
+    .filter( (d, i, nodes) =>  d.x > slice_xloc)
+    .transition()
+    .duration(400)
+    .attr("r", 0.)
+    .on("end", function() {d3.select(this).style("display", "none")})
 
     xaxis_gp.selectAll(".tick")
       .filter(function () {
@@ -514,38 +521,26 @@ function drawExpectedImprovementExplanationChart() {
           .duration(400)
           .style("opacity", 1.0)
       })
-    // Hide improvement label
-    legendTextGroup.selectAll("#improvement-label")
-      .transition()
-      .duration(400)
-      .style("opacity", 0.0)
-      .on("end", function () { d3.select(this).style("visibility", "hidden") })
   };
 
   const plotStateHeatMapAndDensityAndImprovement = function () {
+    // Hide future states if they are showing from previously running animation
+    hideStateWeightedImprovementArea() // hide state 6
+    hideStateWeightedImprovement() // hide state 5
+
     // PLOT STATE 4
-    sliceImprovementLine.style("display", "block")
-      .transition()
-      .delay(400)
-      .duration(400)
-      .style("opacity", 1.0)
-    slice_improvement_axis.style("display", "block")
-      .transition()
-      .duration(400)
-      .style("opacity", 1.0)
-    bestPointSoFarLine.transition().duration(400)
-      .attr("x1", xscale.range()[0])
-      .attr("x2", xscale.range()[1])
-    // Hide the improvement times p(y|x)
-    weightedImprovementCurve.transition()
-      .duration(400)
-      .style("opacity", 0.0)
-      .on("end", function () { d3.select(this).style("display", "none"); });
-    weightedImprovementAxis
-      .transition()
-      .duration(400)
-      .style("opacity", 0.0)
-      .on("end", function () { d3.select(this).style("display", "none") });
+        sliceImprovementLine.style("display", "block")
+          .transition()
+          .delay(400)
+          .duration(400)
+          .style("opacity", 1.0)
+        slice_improvement_axis.style("display", "block")
+          .transition()
+          .duration(400)
+          .style("opacity", 1.0)
+        bestPointSoFarLine.transition().duration(400)
+          .attr("x1", xscale.range()[0])
+          .attr("x2", xscale.range()[1])
 
     // Show improvement label
     legendTextGroup.selectAll("#improvement-label")
@@ -553,15 +548,12 @@ function drawExpectedImprovementExplanationChart() {
       .transition()
       .duration(400)
       .style("opacity", 1.0)
-    // Hide expected improvement label
-    legendTextGroup.selectAll("#expected-improvement-label")
-      .transition()
-      .duration(400)
-      .style("opacity", 0.0)
-      .on("end", function () { d3.select(this).style("visibility", "hidden") })
   }
 
   const plotStateWeightedImprovement = function () {
+    // Hide future states if they are showing from previously running animation
+    hideStateWeightedImprovementArea() // hide state 6
+
     // PLOT STATE 5
     weightedImprovementCurve.style("display", "block")
       .transition()
@@ -572,12 +564,104 @@ function drawExpectedImprovementExplanationChart() {
       .duration(400)
       .style("opacity", 1.0)
     // Show expected improvement label
-    legendTextGroup.selectAll("#expected-improvement-label")
+    legendTextGroup.selectAll("#density-times-improvement-label")
       .style("visibility", "visible")
       .transition()
       .duration(400)
       .style("opacity", 1.0)
 
+  }
+
+  const plotStateWeightedImprovementArea = function () {
+    // PLOT STATE 6
+    weightedImprovementCurveArea.style("display", "block")
+      .transition()
+      .duration(400)
+      .style("opacity", 1.0)
+    // Show expected improvement label
+    legendTextGroup.selectAll("#expected-improvement-label")
+      .style("visibility", "visible")
+      .transition()
+      .duration(400)
+      .style("opacity", 1.0)
+  }
+
+  const hideStateHeatMapAndDensity = function () {
+    // Hide density line and axis
+    sliceDensityLine.transition().duration(400).style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("display", "none")})
+    slice_density_axis.transition().duration(400).style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("display", "none")})
+    // Hide speed density label
+    legendTextGroup.selectAll("#speed-density-label")
+      .transition()
+      .duration(400)
+      .style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("visibility", "hidden")})
+
+  }
+
+  const hideStateHeatMapAndDensityAndImprovement = function () {
+
+    // Hide the best point so far line
+    bestPointSoFarLine.transition().duration(400)
+      .attr("x1", xscale(best_point_so_far.x))
+      .attr("x2", xscale(best_point_so_far.x))
+    // And hide the improvement line
+    sliceImprovementLine.style("display", "block")
+      .transition()
+      .duration(400)
+      .style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("display", "none")})
+    slice_improvement_axis
+      .transition()
+      .duration(400)
+      .style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("display", "none")})
+
+    // Hide improvement label
+    legendTextGroup.selectAll("#density-times-improvement-label")
+      .transition()
+      .duration(400)
+      .style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("visibility", "hidden")})
+  }
+
+  const hideStateWeightedImprovement = function () {
+
+      // Hide the improvement times p(y|x)
+      weightedImprovementCurve.transition()
+      .duration(400)
+      .style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("display", "none");});
+      weightedImprovementAxis
+      .transition()
+      .duration(400)
+      .style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("display", "none")});
+
+    // Hide expected improvement label
+    legendTextGroup.selectAll("#density-times-improvement-label")
+      .transition()
+      .duration(400)
+      .style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("visibility", "hidden")})
+  }
+
+  const hideStateWeightedImprovementArea = function () {
+
+    // Hide the improvement times p(y|x)
+    weightedImprovementCurveArea.transition()
+    .duration(400)
+    .style("opacity", 0.0)
+    .on("end", function () {d3.select(this).style("display", "none");});
+
+    // Hide expected improvement label
+    legendTextGroup.selectAll("#expected-improvement-label")
+      .transition()
+      .duration(400)
+      .style("opacity", 0.0)
+      .on("end", function () {d3.select(this).style("visibility", "hidden")})
   }
 
   // Interactive buttons -> progress through the elements of the plot
@@ -596,6 +680,9 @@ function drawExpectedImprovementExplanationChart() {
   button5 = document.getElementById("button5");
   button5.onclick = plotStateWeightedImprovement;
 
+  button6 = document.getElementById("button6");
+  button6.onclick = plotStateWeightedImprovementArea;
+
 }
 
-drawExpectedImprovementExplanationChart() 
+drawExpectedImprovementExplanationChart()
