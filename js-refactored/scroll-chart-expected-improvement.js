@@ -119,8 +119,9 @@ function drawExpectedImprovementExplanationChart() {
 
   // Restrict circles to a common group to set attributes collectively and avoid selecting unwanted elements
   const circles = svg.append("g")
-    .attr("fill", "white")
-    .attr("stroke", "black")
+    // .attr("fill", "black")
+    .attr("fill", selectedPointsColor)
+    .attr("stroke", "white")
     .attr("class", "datapointCircle");
   // ============================
   // Compute the distribution for line GP plot

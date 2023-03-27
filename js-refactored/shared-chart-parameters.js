@@ -2,7 +2,9 @@
 let width = 500; //document.getElementById("chart").offsetWidth
 let height = 250; // document.getElementById("chart").offsetWidth / 2
 // let colors = ["#003f5c", "#7a5195", "#ef5675", "#ffa600"];
-let colors = d3.schemeSet2;
+let colors = ["#473198", "#fe4a49","#2ab7ca","#fed766","#13505b"];
+let trueFuncColor = colors[1];
+let selectedPointsColor = "black";
 let x_axis_resolution = 201;
 
 const NUMBER_OF_GUESSES = 6;

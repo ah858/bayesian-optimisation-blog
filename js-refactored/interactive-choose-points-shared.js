@@ -122,7 +122,7 @@ function make_choose_points_plot(svg, width, top_plot_height, week_slider_height
   
   const underlyingMean = svg.append("g")
     // .attr("stroke", "red")
-    .attr("stroke", colors[2])
+    .attr("stroke", trueFuncColor)
     .attr("stroke-dasharray", (3, 5))
     .attr("stroke-width", 2)
     .attr("fill", "transparent");
@@ -169,7 +169,9 @@ function make_choose_points_plot(svg, width, top_plot_height, week_slider_height
   
   // Restrict circles to a common group to set attributes collectively and avoid selecting unwanted elements
   const circles = svg.append("g")
-    .attr("fill", "blue");
+    .attr("fill", selectedPointsColor)
+    .attr("stroke", "white")
+    // .attr("stroke", selectedPointsColor);
  
 
   const resetButton = svg.append("text")
@@ -209,7 +211,7 @@ function make_choose_points_plot(svg, width, top_plot_height, week_slider_height
       .join(
         // Special handling for new elements only
         enter => enter.append("circle")
-          .attr("r", 7)
+          .attr("r", datapointCircleRadius)
       )
       // Applies to merged selection of new and old elements
       .attr("cx", d => xscale(d.x))
