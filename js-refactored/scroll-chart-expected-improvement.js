@@ -608,7 +608,7 @@ function drawExpectedImprovementExplanationChart() {
       .attr("x1", xscale(best_point_so_far.x))
       .attr("x2", xscale(best_point_so_far.x))
     // And hide the improvement line
-    sliceImprovementLine.style("display", "block")
+    sliceImprovementLine 
       .transition()
       .duration(400)
       .style("opacity", 0.0)
@@ -620,7 +620,7 @@ function drawExpectedImprovementExplanationChart() {
       .on("end", function () {d3.select(this).style("display", "none")})
 
     // Hide improvement label
-    legendTextGroup.selectAll("#density-times-improvement-label")
+    legendTextGroup.selectAll("#improvement-label")
       .transition()
       .duration(400)
       .style("opacity", 0.0)
