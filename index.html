@@ -265,7 +265,7 @@
 				<img src="expected-value-acquisition.png">
 
 				<p>
-					We've seen the short-comings of this acquisition, which leads to the question: what is the right acquisition function? Starting from the goal of finding the best front-wing design, can we come up with an acquisition function that would lead us to the optimal rule for choosing the next length \(x\) to test? Let's try and do just that.
+					We've seen the short-coming of this acquisition is that it doesn't allow exploration, which leads to the question: what is the right acquisition function? Starting from the goal of finding the best front-wing design, can we come up with an acquisition function that would lead us to the optimal rule for choosing the next length \(x\) to test? Let's try and do just that.
 				</p>
 				<h3>Optimal Acquisition Function</h3>
 				<p>
@@ -275,9 +275,9 @@
 					It's possible to formulate the optimization problem in other ways, including observations with noise, returning a point \(x^*\) that hasn't been tested, or having a non-fixed number of steps left.
 				</div>
 				<p>
-					Having defined our problem setup, let's also be precise about our goal. We can define a utility function \(U(x^*)\) that quantifies how good the final design is. Let's assume — for this problem — it is proportional to the cornering speed \(y^* = f(x^*)\). In other words:
+					Having defined our problem setup, let's also be precise about our goal. We can define a utility function \(U(x^*)\) that quantifies how good the final design is. Let's assume — for this problem — it is proportional to the optimal cornering speed \(y^* = f(x^*)\). In other words:
 					\[U(x^*) = y^* = f(x^*)\]
-					To maximise this utility, we'd naturally want to report the best design we've found during our experimentation:
+					To maximise this utility, we'd naturally want to report the best design we've found across all our experimentation data points:
 					\[x^*_{\text{final}} = x_{\class{light-red}{i^*}}\quad\text{ where }\class{light-red}{i^*}=\underset{i\in \{1,\dots, N\}}{\operatorname{argmax}} y_i\]
 
 					To arrive at a general acquisition function, it helps to first consider the specific case when we're almost at the end of the design period; we only have time to test one last prototype before we must pick a design to be manufactured for the race. So far, we have tried front-wing lengths \((x_1, \dots, x_{N-1})\) and observed corresponding speeds \((y_1, \dots, y_{N-1})\). Given these, we can define the <i>extra</i> utility we would get from evaluating the last point at \(x_N\), and (hypothetically) observing a cornering speed \(y_N\):
@@ -307,7 +307,7 @@
 					\[\alpha_N(x_N)=\mathbb{E}_{y_N|x_N, \mathcal{D}_N} [\lambda_N]\]
 				</p>
 				<p>
-					We visualize this <strong>1-step</strong> expected improvement below:
+					Remember, all this says is that our acqusition function plots the expected speed improvement for each wind length. We visualise this <strong>1-step</strong> expected improvement below:
 				</p>
 
 				<p><strong>TODO:</strong> 1-step expected improvement visualisation</p>
@@ -361,7 +361,7 @@
 					\end{align}
 					\]
 				</div>
-				<a class="collapsible-button light-blue link dim bl bw2 ph3" href="#0">Math Legend</a>
+				<a class="collapsible-button light-blue link dim bl bw2 ph3" href="#0">Click to expand Math Legend</a>
 				<div class="collapsible-content light-blue bl bw2 ph3">
 					<p class="gray f6">Notation is ready to forget on a first read, so here are some helpers:</p>
 					<ul class="list pl0">
